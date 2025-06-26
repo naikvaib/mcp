@@ -91,14 +91,19 @@ async def test_command_line_args():
         with patch(
             'awslabs.dataprocessing_mcp_server.server.create_server', return_value=mock_server
         ):
-            # Call the main function
-            main()
+            # Mock the AWS helper's create_boto3_client method
+            with patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+                return_value=MagicMock(),
+            ):
+                # Call the main function
+                main()
 
-            # Verify that parse_args was called
-            mock_parse_args.assert_called_once()
+                # Verify that parse_args was called
+                mock_parse_args.assert_called_once()
 
-            # Verify that run was called with the correct parameters
-            mock_server.run.assert_called_once()
+                # Verify that run was called with the correct parameters
+                mock_server.run.assert_called_once()
 
     # Test with write access enabled
     with patch.object(argparse.ArgumentParser, 'parse_args') as mock_parse_args:
@@ -165,21 +170,26 @@ async def test_glue_data_catalog_handler_initialization():
     # Create a mock MCP server
     mock_mcp = MagicMock()
 
-    # Initialize the Glue Data Catalog handler with the mock MCP server
-    GlueDataCatalogHandler(mock_mcp)
+    # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
+    with patch(
+        'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+        return_value=MagicMock(),
+    ):
+        # Initialize the Glue Data Catalog handler with the mock MCP server
+        GlueDataCatalogHandler(mock_mcp)
 
-    # Verify that the tools were registered
-    assert mock_mcp.tool.call_count > 0
+        # Verify that the tools were registered
+        assert mock_mcp.tool.call_count > 0
 
-    # Get all call args
-    call_args_list = mock_mcp.tool.call_args_list
+        # Get all call args
+        call_args_list = mock_mcp.tool.call_args_list
 
-    # Get all tool names that were registered
-    tool_names = [call_args[1]['name'] for call_args in call_args_list]
+        # Get all tool names that were registered
+        tool_names = [call_args[1]['name'] for call_args in call_args_list]
 
-    # Verify that expected tools are registered
-    assert 'manage_aws_glue_databases' in tool_names
-    assert 'manage_aws_glue_tables' in tool_names
+        # Verify that expected tools are registered
+        assert 'manage_aws_glue_databases' in tool_names
+        assert 'manage_aws_glue_tables' in tool_names
 
 
 @pytest.mark.asyncio
@@ -191,20 +201,25 @@ async def test_handler_write_access_control():
     # Create a mock context
     mock_ctx = MagicMock(spec=Context)
 
-    # Initialize handlers with write access disabled
-    glue_data_catalog_handler = GlueDataCatalogHandler(mock_mcp, allow_write=False)
+    # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
+    with patch(
+        'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+        return_value=MagicMock(),
+    ):
+        # Initialize handlers with write access disabled
+        glue_data_catalog_handler = GlueDataCatalogHandler(mock_mcp, allow_write=False)
 
-    # Mock the necessary methods to test write access control
-    with patch.object(
-        glue_data_catalog_handler, 'manage_aws_glue_data_catalog_databases'
-    ) as mock_manage_databases:
-        # Call the handler with a write operation
-        await glue_data_catalog_handler.manage_aws_glue_data_catalog_databases(
-            mock_ctx, operation='create', database_name='test-db'
-        )
+        # Mock the necessary methods to test write access control
+        with patch.object(
+            glue_data_catalog_handler, 'manage_aws_glue_data_catalog_databases'
+        ) as mock_manage_databases:
+            # Call the handler with a write operation
+            await glue_data_catalog_handler.manage_aws_glue_data_catalog_databases(
+                mock_ctx, operation='create', database_name='test-db'
+            )
 
-        # Verify that the method was called with the correct parameters
-        mock_manage_databases.assert_called_once()
+            # Verify that the method was called with the correct parameters
+            mock_manage_databases.assert_called_once()
 
-        # Check that allow_write is False
-        assert glue_data_catalog_handler.allow_write is False
+            # Check that allow_write is False
+            assert glue_data_catalog_handler.allow_write is False
