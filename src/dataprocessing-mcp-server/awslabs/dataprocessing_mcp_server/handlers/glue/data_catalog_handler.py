@@ -67,7 +67,7 @@ class GlueDataCatalogHandler:
     """Handler for Amazon Glue Data Catalog operations."""
 
     def __init__(self, mcp, allow_write: bool = False, allow_sensitive_data_access: bool = False):
-        """Initialize the EKS stack handler.
+        """Initialize the Glue Data Catalog handler.
 
         Args:
             mcp: The MCP server instance
@@ -109,15 +109,15 @@ class GlueDataCatalogHandler:
         ),
         database_name: Optional[str] = Field(
             None,
-            description='Name of the database (required for create, delete, get, and update operations).',
+            description='Name of the database (required for create-database, delete-database, get-database, and update-database operations).',
         ),
         description: Optional[str] = Field(
             None,
-            description='Description of the database (for create and update operations).',
+            description='Description of the database (for create-database and update-database operations).',
         ),
         location_uri: Optional[str] = Field(
             None,
-            description='Location URI of the database (for create and update operations).',
+            description='Location URI of the database (for create-database and update-database operations).',
         ),
         parameters: Optional[Dict[str, str]] = Field(
             None,
@@ -141,7 +141,7 @@ class GlueDataCatalogHandler:
         for database management within the AWS Glue Data Catalog.
 
         ## Requirements
-        - The server must be run with the `--allow-write` flag for create, update, and delete operations
+        - The server must be run with the `--allow-write` flag for create-database, update-database, and delete-database operations
         - Appropriate AWS permissions for Glue Data Catalog operations
 
         ## Operations
@@ -152,7 +152,7 @@ class GlueDataCatalogHandler:
         - **update-database**: Update an existing database's properties
 
         ## Usage Tips
-        - Use the get or list operations first to check existing databases
+        - Use the get-database or list-databases operations first to check existing databases
         - Database names must be unique within your AWS account and region
         - Deleting a database will also delete all tables within it
 
@@ -176,7 +176,9 @@ class GlueDataCatalogHandler:
         try:
             if not self.allow_write and operation not in [
                 'get-database',
+                'get',
                 'list-databases',
+                'list',
             ]:
                 error_message = f'Operation {operation} is not allowed without write access'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
@@ -186,21 +188,21 @@ class GlueDataCatalogHandler:
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         database_name='',
-                        operation='create',
+                        operation='create-database',
                     )
                 elif operation == 'delete-database' or operation == 'delete':
                     return DeleteDatabaseResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         database_name='',
-                        operation='delete',
+                        operation='delete-database',
                     )
                 elif operation == 'update-database' or operation == 'update':
                     return UpdateDatabaseResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         database_name='',
-                        operation='update',
+                        operation='update-database',
                     )
                 else:
                     return GetDatabaseResponse(
@@ -211,7 +213,7 @@ class GlueDataCatalogHandler:
                         location_uri='',
                         parameters={},
                         creation_time='',
-                        operation='get',
+                        operation='get-database',
                         catalog_id='',
                     )
 
@@ -269,7 +271,7 @@ class GlueDataCatalogHandler:
                     location_uri='',
                     parameters={},
                     creation_time='',
-                    operation='get',
+                    operation='get-database',
                     catalog_id='',
                 )
 
@@ -288,7 +290,7 @@ class GlueDataCatalogHandler:
                 location_uri='',
                 parameters={},
                 creation_time='',
-                operation='get',
+                operation='get-database',
                 catalog_id='',  # Always use empty string for catalog_id in error responses
             )
 
@@ -305,7 +307,7 @@ class GlueDataCatalogHandler:
         ),
         table_name: Optional[str] = Field(
             None,
-            description='Name of the table (required for create, delete, get, and update operations).',
+            description='Name of the table (required for create-table, delete-table, get-table, and update-table operations).',
         ),
         catalog_id: Optional[str] = Field(
             None,
@@ -313,15 +315,15 @@ class GlueDataCatalogHandler:
         ),
         table_input: Optional[Dict[str, Any]] = Field(
             None,
-            description='Table definition for create and update operations.',
+            description='Table definition for create-table and update-table operations.',
         ),
         search_text: Optional[str] = Field(
             None,
-            description='Search text for search operation.',
+            description='Search text for search-tables operation.',
         ),
         max_results: Optional[int] = Field(
             None,
-            description='Maximum number of results to return for list and search operations.',
+            description='Maximum number of results to return for list and search-tables operations.',
         ),
     ) -> Union[
         CreateTableResponse,
@@ -338,7 +340,7 @@ class GlueDataCatalogHandler:
         Tables define the schema and metadata for data stored in various formats and locations.
 
         ## Requirements
-        - The server must be run with the `--allow-write` flag for create, update, and delete operations
+        - The server must be run with the `--allow-write` flag for create-table, update-table, and delete-table operations
         - Database must exist before creating tables within it
         - Appropriate AWS permissions for Glue Data Catalog operations
 
@@ -352,7 +354,7 @@ class GlueDataCatalogHandler:
 
         ## Usage Tips
         - Table names must be unique within a database
-        - Use get or list operations to check existing tables before creating
+        - Use get-table or list-tables operations to check existing tables before creating
         - Table input should include storage descriptor, columns, and partitioning information
 
         Args:
@@ -386,7 +388,7 @@ class GlueDataCatalogHandler:
                         content=[TextContent(type='text', text=error_message)],
                         database_name=database_name,
                         table_name='',
-                        operation='create',
+                        operation='create-table',
                     )
                 elif operation == 'delete-table' or operation == 'delete':
                     return DeleteTableResponse(
@@ -394,7 +396,7 @@ class GlueDataCatalogHandler:
                         content=[TextContent(type='text', text=error_message)],
                         database_name=database_name,
                         table_name='',
-                        operation='delete',
+                        operation='delete-table',
                     )
                 elif operation == 'update-table' or operation == 'update':
                     return UpdateTableResponse(
@@ -402,7 +404,7 @@ class GlueDataCatalogHandler:
                         content=[TextContent(type='text', text=error_message)],
                         database_name=database_name,
                         table_name='',
-                        operation='update',
+                        operation='update-table',
                     )
                 elif operation == 'search-tables' or operation == 'search':
                     return SearchTablesResponse(
@@ -411,7 +413,7 @@ class GlueDataCatalogHandler:
                         tables=[],
                         search_text='',
                         count=0,
-                        operation='search',
+                        operation='search-tables',
                     )
                 else:
                     return GetTableResponse(
@@ -422,13 +424,13 @@ class GlueDataCatalogHandler:
                         table_definition={},
                         creation_time='',
                         last_access_time='',
-                        operation='get',
+                        operation='get-table',
                     )
 
             if operation == 'create-table' or operation == 'create':
                 if table_name is None or table_input is None:
                     raise ValueError(
-                        'table_name and table_input are required for create operation'
+                        'table_name and table_input are required for create-table operation'
                     )
                 return await self.data_catalog_table_manager.create_table(
                     ctx=ctx,
@@ -440,7 +442,7 @@ class GlueDataCatalogHandler:
 
             elif operation == 'delete-table' or operation == 'delete':
                 if table_name is None:
-                    raise ValueError('table_name is required for delete operation')
+                    raise ValueError('table_name is required for delete-table operation')
                 return await self.data_catalog_table_manager.delete_table(
                     ctx=ctx,
                     database_name=database_name,
@@ -450,7 +452,7 @@ class GlueDataCatalogHandler:
 
             elif operation == 'get-table' or operation == 'get':
                 if table_name is None:
-                    raise ValueError('table_name is required for get operation')
+                    raise ValueError('table_name is required for get-table operation')
                 return await self.data_catalog_table_manager.get_table(
                     ctx=ctx,
                     database_name=database_name,
@@ -469,7 +471,7 @@ class GlueDataCatalogHandler:
             elif operation == 'update-table' or operation == 'update':
                 if table_name is None or table_input is None:
                     raise ValueError(
-                        'table_name and table_input are required for update operation'
+                        'table_name and table_input are required for update-table operation'
                     )
                 return await self.data_catalog_table_manager.update_table(
                     ctx=ctx,
@@ -498,7 +500,7 @@ class GlueDataCatalogHandler:
                     table_definition={},
                     creation_time='',
                     last_access_time='',
-                    operation='get',
+                    operation='get-table',
                 )
 
         except ValueError as e:
@@ -515,7 +517,7 @@ class GlueDataCatalogHandler:
                 table_definition={},
                 creation_time='',
                 last_access_time='',
-                operation='get',
+                operation='get-table',
             )
 
     async def manage_aws_glue_data_catalog_connections(
@@ -523,11 +525,11 @@ class GlueDataCatalogHandler:
         ctx: Context,
         operation: str = Field(
             ...,
-            description='Operation to perform: create, delete, get, list, or update. Choose "get" or "list" for read-only operations.',
+            description='Operation to perform: create-connection, delete-connection, get-connection, list-connections, or update-connection. Choose "get-connection" or "list-connections" for read-only operations.',
         ),
         connection_name: Optional[str] = Field(
             None,
-            description='Name of the connection (required for create, delete, get, and update operations).',
+            description='Name of the connection (required for create-connection, delete-connection, get-connection, and update-connection operations).',
         ),
         connection_input: Optional[Dict[str, Any]] = Field(
             None,
@@ -557,11 +559,11 @@ class GlueDataCatalogHandler:
         - Connection properties must be valid for the connection type
 
         ## Operations
-        - **create**: Create a new connection
-        - **delete**: Delete an existing connection
-        - **get**: Retrieve detailed information about a specific connection
-        - **list**: List all connections
-        - **update**: Update an existing connection's properties
+        - **create-connection**: Create a new connection
+        - **delete-connection**: Delete an existing connection
+        - **get-connection**: Retrieve detailed information about a specific connection
+        - **list-connections**: List all connections
+        - **update-connection**: Update an existing connection's properties
 
         ## Usage Tips
         - Connection names must be unique within your catalog
@@ -579,32 +581,37 @@ class GlueDataCatalogHandler:
             Union of response types specific to the operation performed
         """
         try:
-            if not self.allow_write and operation not in ['get', 'list']:
+            if not self.allow_write and operation not in [
+                'get-connection',
+                'get',
+                'list-connections',
+                'list',
+            ]:
                 error_message = f'Operation {operation} is not allowed without write access'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
 
-                if operation == 'create':
+                if operation == 'create-connection' or operation == 'create':
                     return CreateConnectionResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         connection_name='',
-                        operation='create',
+                        operation='create-connection',
                         catalog_id='',
                     )
-                elif operation == 'delete':
+                elif operation == 'delete-connection' or operation == 'delete':
                     return DeleteConnectionResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         connection_name='',
-                        operation='delete',
+                        operation='delete-connectionte',
                         catalog_id='',
                     )
-                elif operation == 'update':
+                elif operation == 'update-connection' or operation == 'update':
                     return UpdateConnectionResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         connection_name='',
-                        operation='update',
+                        operation='update-connection',
                         catalog_id='',
                     )
                 else:
@@ -625,7 +632,7 @@ class GlueDataCatalogHandler:
                         operation='get',
                     )
 
-            if operation == 'create':
+            if operation == 'create-connection' or operation == 'create':
                 if connection_name is None or connection_input is None:
                     raise ValueError(
                         'connection_name and connection_input are required for create operation'
@@ -637,26 +644,26 @@ class GlueDataCatalogHandler:
                     catalog_id=catalog_id,
                 )
 
-            elif operation == 'delete':
+            elif operation == 'delete-connection' or operation == 'delete':
                 if connection_name is None:
                     raise ValueError('connection_name is required for delete operation')
                 return await self.data_catalog_manager.delete_connection(
                     ctx=ctx, connection_name=connection_name, catalog_id=catalog_id
                 )
 
-            elif operation == 'get':
+            elif operation == 'get-connection' or operation == 'get':
                 if connection_name is None:
                     raise ValueError('connection_name is required for get operation')
                 return await self.data_catalog_manager.get_connection(
                     ctx=ctx, connection_name=connection_name, catalog_id=catalog_id
                 )
 
-            elif operation == 'list':
+            elif operation == 'list-connections' or operation == 'list':
                 return await self.data_catalog_manager.list_connections(
                     ctx=ctx, catalog_id=catalog_id
                 )
 
-            elif operation == 'update':
+            elif operation == 'update-connection' or operation == 'update':
                 if connection_name is None or connection_input is None:
                     raise ValueError(
                         'connection_name and connection_input are required for update operation'
@@ -669,7 +676,7 @@ class GlueDataCatalogHandler:
                 )
 
             else:
-                error_message = f'Invalid operation: {operation}. Must be one of: create, delete, get, list, update'
+                error_message = f'Invalid operation: {operation}. Must be one of: create-connection, delete-connection, get-connection, list-connections, update-connection'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
                 return GetConnectionResponse(
                     isError=True,
@@ -716,7 +723,7 @@ class GlueDataCatalogHandler:
         ctx: Context,
         operation: str = Field(
             ...,
-            description='Operation to perform: create, delete, get, list, or update. Choose "get" or "list" for read-only operations.',
+            description='Operation to perform: create-partition, delete-partition, get-partition, list-partitions, or update-partition. Choose "get-partition" or "list-partitions" for read-only operations.',
         ),
         database_name: str = Field(
             ...,
@@ -728,19 +735,19 @@ class GlueDataCatalogHandler:
         ),
         partition_values: Optional[List[str]] = Field(
             None,
-            description='Values that define the partition (required for create, delete, get, and update operations).',
+            description='Values that define the partition (required for create-partition, delete-partition, get-partition, and update-partition operations).',
         ),
         partition_input: Optional[Dict[str, Any]] = Field(
             None,
-            description='Partition definition for create and update operations.',
+            description='Partition definition for create-partition and update-partition operations.',
         ),
         max_results: Optional[int] = Field(
             None,
-            description='Maximum number of results to return for list operation.',
+            description='Maximum number of results to return for list-partitions operation.',
         ),
         expression: Optional[str] = Field(
             None,
-            description='Filter expression for list operation.',
+            description='Filter expression for list-partitions operation.',
         ),
         catalog_id: Optional[str] = Field(
             None,
@@ -760,20 +767,20 @@ class GlueDataCatalogHandler:
         by allowing queries to target specific subsets of data.
 
         ## Requirements
-        - The server must be run with the `--allow-write` flag for create, update, and delete operations
+        - The server must be run with the `--allow-write` flag for create-partition, update-partition, and delete-partition operations
         - Database and table must exist before creating partitions
         - Partition values must match the partition schema defined in the table
 
         ## Operations
-        - **create**: Create a new partition in the specified table
-        - **delete**: Delete an existing partition from the table
-        - **get**: Retrieve detailed information about a specific partition
-        - **list**: List all partitions in the specified table
-        - **update**: Update an existing partition's properties
+        - **create-partition**: Create a new partition in the specified table
+        - **delete-partition**: Delete an existing partition from the table
+        - **get-partition**: Retrieve detailed information about a specific partition
+        - **list-partitions**: List all partitions in the specified table
+        - **update-partition**: Update an existing partition's properties
 
         ## Usage Tips
         - Partition values must be provided in the same order as partition columns in the table
-        - Use get or list operations to check existing partitions before creating
+        - Use get-partition or list-partitions operations to check existing partitions before creating
         - Partition input should include storage descriptor and location information
 
         Args:
@@ -784,43 +791,47 @@ class GlueDataCatalogHandler:
             partition_values: Values that define the partition
             partition_input: Partition definition
             max_results: Maximum results to return
-            expression: Filter expression for list operation
+            expression: Filter expression for list-partitions operation
             catalog_id: ID of the catalog (optional, defaults to account ID)
 
         Returns:
             Union of response types specific to the operation performed
         """
         try:
-            if not self.allow_write and operation not in ['get', 'list']:
+            if not self.allow_write and operation not in [
+                'get-partition',
+                'getlist-partitions',
+                'list',
+            ]:
                 error_message = f'Operation {operation} is not allowed without write access'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
 
-                if operation == 'create':
+                if operation == 'create-partition' or operation == 'create':
                     return CreatePartitionResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         database_name=database_name,
                         table_name=table_name,
                         partition_values=[],
-                        operation='create',
+                        operation='create-partition',
                     )
-                elif operation == 'delete':
+                elif operation == 'delete-partition' or operation == 'delete':
                     return DeletePartitionResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         database_name=database_name,
                         table_name=table_name,
                         partition_values=[],
-                        operation='delete',
+                        operation='delete-partition',
                     )
-                elif operation == 'update':
+                elif operation == 'update-partition' or operation == 'update':
                     return UpdatePartitionResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         database_name=database_name,
                         table_name=table_name,
                         partition_values=[],
-                        operation='update',
+                        operation='update-partition',
                     )
                 else:
                     return GetPartitionResponse(
@@ -832,13 +843,13 @@ class GlueDataCatalogHandler:
                         partition_definition={},
                         creation_time='',
                         last_access_time='',
-                        operation='get',
+                        operation='get-partition',
                     )
 
-            if operation == 'create':
+            if operation == 'create-partition' or operation == 'create':
                 if partition_values is None or partition_input is None:
                     raise ValueError(
-                        'partition_values and partition_input are required for create operation'
+                        'partition_values and partition_input are required for create-partition operation'
                     )
                 return await self.data_catalog_manager.create_partition(
                     ctx=ctx,
@@ -849,9 +860,9 @@ class GlueDataCatalogHandler:
                     catalog_id=catalog_id,
                 )
 
-            elif operation == 'delete':
+            elif operation == 'delete-partition' or operation == 'delete':
                 if partition_values is None:
-                    raise ValueError('partition_values is required for delete operation')
+                    raise ValueError('partition_values is required for delete-partition operation')
                 return await self.data_catalog_manager.delete_partition(
                     ctx=ctx,
                     database_name=database_name,
@@ -860,9 +871,9 @@ class GlueDataCatalogHandler:
                     catalog_id=catalog_id,
                 )
 
-            elif operation == 'get':
+            elif operation == 'get-partition' or 'get':
                 if partition_values is None:
-                    raise ValueError('partition_values is required for get operation')
+                    raise ValueError('partition_values is required for get-partition operation')
                 return await self.data_catalog_manager.get_partition(
                     ctx=ctx,
                     database_name=database_name,
@@ -871,7 +882,7 @@ class GlueDataCatalogHandler:
                     catalog_id=catalog_id,
                 )
 
-            elif operation == 'list':
+            elif operation == 'list-partitions' or operation == 'list':
                 return await self.data_catalog_manager.list_partitions(
                     ctx=ctx,
                     database_name=database_name,
@@ -881,10 +892,10 @@ class GlueDataCatalogHandler:
                     catalog_id=catalog_id,
                 )
 
-            elif operation == 'update':
+            elif operation == 'update-partition' or operation == 'update':
                 if partition_values is None or partition_input is None:
                     raise ValueError(
-                        'partition_values and partition_input are required for update operation'
+                        'partition_values and partition_input are required for update-partition operation'
                     )
                 return await self.data_catalog_manager.update_partition(
                     ctx=ctx,
@@ -896,7 +907,7 @@ class GlueDataCatalogHandler:
                 )
 
             else:
-                error_message = f'Invalid operation: {operation}. Must be one of: create, delete, get, list, update'
+                error_message = f'Invalid operation: {operation}. Must be one of: create-partition, delete-partition, get-partition, list-partitions, update-partition'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
                 return GetPartitionResponse(
                     isError=True,
@@ -907,7 +918,7 @@ class GlueDataCatalogHandler:
                     partition_definition={},
                     creation_time='',
                     last_access_time='',
-                    operation='get',
+                    operation='get-partition',
                 )
 
         except ValueError as e:
@@ -925,7 +936,7 @@ class GlueDataCatalogHandler:
                 partition_definition={},
                 creation_time='',
                 last_access_time='',
-                operation='get',
+                operation='get-partition',
             )
 
     async def manage_aws_glue_data_catalog(
@@ -933,15 +944,15 @@ class GlueDataCatalogHandler:
         ctx: Context,
         operation: str = Field(
             ...,
-            description='Operation to perform: create, delete, get, list, or import. Choose "get" or "list" for read-only operations.',
+            description='Operation to perform: create-catalog, delete-catalog, get-catalog, list-catalogs, or import-catalog-to-glue. Choose "get-catalog" or "list-catalogs" for read-only operations.',
         ),
         catalog_id: Optional[str] = Field(
             None,
-            description='ID of the catalog (required for create, delete, get, and import operations).',
+            description='ID of the catalog (required for create-catalog, delete-catalog, get-catalog, and import-catalog-to-glue operations).',
         ),
         catalog_input: Optional[Dict[str, Any]] = Field(
             None,
-            description='Catalog definition for create operations.',
+            description='Catalog definition for create-catalog operations.',
         ),
         import_source: Optional[str] = Field(
             None,
@@ -961,16 +972,16 @@ class GlueDataCatalogHandler:
         and managing catalog-level configurations.
 
         ## Requirements
-        - The server must be run with the `--allow-write` flag for create, delete, and import operations
+        - The server must be run with the `--allow-write` flag for create-catalog, delete-catalog, and import operations
         - Appropriate AWS permissions for Glue Data Catalog operations
         - For import operations, access to the external data source is required
 
         ## Operations
-        - **create**: Create a new data catalog
-        - **delete**: Delete an existing data catalog
-        - **get**: Retrieve detailed information about a specific catalog
-        - **list**: List all available catalogs
-        - **import**: Import metadata from external sources into Glue Data Catalog
+        - **create-catalog**: Create a new data catalog
+        - **delete-catalog**: Delete an existing data catalog
+        - **get-catalog**: Retrieve detailed information about a specific catalog
+        - **list-catalogs**: List all available catalogs
+        - **import-catalog-to-glue**: Import metadata from external sources into Glue Data Catalog
 
         ## Usage Tips
         - The default catalog ID is your AWS account ID
@@ -988,32 +999,37 @@ class GlueDataCatalogHandler:
             Union of response types specific to the operation performed
         """
         try:
-            if not self.allow_write and operation not in ['get', 'list']:
+            if not self.allow_write and operation not in [
+                'get-catalog',
+                'get',
+                'list-catalogs',
+                'list',
+            ]:
                 error_message = f'Operation {operation} is not allowed without write access'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
 
-                if operation == 'create':
+                if operation == 'create-catalog' or operation == 'create':
                     return CreateCatalogResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         catalog_id='',
-                        operation='create',
+                        operation='create-catalog',
                     )
-                elif operation == 'delete':
+                elif operation == 'delete-catalog' or operation == 'delete':
                     return DeleteCatalogResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         catalog_id='',
-                        operation='delete',
+                        operation='delete-catalog',
                     )
-                elif operation == 'import':
+                elif operation == 'import-catalog-to-glue' or operation == 'import':
                     return ImportCatalogResponse(
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         catalog_id='',
                         import_status='',
                         import_source='',
-                        operation='import',
+                        operation='import-catalog-to-glue',
                     )
                 else:
                     return GetCatalogResponse(
@@ -1025,33 +1041,33 @@ class GlueDataCatalogHandler:
                         description='',
                         create_time='',
                         update_time='',
-                        operation='get',
+                        operation='get-catalog',
                     )
 
-            if operation == 'create':
+            if operation == 'create-catalog' or operation == 'create':
                 if catalog_id is None or catalog_input is None:
                     raise ValueError(
-                        'catalog_id and catalog_input are required for create operation'
+                        'catalog_id and catalog_input are required for create-catalog operation'
                     )
                 return await self.data_catalog_manager.create_catalog(
                     ctx=ctx, catalog_name=catalog_id, catalog_input=catalog_input
                 )
 
-            elif operation == 'delete':
+            elif operation == 'delete-catalog' or operation == 'delete':
                 if catalog_id is None:
-                    raise ValueError('catalog_id is required for delete operation')
+                    raise ValueError('catalog_id is required for delete-catalog operation')
                 return await self.data_catalog_manager.delete_catalog(
                     ctx=ctx, catalog_id=catalog_id
                 )
 
-            elif operation == 'get':
+            elif operation == 'get-catalog' or operation == 'get':
                 if catalog_id is None:
-                    raise ValueError('catalog_id is required for get operation')
+                    raise ValueError('catalog_id is required for get-catalog operation')
                 return await self.data_catalog_manager.get_catalog(ctx=ctx, catalog_id=catalog_id)
 
-            elif operation == 'list':
+            elif operation == 'list-catalogs' or operation == 'list':
                 # This method might not be implemented yet
-                error_message = 'list_catalogs operation is not implemented yet'
+                error_message = 'list-catalogs operation is not implemented yet'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
                 return GetCatalogResponse(
                     isError=True,
@@ -1062,16 +1078,16 @@ class GlueDataCatalogHandler:
                     description='',
                     create_time='',
                     update_time='',
-                    operation='get',
+                    operation='get-catalog',
                 )
 
-            elif operation == 'import':
+            elif operation == 'import-catalog-to-glue' or operation == 'import':
                 if catalog_id is None or import_source is None:
                     raise ValueError(
-                        'catalog_id and import_source are required for import operation'
+                        'catalog_id and import_source are required for import-catalog-to-glue operation'
                     )
                 # This method might not be implemented yet
-                error_message = 'import_catalog operation is not implemented yet'
+                error_message = 'import-catalog-to-glue operation is not implemented yet'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
                 return ImportCatalogResponse(
                     isError=True,
@@ -1079,11 +1095,11 @@ class GlueDataCatalogHandler:
                     content=[TextContent(type='text', text=error_message)],
                     import_status='',
                     import_source='',
-                    operation='import',
+                    operation='import-catalog-to-glue',
                 )
 
             # Default return for invalid operations
-            error_message = f'Invalid operation: {operation}. Must be one of: create, delete, get, list, import'
+            error_message = f'Invalid operation: {operation}. Must be one of: create-catalog, delete-catalog, get-catalog, list-catalogs, import-catalog-to-glue'
             log_with_request_id(ctx, LogLevel.ERROR, error_message)
             return GetCatalogResponse(
                 isError=True,
@@ -1094,7 +1110,7 @@ class GlueDataCatalogHandler:
                 description='',
                 create_time='',
                 update_time='',
-                operation='get',
+                operation='get-catalog',
             )
 
         except ValueError as e:
@@ -1112,5 +1128,5 @@ class GlueDataCatalogHandler:
                 description='',
                 create_time='',
                 update_time='',
-                operation='get',
+                operation='get-catalog',
             )

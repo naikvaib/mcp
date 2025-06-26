@@ -171,7 +171,7 @@ class TestGlueDataCatalogHandler:
             assert result.isError is True
             assert 'not allowed without write access' in result.content[0].text
             assert result.database_name == ''
-            assert result.operation == 'create'
+            assert result.operation == 'create-database'
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_databases_delete_no_write_access(
@@ -202,7 +202,7 @@ class TestGlueDataCatalogHandler:
             assert result.isError is True
             assert 'not allowed without write access' in result.content[0].text
             assert result.database_name == ''
-            assert result.operation == 'delete'
+            assert result.operation == 'delete-database'
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_databases_update_no_write_access(
@@ -233,7 +233,7 @@ class TestGlueDataCatalogHandler:
             assert result.isError is True
             assert 'not allowed without write access' in result.content[0].text
             assert result.database_name == ''
-            assert result.operation == 'update'
+            assert result.operation == 'update-database'
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_databases_get_read_access(
@@ -422,7 +422,7 @@ class TestGlueDataCatalogHandler:
         assert result.isError is True
         assert 'Invalid operation' in result.content[0].text
         assert result.database_name == ''
-        assert result.operation == 'get'
+        assert result.operation == 'get-database'
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_databases_missing_database_name(
@@ -485,7 +485,7 @@ class TestGlueDataCatalogHandler:
                     in result.content[0].text
                 )
                 assert result.database_name == 'test-db'
-                assert result.operation == 'get'
+                assert result.operation == 'get-database'
 
     # Tests for manage_aws_glue_data_catalog_tables method
 
@@ -508,7 +508,7 @@ class TestGlueDataCatalogHandler:
         assert 'not allowed without write access' in result.content[0].text
         assert result.database_name == 'test-db'
         assert result.table_name == ''
-        assert result.operation == 'create'
+        assert result.operation == 'create-table'
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_tables_get_read_access(
@@ -559,7 +559,7 @@ class TestGlueDataCatalogHandler:
         assert result.isError is True
         assert 'not allowed without write access' in result.content[0].text
         assert result.connection_name == ''
-        assert result.operation == 'create'
+        assert result.operation == 'create-connection'
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_connections_get_read_access(
@@ -623,7 +623,7 @@ class TestGlueDataCatalogHandler:
         assert result.database_name == 'test-db'
         assert result.table_name == 'test-table'
         assert result.partition_values == []
-        assert result.operation == 'create'
+        assert result.operation == 'create-partition'
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_partitions_get_read_access(
@@ -648,7 +648,7 @@ class TestGlueDataCatalogHandler:
         # Call the method with a read operation
         result = await handler.manage_aws_glue_data_catalog_partitions(
             mock_ctx,
-            operation='get',
+            operation='get-partition',
             database_name='test-db',
             table_name='test-table',
             partition_values=['2023'],
@@ -681,7 +681,7 @@ class TestGlueDataCatalogHandler:
         assert result.isError is True
         assert 'not allowed without write access' in result.content[0].text
         assert result.catalog_id == ''
-        assert result.operation == 'create'
+        assert result.operation == 'create-catalog'
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_get_read_access(
@@ -703,7 +703,7 @@ class TestGlueDataCatalogHandler:
 
         # Call the method with a read operation
         result = await handler.manage_aws_glue_data_catalog(
-            mock_ctx, operation='get', catalog_id='test-catalog'
+            mock_ctx, operation='get-catalog', catalog_id='test-catalog'
         )
 
         # Verify that the method was called with the correct parameters

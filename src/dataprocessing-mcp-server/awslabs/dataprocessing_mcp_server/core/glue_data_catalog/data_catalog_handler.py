@@ -59,7 +59,7 @@ class DataCatalogManager:
         """Initialize the Data Catalog Manager.
 
         Args:
-            allow_write: Whether to enable write operations (create, update, delete)
+            allow_write: Whether to enable write operations (create-connection, update-connection, delete-connection, create-partition, delete-partition. update-partition, create-catalog, delete-catalog)
             allow_sensitive_data_access: Whether to allow access to sensitive data
         """
         self.allow_write = allow_write
@@ -126,7 +126,7 @@ class DataCatalogManager:
                 isError=False,
                 connection_name=connection_name,
                 catalog_id=catalog_id,
-                operation='create',
+                operation='create-connection',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -139,7 +139,7 @@ class DataCatalogManager:
                 isError=True,
                 connection_name=connection_name,
                 catalog_id=catalog_id,
-                operation='create',
+                operation='create-connection',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -186,7 +186,7 @@ class DataCatalogManager:
                         isError=True,
                         connection_name=connection_name,
                         catalog_id=catalog_id,
-                        operation='delete',
+                        operation='delete-connection',
                         content=[TextContent(type='text', text=error_message)],
                     )
             except ClientError as e:
@@ -197,7 +197,7 @@ class DataCatalogManager:
                         isError=True,
                         connection_name=connection_name,
                         catalog_id=catalog_id,
-                        operation='delete',
+                        operation='delete-connection',
                         content=[TextContent(type='text', text=error_message)],
                     )
                 else:
@@ -221,7 +221,7 @@ class DataCatalogManager:
                 isError=False,
                 connection_name=connection_name,
                 catalog_id=catalog_id,
-                operation='delete',
+                operation='delete-connection',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -234,7 +234,7 @@ class DataCatalogManager:
                 isError=True,
                 connection_name=connection_name,
                 catalog_id=catalog_id,
-                operation='delete',
+                operation='delete-connection',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -309,7 +309,7 @@ class DataCatalogManager:
                     else ''
                 ),
                 catalog_id=catalog_id,
-                operation='get',
+                operation='get-connection',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -331,7 +331,7 @@ class DataCatalogManager:
                 status_reason='',
                 last_connection_validation_time='',
                 catalog_id=catalog_id,
-                operation='get',
+                operation='get-connection',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -410,7 +410,7 @@ class DataCatalogManager:
                 count=len(connections),
                 catalog_id=catalog_id,
                 next_token=next_token_response,
-                operation='list',
+                operation='list-connections',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -427,7 +427,7 @@ class DataCatalogManager:
                 count=0,
                 catalog_id=catalog_id,
                 next_token=None,
-                operation='list',
+                operation='list-connections',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -478,7 +478,7 @@ class DataCatalogManager:
                         isError=True,
                         connection_name=connection_name,
                         catalog_id=catalog_id,
-                        operation='update',
+                        operation='update-connection',
                         content=[TextContent(type='text', text=error_message)],
                     )
 
@@ -500,7 +500,7 @@ class DataCatalogManager:
                         isError=True,
                         connection_name=connection_name,
                         catalog_id=catalog_id,
-                        operation='update',
+                        operation='update-connection',
                         content=[TextContent(type='text', text=error_message)],
                     )
                 else:
@@ -525,7 +525,7 @@ class DataCatalogManager:
                 isError=False,
                 connection_name=connection_name,
                 catalog_id=catalog_id,
-                operation='update',
+                operation='update-connection',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -538,7 +538,7 @@ class DataCatalogManager:
                 isError=True,
                 connection_name=connection_name,
                 catalog_id=catalog_id,
-                operation='update',
+                operation='update-connection',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -601,7 +601,7 @@ class DataCatalogManager:
                 database_name=database_name,
                 table_name=table_name,
                 partition_values=partition_values,
-                operation='create',
+                operation='create-partition',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -615,7 +615,7 @@ class DataCatalogManager:
                 database_name=database_name,
                 table_name=table_name,
                 partition_values=partition_values,
-                operation='create',
+                operation='create-partition',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -674,7 +674,7 @@ class DataCatalogManager:
                         database_name=database_name,
                         table_name=table_name,
                         partition_values=partition_values,
-                        operation='delete',
+                        operation='delete-partition',
                         content=[TextContent(type='text', text=error_message)],
                     )
             except ClientError as e:
@@ -686,7 +686,7 @@ class DataCatalogManager:
                         database_name=database_name,
                         table_name=table_name,
                         partition_values=partition_values,
-                        operation='delete',
+                        operation='delete-partition',
                         content=[TextContent(type='text', text=error_message)],
                     )
                 else:
@@ -717,7 +717,7 @@ class DataCatalogManager:
                 database_name=database_name,
                 table_name=table_name,
                 partition_values=partition_values,
-                operation='delete',
+                operation='delete-partition',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -731,7 +731,7 @@ class DataCatalogManager:
                 database_name=database_name,
                 table_name=table_name,
                 partition_values=partition_values,
-                operation='delete',
+                operation='delete-partition',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -797,7 +797,7 @@ class DataCatalogManager:
                 ),
                 storage_descriptor=partition.get('StorageDescriptor', {}),
                 parameters=partition.get('Parameters', {}),
-                operation='get',
+                operation='get-partition',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -814,7 +814,7 @@ class DataCatalogManager:
                 partition_definition={},
                 creation_time='',
                 last_access_time='',
-                operation='get',
+                operation='get-partitionet',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -913,7 +913,7 @@ class DataCatalogManager:
                 count=len(partitions),
                 next_token=next_token_response,
                 expression=expression,
-                operation='list',
+                operation='list-partitions',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -930,7 +930,7 @@ class DataCatalogManager:
                 count=0,
                 next_token=None,
                 expression=None,
-                operation='list',
+                operation='list-partitions',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -990,7 +990,7 @@ class DataCatalogManager:
                         database_name=database_name,
                         table_name=table_name,
                         partition_values=partition_values,
-                        operation='update',
+                        operation='update-partition',
                         content=[TextContent(type='text', text=error_message)],
                     )
 
@@ -1013,7 +1013,7 @@ class DataCatalogManager:
                         database_name=database_name,
                         table_name=table_name,
                         partition_values=partition_values,
-                        operation='update',
+                        operation='update-partition',
                         content=[TextContent(type='text', text=error_message)],
                     )
                 else:
@@ -1044,7 +1044,7 @@ class DataCatalogManager:
                 database_name=database_name,
                 table_name=table_name,
                 partition_values=partition_values,
-                operation='update',
+                operation='update-partition',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -1058,7 +1058,7 @@ class DataCatalogManager:
                 database_name=database_name,
                 table_name=table_name,
                 partition_values=partition_values,
-                operation='update',
+                operation='update-partition',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -1116,7 +1116,7 @@ class DataCatalogManager:
             return CreateCatalogResponse(
                 isError=False,
                 catalog_id=catalog_name,
-                operation='create',
+                operation='create-catalog',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -1128,7 +1128,7 @@ class DataCatalogManager:
             return CreateCatalogResponse(
                 isError=True,
                 catalog_id=catalog_name,
-                operation='create',
+                operation='create-catalog',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -1169,7 +1169,7 @@ class DataCatalogManager:
                     return DeleteCatalogResponse(
                         isError=True,
                         catalog_id=catalog_id,
-                        operation='delete',
+                        operation='delete-catalog',
                         content=[TextContent(type='text', text=error_message)],
                     )
             except ClientError as e:
@@ -1179,7 +1179,7 @@ class DataCatalogManager:
                     return DeleteCatalogResponse(
                         isError=True,
                         catalog_id=catalog_id,
-                        operation='delete',
+                        operation='delete-catalog',
                         content=[TextContent(type='text', text=error_message)],
                     )
                 else:
@@ -1196,7 +1196,7 @@ class DataCatalogManager:
             return DeleteCatalogResponse(
                 isError=False,
                 catalog_id=catalog_id,
-                operation='delete',
+                operation='delete-catalog',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -1208,7 +1208,7 @@ class DataCatalogManager:
             return DeleteCatalogResponse(
                 isError=True,
                 catalog_id=catalog_id,
-                operation='delete',
+                operation='delete-catalog',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -1249,7 +1249,7 @@ class DataCatalogManager:
                 update_time=(
                     catalog.get('UpdateTime', '').isoformat() if catalog.get('UpdateTime') else ''
                 ),
-                operation='get',
+                operation='get-catalog',
                 content=[TextContent(type='text', text=success_msg)],
             )
         except ClientError as e:
@@ -1261,7 +1261,7 @@ class DataCatalogManager:
                 isError=True,
                 catalog_id=catalog_id,
                 catalog_definition={},
-                operation='get',
+                operation='get-catalog',
                 content=[TextContent(type='text', text=error_message)],
                 name='',
                 description='',

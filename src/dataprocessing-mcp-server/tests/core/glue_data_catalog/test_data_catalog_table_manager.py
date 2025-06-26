@@ -116,7 +116,7 @@ class TestDataCatalogTableManager:
             assert result.isError is False
             assert result.database_name == database_name
             assert result.table_name == table_name
-            assert result.operation == 'create'
+            assert result.operation == 'create-table'
             assert len(result.content) == 1
             assert (
                 result.content[0].text
@@ -159,7 +159,7 @@ class TestDataCatalogTableManager:
             assert result.isError is True
             assert result.database_name == database_name
             assert result.table_name == table_name
-            assert result.operation == 'create'
+            assert result.operation == 'create-table'
             assert len(result.content) == 1
             assert 'Failed to create table' in result.content[0].text
             assert 'AlreadyExistsException' in result.content[0].text
@@ -207,7 +207,7 @@ class TestDataCatalogTableManager:
             assert result.isError is False
             assert result.database_name == database_name
             assert result.table_name == table_name
-            assert result.operation == 'delete'
+            assert result.operation == 'delete-table'
             assert len(result.content) == 1
             assert (
                 result.content[0].text
@@ -250,7 +250,7 @@ class TestDataCatalogTableManager:
             assert result.isError is True
             assert result.database_name == database_name
             assert result.table_name == table_name
-            assert result.operation == 'delete'
+            assert result.operation == 'delete-table'
             assert len(result.content) == 1
             assert 'not managed by the MCP server' in result.content[0].text
 
@@ -312,7 +312,7 @@ class TestDataCatalogTableManager:
         assert result.partition_keys[0]['Name'] == 'year'
         assert result.partition_keys[1]['Name'] == 'month'
         assert result.partition_keys[2]['Name'] == 'day'
-        assert result.operation == 'get'
+        assert result.operation == 'get-table'
         assert len(result.content) == 1
         assert (
             result.content[0].text == f'Successfully retrieved table: {database_name}.{table_name}'
@@ -381,7 +381,7 @@ class TestDataCatalogTableManager:
         assert result.database_name == database_name
         assert len(result.tables) == 2
         assert result.count == 2
-        assert result.operation == 'list'
+        assert result.operation == 'list-tables'
         assert len(result.content) == 1
         assert (
             result.content[0].text == f'Successfully listed 2 tables in database {database_name}'
@@ -473,7 +473,7 @@ class TestDataCatalogTableManager:
             assert result.isError is False
             assert result.database_name == database_name
             assert result.table_name == table_name
-            assert result.operation == 'update'
+            assert result.operation == 'update-table'
             assert len(result.content) == 1
             assert (
                 result.content[0].text
@@ -524,7 +524,7 @@ class TestDataCatalogTableManager:
             assert result.isError is True
             assert result.database_name == database_name
             assert result.table_name == table_name
-            assert result.operation == 'update'
+            assert result.operation == 'update-table'
             assert len(result.content) == 1
             assert 'not managed by the MCP server' in result.content[0].text
 
@@ -591,7 +591,7 @@ class TestDataCatalogTableManager:
         assert result.search_text == search_text
         assert len(result.tables) == 2
         assert result.count == 2
-        assert result.operation == 'search'
+        assert result.operation == 'search-tables'
         assert len(result.content) == 1
         assert result.content[0].text == 'Search found 2 tables'
 

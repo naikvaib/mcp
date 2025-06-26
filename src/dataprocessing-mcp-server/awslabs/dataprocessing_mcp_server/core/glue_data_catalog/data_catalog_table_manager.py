@@ -51,7 +51,7 @@ class DataCatalogTableManager:
         """Initialize the Data Catalog Table Manager.
 
         Args:
-            allow_write: Whether to enable write operations (create, update, delete)
+            allow_write: Whether to enable write operations (create-table, update-table, delete-table)
             allow_sensitive_data_access: Whether to allow access to sensitive data
         """
         self.allow_write = allow_write
@@ -133,7 +133,7 @@ class DataCatalogTableManager:
                 isError=False,
                 database_name=database_name,
                 table_name=table_name,
-                operation='create',
+                operation='create-table',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -146,7 +146,7 @@ class DataCatalogTableManager:
                 isError=True,
                 database_name=database_name,
                 table_name=table_name,
-                operation='create',
+                operation='create-table',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -200,7 +200,7 @@ class DataCatalogTableManager:
                         isError=True,
                         database_name=database_name,
                         table_name=table_name,
-                        operation='delete',
+                        operation='delete-table',
                         content=[TextContent(type='text', text=error_message)],
                     )
             except ClientError as e:
@@ -211,7 +211,7 @@ class DataCatalogTableManager:
                         isError=True,
                         database_name=database_name,
                         table_name=table_name,
-                        operation='delete',
+                        operation='delete-table',
                         content=[TextContent(type='text', text=error_message)],
                     )
                 else:
@@ -238,7 +238,7 @@ class DataCatalogTableManager:
                 isError=False,
                 database_name=database_name,
                 table_name=table_name,
-                operation='delete',
+                operation='delete-table',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -251,7 +251,7 @@ class DataCatalogTableManager:
                 isError=True,
                 database_name=database_name,
                 table_name=table_name,
-                operation='delete',
+                operation='delete-table',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -319,7 +319,7 @@ class DataCatalogTableManager:
                 ),
                 storage_descriptor=table.get('StorageDescriptor', {}),
                 partition_keys=table.get('PartitionKeys', []),
-                operation='get',
+                operation='get-table',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -337,7 +337,7 @@ class DataCatalogTableManager:
                 last_access_time='',
                 storage_descriptor={},
                 partition_keys=[],
-                operation='get',
+                operation='get-table',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -433,7 +433,7 @@ class DataCatalogTableManager:
                     for table in tables
                 ],
                 count=len(tables),
-                operation='list',
+                operation='list-tables',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -447,7 +447,7 @@ class DataCatalogTableManager:
                 database_name=database_name,
                 tables=[],
                 count=0,
-                operation='list',
+                operation='list-tables',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -510,7 +510,7 @@ class DataCatalogTableManager:
                         isError=True,
                         database_name=database_name,
                         table_name=table_name,
-                        operation='update',
+                        operation='update-table',
                         content=[TextContent(type='text', text=error_message)],
                     )
 
@@ -532,7 +532,7 @@ class DataCatalogTableManager:
                         isError=True,
                         database_name=database_name,
                         table_name=table_name,
-                        operation='update',
+                        operation='update-table',
                         content=[TextContent(type='text', text=error_message)],
                     )
                 else:
@@ -568,7 +568,7 @@ class DataCatalogTableManager:
                 isError=False,
                 database_name=database_name,
                 table_name=table_name,
-                operation='update',
+                operation='update-table',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -581,7 +581,7 @@ class DataCatalogTableManager:
                 isError=True,
                 database_name=database_name,
                 table_name=table_name,
-                operation='update',
+                operation='update-table',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -671,7 +671,7 @@ class DataCatalogTableManager:
                 ],
                 search_text=search_text or '',
                 count=len(tables),
-                operation='search',
+                operation='search-tables',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -687,6 +687,6 @@ class DataCatalogTableManager:
                 tables=[],
                 search_text=search_text or '',
                 count=0,
-                operation='search',
+                operation='search-tables',
                 content=[TextContent(type='text', text=error_message)],
             )

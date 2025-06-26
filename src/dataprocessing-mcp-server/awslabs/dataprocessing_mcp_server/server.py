@@ -35,7 +35,7 @@ from mcp.server.fastmcp import FastMCP
 SERVER_INSTRUCTIONS = """
 # AWS Data Processing MCP Server
 
-This MCP server provides tools for managing AWS data processing services including Glue.
+This MCP server provides tools for managing AWS data processing services including Glue Data Catalog.
 It enables you to create, manage, and monitor data processing workflows.
 
 ## Usage Notes
@@ -47,13 +47,30 @@ It enables you to create, manage, and monitor data processing workflows.
 
 ## Common Workflows
 
-### Glue Data Catalog Management
-1. Create a database: `manage_aws_glue_data_catalog_databases(operation='create-database', database_name='my-database', description='My database')`
-2. Create a table: `manage_aws_glue_data_catalog_tables(operation='create-table', database_name='my-database', table_name='my-table', table_input={...})`
-3. Create a partition: `manage_aws_glue_data_catalog_partitions(operation='create', database_name='my-database', table_name='my-table', partition_values=['2023'], partition_input={...})`
-4. Create a connection: `manage_aws_glue_data_catalog_connections(operation='create', connection_name='my-connection', connection_input={...})`
-5. Search tables: `manage_aws_glue_data_catalog_tables(operation='search', database_name='my-database', search_text='customer')`
-6. Manage catalogs: `manage_aws_glue_data_catalog(operation='get', catalog_id='123456789012')`
+### Setting Up a Data Catalog
+1. Create a database: `manage_aws_glue_databases(operation='create-database', database_name='my-database', description='My database')`
+2. Create a connection: `manage_aws_glue_connections(operation='create-connection', connection_name='my-connection', connection_input={'ConnectionType': 'JDBC', 'ConnectionProperties': {'JDBC_CONNECTION_URL': 'jdbc:mysql://host:port/db', 'USERNAME': '...', 'PASSWORD': '...'}})`
+3. Create a table: `manage_aws_glue_tables(operation='create-table', database_name='my-database', table_name='my-table', table_input={'StorageDescriptor': {'Columns': [{'Name': 'id', 'Type': 'int'}, {'Name': 'name', 'Type': 'string'}], 'Location': 's3://bucket/path'}})`
+4. Create partitions: `manage_aws_glue_partitions(operation='create-partition', database_name='my-database', table_name='my-table', partition_values=['2023-01'], partition_input={'StorageDescriptor': {'Location': 's3://bucket/path/year=2023/month=01'}})`
+
+### Exploring the Data Catalog
+1. List databases: `manage_aws_glue_databases(operation='list-databases')`
+2. List tables in a database: `manage_aws_glue_tables(operation='list-tables', database_name='my-database')`
+3. Search for tables: `manage_aws_glue_tables(operation='search-tables', search_text='customer')`
+4. Get table details: `manage_aws_glue_tables(operation='get-table', database_name='my-database', table_name='my-table')`
+5. List partitions: `manage_aws_glue_partitions(operation='list-partitions', database_name='my-database', table_name='my-table')`
+
+### Updating Data Catalog Resources
+1. Update database properties: `manage_aws_glue_databases(operation='update-database', database_name='my-database', description='Updated description')`
+2. Update table schema: `manage_aws_glue_tables(operation='update-table', database_name='my-database', table_name='my-table', table_input={'StorageDescriptor': {'Columns': [{'Name': 'id', 'Type': 'int'}, {'Name': 'name', 'Type': 'string'}, {'Name': 'email', 'Type': 'string'}]}})`
+3. Update connection properties: `manage_aws_glue_connections(operation='update-connection', connection_name='my-connection', connection_input={'ConnectionProperties': {'JDBC_CONNECTION_URL': 'jdbc:mysql://new-host:port/db'}})`
+
+### Cleaning Up Resources
+1. Delete a partition: `manage_aws_glue_partitions(operation='delete-partition', database_name='my-database', table_name='my-table', partition_values=['2023-01'])`
+2. Delete a table: `manage_aws_glue_tables(operation='delete-table', database_name='my-database', table_name='my-table')`
+3. Delete a connection: `manage_aws_glue_connections(operation='delete-connection', connection_name='my-connection')`
+4. Delete a database: `manage_aws_glue_databases(operation='delete-database', database_name='my-database')`
+
 """
 
 SERVER_DEPENDENCIES = [

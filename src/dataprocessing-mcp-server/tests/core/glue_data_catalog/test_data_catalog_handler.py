@@ -116,7 +116,7 @@ class TestDataCatalogManager:
             assert result.isError is False
             assert result.connection_name == connection_name
             assert result.catalog_id == catalog_id
-            assert result.operation == 'create'
+            assert result.operation == 'create-connection'
             assert len(result.content) == 1
             assert result.content[0].text == f'Successfully created connection: {connection_name}'
 
@@ -156,7 +156,7 @@ class TestDataCatalogManager:
             assert isinstance(result, CreateConnectionResponse)
             assert result.isError is True
             assert result.connection_name == connection_name
-            assert result.operation == 'create'
+            assert result.operation == 'create-connection'
             assert len(result.content) == 1
             assert 'Failed to create connection' in result.content[0].text
             assert 'AlreadyExistsException' in result.content[0].text
@@ -203,7 +203,7 @@ class TestDataCatalogManager:
             assert result.isError is False
             assert result.connection_name == connection_name
             assert result.catalog_id == catalog_id
-            assert result.operation == 'delete'
+            assert result.operation == 'delete-connection'
             assert len(result.content) == 1
             assert result.content[0].text == f'Successfully deleted connection: {connection_name}'
 
@@ -243,7 +243,7 @@ class TestDataCatalogManager:
             assert isinstance(result, DeleteConnectionResponse)
             assert result.isError is True
             assert result.connection_name == connection_name
-            assert result.operation == 'delete'
+            assert result.operation == 'delete-connection'
             assert len(result.content) == 1
             assert 'not managed by the MCP server' in result.content[0].text
 
@@ -298,7 +298,7 @@ class TestDataCatalogManager:
         assert result.status == 'ACTIVE'
         assert result.status_reason == 'Connection is active'
         assert result.catalog_id == catalog_id
-        assert result.operation == 'get'
+        assert result.operation == 'get-connection'
         assert len(result.content) == 1
         assert result.content[0].text == f'Successfully retrieved connection: {connection_name}'
 
@@ -365,7 +365,7 @@ class TestDataCatalogManager:
         assert result.count == 2
         assert result.catalog_id == catalog_id
         assert result.next_token == 'next-token-response'
-        assert result.operation == 'list'
+        assert result.operation == 'list-connections'
         assert len(result.content) == 1
         assert result.content[0].text == 'Successfully listed 2 connections'
 
@@ -437,7 +437,7 @@ class TestDataCatalogManager:
             assert result.database_name == database_name
             assert result.table_name == table_name
             assert result.partition_values == partition_values
-            assert result.operation == 'create'
+            assert result.operation == 'create-partition'
             assert len(result.content) == 1
             assert (
                 result.content[0].text
@@ -500,7 +500,7 @@ class TestDataCatalogManager:
             == 's3://test-bucket/test-db/test-table/year=2023/month=01/day=01/'
         )
         assert result.parameters == {'key1': 'value1'}
-        assert result.operation == 'get'
+        assert result.operation == 'get-partition'
         assert len(result.content) == 1
         assert (
             result.content[0].text
@@ -576,7 +576,7 @@ class TestDataCatalogManager:
         assert result.table_name == table_name
         assert result.next_token == 'next-token-response'
         assert result.expression == expression
-        assert result.operation == 'list'
+        assert result.operation == 'list-partitions'
         assert len(result.content) == 1
         assert (
             result.content[0].text
@@ -643,7 +643,7 @@ class TestDataCatalogManager:
             assert isinstance(result, CreateCatalogResponse)
             assert result.isError is False
             assert result.catalog_id == catalog_name
-            assert result.operation == 'create'
+            assert result.operation == 'create-catalog'
             assert len(result.content) == 1
             assert result.content[0].text == f'Successfully created catalog: {catalog_name}'
 
@@ -683,6 +683,6 @@ class TestDataCatalogManager:
         assert result.parameters == {'key1': 'value1'}
         assert result.create_time == create_time.isoformat()
         assert result.update_time == update_time.isoformat()
-        assert result.operation == 'get'
+        assert result.operation == 'get-catalog'
         assert len(result.content) == 1
         assert result.content[0].text == f'Successfully retrieved catalog: {catalog_id}'

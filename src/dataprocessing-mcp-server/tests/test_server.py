@@ -42,12 +42,12 @@ sys.modules['mcp.types'].TextContent = MagicMock()
 async def test_server_initialization():
     """Test that the server is initialized correctly with the right configuration."""
     # Test the server initialization by creating a server instance
-    from awslabs.dataprocessing_mcp_server.server import create_server
+    from awslabs.dataprocessing_mcp_server.server import SERVER_INSTRUCTIONS, create_server
 
     # Mock the FastMCP class
     mock_fastmcp = MagicMock()
     mock_fastmcp.name = 'awslabs.dataprocessing-mcp-server'
-    mock_fastmcp.instructions = 'AWS Data Processing MCP Server'
+    mock_fastmcp.instructions = SERVER_INSTRUCTIONS
     mock_fastmcp.dependencies = ['pydantic', 'loguru', 'boto3', 'requests', 'pyyaml', 'cachetools']
 
     # Patch the FastMCP class to return our mock
@@ -57,8 +57,14 @@ async def test_server_initialization():
 
         # Test that the server is initialized with the correct name
         assert server.name == 'awslabs.dataprocessing-mcp-server'
+
         # Test that the server has the correct instructions
         assert 'AWS Data Processing MCP Server' in server.instructions
+        assert 'Setting Up a Data Catalog' in server.instructions
+        assert 'Exploring the Data Catalog' in server.instructions
+        assert 'Updating Data Catalog Resources' in server.instructions
+        assert 'Cleaning Up Resources' in server.instructions
+
         # Test that the server has the correct dependencies
         assert 'pydantic' in server.dependencies
         assert 'loguru' in server.dependencies

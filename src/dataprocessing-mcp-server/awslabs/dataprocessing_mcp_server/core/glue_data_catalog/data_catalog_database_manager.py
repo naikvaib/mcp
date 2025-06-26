@@ -49,7 +49,7 @@ class DataCatalogDatabaseManager:
         """Initialize the Data Catalog Database Manager.
 
         Args:
-            allow_write: Whether to enable write operations (create, update, delete)
+            allow_write: Whether to enable write operations (create-database, update-database, delete-database)
             allow_sensitive_data_access: Whether to allow access to sensitive data
         """
         self.allow_write = allow_write
@@ -127,7 +127,7 @@ class DataCatalogDatabaseManager:
             return CreateDatabaseResponse(
                 isError=False,
                 database_name=database_name,
-                operation='create',
+                operation='create-database',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -139,7 +139,7 @@ class DataCatalogDatabaseManager:
             return CreateDatabaseResponse(
                 isError=True,
                 database_name=database_name,
-                operation='create',
+                operation='create-database',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -185,7 +185,7 @@ class DataCatalogDatabaseManager:
                     return DeleteDatabaseResponse(
                         isError=True,
                         database_name=database_name,
-                        operation='delete',
+                        operation='delete-database',
                         content=[TextContent(type='text', text=error_message)],
                     )
             except ClientError as e:
@@ -195,7 +195,7 @@ class DataCatalogDatabaseManager:
                     return DeleteDatabaseResponse(
                         isError=True,
                         database_name=database_name,
-                        operation='delete',
+                        operation='delete-database',
                         content=[TextContent(type='text', text=error_message)],
                     )
                 else:
@@ -216,7 +216,7 @@ class DataCatalogDatabaseManager:
             return DeleteDatabaseResponse(
                 isError=False,
                 database_name=database_name,
-                operation='delete',
+                operation='delete-database',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -228,7 +228,7 @@ class DataCatalogDatabaseManager:
             return DeleteDatabaseResponse(
                 isError=True,
                 database_name=database_name,
-                operation='delete',
+                operation='delete-database',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -273,7 +273,7 @@ class DataCatalogDatabaseManager:
                     else ''
                 ),
                 catalog_id=database.get('CatalogId', ''),
-                operation='get',
+                operation='get-database',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -290,7 +290,7 @@ class DataCatalogDatabaseManager:
                 parameters={},
                 creation_time='',
                 catalog_id=catalog_id,
-                operation='get',
+                operation='get-database',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -356,7 +356,7 @@ class DataCatalogDatabaseManager:
                 ],
                 count=len(databases),
                 catalog_id=catalog_id,
-                operation='list',
+                operation='list-databases',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -372,7 +372,7 @@ class DataCatalogDatabaseManager:
                 databases=[],
                 count=0,
                 catalog_id=catalog_id,
-                operation='list',
+                operation='list-databases',
                 content=[TextContent(type='text', text=error_message)],
             )
 
@@ -432,7 +432,7 @@ class DataCatalogDatabaseManager:
                     return UpdateDatabaseResponse(
                         isError=True,
                         database_name=database_name,
-                        operation='update',
+                        operation='update-database',
                         content=[TextContent(type='text', text=error_message)],
                     )
 
@@ -455,7 +455,7 @@ class DataCatalogDatabaseManager:
                     return UpdateDatabaseResponse(
                         isError=True,
                         database_name=database_name,
-                        operation='update',
+                        operation='update-database',
                         content=[TextContent(type='text', text=error_message)],
                     )
                 else:
@@ -492,7 +492,7 @@ class DataCatalogDatabaseManager:
             return UpdateDatabaseResponse(
                 isError=False,
                 database_name=database_name,
-                operation='update',
+                operation='update-database',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -504,6 +504,6 @@ class DataCatalogDatabaseManager:
             return UpdateDatabaseResponse(
                 isError=True,
                 database_name=database_name,
-                operation='update',
+                operation='update-database',
                 content=[TextContent(type='text', text=error_message)],
             )

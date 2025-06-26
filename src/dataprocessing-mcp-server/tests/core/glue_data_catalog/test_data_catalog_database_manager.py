@@ -98,7 +98,7 @@ class TestDataCatalogDatabaseManager:
             assert isinstance(result, CreateDatabaseResponse)
             assert result.isError is False
             assert result.database_name == database_name
-            assert result.operation == 'create'
+            assert result.operation == 'create-database'
             assert len(result.content) == 1
             assert result.content[0].text == f'Successfully created database: {database_name}'
 
@@ -128,7 +128,7 @@ class TestDataCatalogDatabaseManager:
             assert isinstance(result, CreateDatabaseResponse)
             assert result.isError is True
             assert result.database_name == database_name
-            assert result.operation == 'create'
+            assert result.operation == 'create-database'
             assert len(result.content) == 1
             assert 'Failed to create database' in result.content[0].text
             assert 'AlreadyExistsException' in result.content[0].text
@@ -170,7 +170,7 @@ class TestDataCatalogDatabaseManager:
             assert isinstance(result, DeleteDatabaseResponse)
             assert result.isError is False
             assert result.database_name == database_name
-            assert result.operation == 'delete'
+            assert result.operation == 'delete-database'
             assert len(result.content) == 1
             assert result.content[0].text == f'Successfully deleted database: {database_name}'
 
@@ -206,7 +206,7 @@ class TestDataCatalogDatabaseManager:
             assert isinstance(result, DeleteDatabaseResponse)
             assert result.isError is True
             assert result.database_name == database_name
-            assert result.operation == 'delete'
+            assert result.operation == 'delete-database'
             assert len(result.content) == 1
             assert 'not managed by the MCP server' in result.content[0].text
 
@@ -232,7 +232,7 @@ class TestDataCatalogDatabaseManager:
         assert isinstance(result, DeleteDatabaseResponse)
         assert result.isError is True
         assert result.database_name == database_name
-        assert result.operation == 'delete'
+        assert result.operation == 'delete-database'
         assert len(result.content) == 1
         assert 'Database test-db not found' in result.content[0].text
 
@@ -278,7 +278,7 @@ class TestDataCatalogDatabaseManager:
         assert result.parameters == parameters
         assert result.creation_time == create_time.isoformat()
         assert result.catalog_id == catalog_id
-        assert result.operation == 'get'
+        assert result.operation == 'get-database'
         assert len(result.content) == 1
         assert result.content[0].text == f'Successfully retrieved database: {database_name}'
 
@@ -309,7 +309,7 @@ class TestDataCatalogDatabaseManager:
         assert result.parameters == {}
         assert result.creation_time == ''
         assert result.catalog_id == catalog_id
-        assert result.operation == 'get'
+        assert result.operation == 'get-database'
         assert len(result.content) == 1
         assert 'Failed to get database' in result.content[0].text
         assert 'EntityNotFoundException' in result.content[0].text
@@ -370,7 +370,7 @@ class TestDataCatalogDatabaseManager:
         assert len(result.databases) == 2
         assert result.count == 2
         assert result.catalog_id == catalog_id
-        assert result.operation == 'list'
+        assert result.operation == 'list-databases'
         assert len(result.content) == 1
         assert result.content[0].text == 'Successfully listed 2 databases'
 
@@ -406,7 +406,7 @@ class TestDataCatalogDatabaseManager:
         assert len(result.databases) == 0
         assert result.count == 0
         assert result.catalog_id == catalog_id
-        assert result.operation == 'list'
+        assert result.operation == 'list-databases'
         assert len(result.content) == 1
         assert 'Failed to list databases' in result.content[0].text
         assert 'AccessDeniedException' in result.content[0].text
@@ -464,7 +464,7 @@ class TestDataCatalogDatabaseManager:
             assert isinstance(result, UpdateDatabaseResponse)
             assert result.isError is False
             assert result.database_name == database_name
-            assert result.operation == 'update'
+            assert result.operation == 'update-database'
             assert len(result.content) == 1
             assert result.content[0].text == f'Successfully updated database: {database_name}'
 
@@ -500,7 +500,7 @@ class TestDataCatalogDatabaseManager:
             assert isinstance(result, UpdateDatabaseResponse)
             assert result.isError is True
             assert result.database_name == database_name
-            assert result.operation == 'update'
+            assert result.operation == 'update-database'
             assert len(result.content) == 1
             assert 'not managed by the MCP server' in result.content[0].text
 
@@ -526,6 +526,6 @@ class TestDataCatalogDatabaseManager:
         assert isinstance(result, UpdateDatabaseResponse)
         assert result.isError is True
         assert result.database_name == database_name
-        assert result.operation == 'update'
+        assert result.operation == 'update-database'
         assert len(result.content) == 1
         assert 'Database test-db not found' in result.content[0].text
