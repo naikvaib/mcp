@@ -101,46 +101,61 @@ class TestGlueDataCatalogHandler:
 
     def test_initialization(self, mock_mcp):
         """Test that the handler is initialized correctly."""
-        handler = GlueDataCatalogHandler(mock_mcp)
+        # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
+        with patch(
+            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+            return_value=MagicMock(),
+        ):
+            handler = GlueDataCatalogHandler(mock_mcp)
 
-        # Verify that the handler has the correct attributes
-        assert handler.mcp == mock_mcp
-        assert handler.allow_write is False
-        assert handler.allow_sensitive_data_access is False
+            # Verify that the handler has the correct attributes
+            assert handler.mcp == mock_mcp
+            assert handler.allow_write is False
+            assert handler.allow_sensitive_data_access is False
 
-        # Verify that the tools were registered
-        assert mock_mcp.tool.call_count == 5
+            # Verify that the tools were registered
+            assert mock_mcp.tool.call_count == 5
 
-        # Get all call args
-        call_args_list = mock_mcp.tool.call_args_list
+            # Get all call args
+            call_args_list = mock_mcp.tool.call_args_list
 
-        # Get all tool names that were registered
-        tool_names = [call_args[1]['name'] for call_args in call_args_list]
+            # Get all tool names that were registered
+            tool_names = [call_args[1]['name'] for call_args in call_args_list]
 
-        # Verify that expected tools are registered
-        assert 'manage_aws_glue_databases' in tool_names
-        assert 'manage_aws_glue_tables' in tool_names
-        assert 'manage_aws_glue_connections' in tool_names
-        assert 'manage_aws_glue_partitions' in tool_names
-        assert 'manage_aws_glue_catalog' in tool_names
+            # Verify that expected tools are registered
+            assert 'manage_aws_glue_databases' in tool_names
+            assert 'manage_aws_glue_tables' in tool_names
+            assert 'manage_aws_glue_connections' in tool_names
+            assert 'manage_aws_glue_partitions' in tool_names
+            assert 'manage_aws_glue_catalog' in tool_names
 
     def test_initialization_with_write_access(self, mock_mcp):
         """Test that the handler is initialized correctly with write access."""
-        handler = GlueDataCatalogHandler(mock_mcp, allow_write=True)
+        # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
+        with patch(
+            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+            return_value=MagicMock(),
+        ):
+            handler = GlueDataCatalogHandler(mock_mcp, allow_write=True)
 
-        # Verify that the handler has the correct attributes
-        assert handler.mcp == mock_mcp
-        assert handler.allow_write is True
-        assert handler.allow_sensitive_data_access is False
+            # Verify that the handler has the correct attributes
+            assert handler.mcp == mock_mcp
+            assert handler.allow_write is True
+            assert handler.allow_sensitive_data_access is False
 
     def test_initialization_with_sensitive_data_access(self, mock_mcp):
         """Test that the handler is initialized correctly with sensitive data access."""
-        handler = GlueDataCatalogHandler(mock_mcp, allow_sensitive_data_access=True)
+        # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
+        with patch(
+            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+            return_value=MagicMock(),
+        ):
+            handler = GlueDataCatalogHandler(mock_mcp, allow_sensitive_data_access=True)
 
-        # Verify that the handler has the correct attributes
-        assert handler.mcp == mock_mcp
-        assert handler.allow_write is False
-        assert handler.allow_sensitive_data_access is True
+            # Verify that the handler has the correct attributes
+            assert handler.mcp == mock_mcp
+            assert handler.allow_write is False
+            assert handler.allow_sensitive_data_access is True
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_databases_create_no_write_access(
