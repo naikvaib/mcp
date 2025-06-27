@@ -24,14 +24,14 @@ Environment Variables:
 """
 
 import argparse
+from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler import (
+    EMREc2InstanceHandler,
+)
 from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
 from awslabs.dataprocessing_mcp_server.handlers.glue.glue_commons_handler import (
     GlueCommonsHandler,
-)
-from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler import (
-    EMREc2InstanceHandler,
 )
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
