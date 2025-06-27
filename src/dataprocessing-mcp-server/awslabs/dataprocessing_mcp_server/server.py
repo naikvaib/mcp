@@ -27,6 +27,9 @@ import argparse
 from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler import (
     EMREc2InstanceHandler,
 )
+from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_steps_handler import (
+    EMREc2StepsHandler,
+)
 from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
