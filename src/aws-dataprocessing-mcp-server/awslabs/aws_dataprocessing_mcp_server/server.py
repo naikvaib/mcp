@@ -36,6 +36,9 @@ from awslabs.aws_dataprocessing_mcp_server.handlers.athena.athena_workgroup_hand
 from awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler import (
+    GlueCommonsHandler,
+)
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
 
@@ -97,6 +100,26 @@ It enables you to create, manage, and monitor data processing workflows.
 ### Athena Workgroup and Data Catalog
 1. Create a workgroup: `manage_aws_athena_workgroups(operation='create-work-group', work_group_name='my-workgroup', configuration={...})`
 2. Manage data catalogs: `manage_aws_athena_data_catalogs(operation='create-data-catalog', name='my-catalog', type='GLUE', parameters={...})`
+
+### Glue Usage Profiles
+1. Create a profile: `manage_aws_glue_usage_profiles(operation='create-profile', profile_name='my-usage-profile', description='my description of the usage profile', configuration={...}, tags={...})`
+2. Delete a profile: `manage_aws_glue_usage_profiles(operation='delete-profile', profile_name='my-usage-profile')`
+3. Get profile details: `manage_aws_glue_usage_profiles(operation='get-profile', profile_name='my-usage-profile')`
+4. Update a profile: `manage_aws_glue_usage_profiles(operation='update-profile', profile_name='my-usage-profile', description='my description of the usage profile', configuration={...})`
+
+### Glue Security Configurations
+1. Create a security configuration: `manage_aws_glue_security(operation='create-security-configuration', config_name='my-config, encryption_configuration={...})`
+2. Delete a security configuration: `manage_aws_glue_security(operation='delete-security-configuration', config_name='my-config)`
+3. Get a security configuration: `manage_aws_glue_security(operation='get-security-configuration', config_name='my-config)`
+
+### Glue Catalog Encryption Settings
+1. Update catalog encryption settings: `manage_aws_glue_encryption(operation='put-catalog-encryption-settings', catalog_id='my-catalog-id', encryption_at_rest={...}, connection_password_encryption={...})`
+2. Get catalog encryption settings: `manage_aws_glue_encryption(operation='get-catalog-encryption-settings', catalog_id='my-catalog-id')`
+
+### Glue Catalog Resource Policies
+1. Update a catalog resource policy: `manage_aws_glue_resource_policies(operation='put-resource-policy', resource_arn='my-resource', policy='my-policy-string')`
+2. Delete a catalog resource policy: `manage_aws_glue_resource_policies(operation='delete-resource-policy', resource_arn='my-resource')`
+3. Get a catalog resource policy: `manage_aws_glue_resource_policies(operation='get-resource-policy', resource_arn='my-resource')`
 
 """
 
@@ -162,6 +185,11 @@ def main():
 
     # Initialize handlers - all tools are always registered, access control is handled within tools
     GlueDataCatalogHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    GlueCommonsHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
