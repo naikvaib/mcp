@@ -122,23 +122,28 @@ async def test_command_line_args():
         with patch(
             'awslabs.dataprocessing_mcp_server.server.create_server', return_value=mock_server
         ):
-            # Mock the handler initialization to verify allow_write is passed
+            # Mock the AWS helper's create_boto3_client method
             with patch(
-                'awslabs.dataprocessing_mcp_server.server.GlueDataCatalogHandler'
-            ) as mock_glue_data_catalog_handler:
-                # Call the main function
-                main()
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+                return_value=MagicMock(),
+            ):
+                # Mock the handler initialization to verify allow_write is passed
+                with patch(
+                    'awslabs.dataprocessing_mcp_server.server.GlueDataCatalogHandler'
+                ) as mock_glue_data_catalog_handler:
+                    # Call the main function
+                    main()
 
-                # Verify that parse_args was called
-                mock_parse_args.assert_called_once()
+                    # Verify that parse_args was called
+                    mock_parse_args.assert_called_once()
 
-                # Verify that the handlers were initialized with correct parameters
-                mock_glue_data_catalog_handler.assert_called_once_with(
-                    mock_server, allow_write=True, allow_sensitive_data_access=False
-                )
+                    # Verify that the handlers were initialized with correct parameters
+                    mock_glue_data_catalog_handler.assert_called_once_with(
+                        mock_server, allow_write=True, allow_sensitive_data_access=False
+                    )
 
-                # Verify that run was called
-                mock_server.run.assert_called_once()
+                    # Verify that run was called
+                    mock_server.run.assert_called_once()
 
     # Test with sensitive data access enabled
     with patch.object(argparse.ArgumentParser, 'parse_args') as mock_parse_args:
@@ -151,23 +156,28 @@ async def test_command_line_args():
         with patch(
             'awslabs.dataprocessing_mcp_server.server.create_server', return_value=mock_server
         ):
-            # Mock the handler initialization to verify allow_sensitive_data_access is passed
+            # Mock the AWS helper's create_boto3_client method
             with patch(
-                'awslabs.dataprocessing_mcp_server.server.GlueDataCatalogHandler'
-            ) as mock_glue_data_catalog_handler:
-                # Call the main function
-                main()
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+                return_value=MagicMock(),
+            ):
+                # Mock the handler initialization to verify allow_sensitive_data_access is passed
+                with patch(
+                    'awslabs.dataprocessing_mcp_server.server.GlueDataCatalogHandler'
+                ) as mock_glue_data_catalog_handler:
+                    # Call the main function
+                    main()
 
-                # Verify that parse_args was called
-                mock_parse_args.assert_called_once()
+                    # Verify that parse_args was called
+                    mock_parse_args.assert_called_once()
 
-                # Verify that the handlers were initialized with correct parameters
-                mock_glue_data_catalog_handler.assert_called_once_with(
-                    mock_server, allow_write=False, allow_sensitive_data_access=True
-                )
+                    # Verify that the handlers were initialized with correct parameters
+                    mock_glue_data_catalog_handler.assert_called_once_with(
+                        mock_server, allow_write=False, allow_sensitive_data_access=True
+                    )
 
-                # Verify that run was called
-                mock_server.run.assert_called_once()
+                    # Verify that run was called
+                    mock_server.run.assert_called_once()
 
 
 @pytest.mark.asyncio
