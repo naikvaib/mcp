@@ -101,7 +101,7 @@ class DataCatalogManager:
             for key, value in resource_tags.items():
                 connection_input['Parameters'][key] = value
 
-            kwargs = {'ConnectionInput': connection_input}
+            kwargs: Dict[str, Any] = {'ConnectionInput': connection_input}
             if catalog_id:
                 kwargs['CatalogId'] = catalog_id
 
@@ -839,7 +839,7 @@ class DataCatalogManager:
 
         Args:
             ctx: MCP context containing request information
-            database_name: Name of the database containing the table
+            database_name: Name of the
             table_name: Name of the table to list partitions from
             max_results: Optional maximum number of results to return
             expression: Optional filter expression to narrow results
@@ -854,7 +854,7 @@ class DataCatalogManager:
             ListPartitionsResponse with the list of partitions
         """
         try:
-            kwargs = {
+            kwargs: Dict[str, Any] = {
                 'DatabaseName': database_name,
                 'TableName': table_name,
             }
