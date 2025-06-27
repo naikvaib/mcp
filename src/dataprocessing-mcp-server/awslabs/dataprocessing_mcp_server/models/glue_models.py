@@ -95,7 +95,7 @@ class CreateWorkflowResponse(CallToolResult):
     isError: bool = Field(..., description="Whether the operation resulted in an error")
     content: List[TextContent] = Field(..., description="Content of the response")
     workflow_name: str = Field(..., description="Name of the created workflow")
-    operation: str = Field(default="create", description="Operation performed")
+    operation: str = Field(default="create-workflow", description="Creates a new workflow.")
 
 
 class DeleteWorkflowResponse(CallToolResult):
@@ -104,7 +104,7 @@ class DeleteWorkflowResponse(CallToolResult):
     isError: bool = Field(..., description="Whether the operation resulted in an error")
     content: List[TextContent] = Field(..., description="Content of the response")
     workflow_name: str = Field(..., description="Name of the deleted workflow")
-    operation: str = Field(default="delete", description="Operation performed")
+    operation: str = Field(default="delete-workflow", description="Deletes a workflow.")
 
 
 class GetWorkflowResponse(CallToolResult):
@@ -116,17 +116,17 @@ class GetWorkflowResponse(CallToolResult):
     workflow_details: Dict[str, Any] = Field(
         ..., description="Complete workflow definition"
     )
-    operation: str = Field(default="get", description="Operation performed")
+    operation: str = Field(default="get-workflow", description="Retrieves resource metadata for a workflow.")
 
 
-class GetWorkflowsResponse(CallToolResult):
+class ListWorkflowsResponse(CallToolResult):
     """Response model for get workflows operation."""
 
     isError: bool = Field(..., description="Whether the operation resulted in an error")
     content: List[TextContent] = Field(..., description="Content of the response")
     workflows: List[Dict[str, Any]] = Field(..., description="List of workflows")
     next_token: Optional[str] = Field(None, description="Token for pagination")
-    operation: str = Field(default="list", description="Operation performed")
+    operation: str = Field(default="list-workflows", description="Lists names of workflows created in the account.")
 
 
 class StartWorkflowRunResponse(CallToolResult):
@@ -136,7 +136,7 @@ class StartWorkflowRunResponse(CallToolResult):
     content: List[TextContent] = Field(..., description="Content of the response")
     workflow_name: str = Field(..., description="Name of the workflow")
     run_id: str = Field(..., description="ID of the workflow run")
-    operation: str = Field(default="start_run", description="Operation performed")
+    operation: str = Field(default="start-workflow-run", description="Starts a new run of the specified workflow.")
 
 
 # Response models for Triggers
@@ -146,7 +146,7 @@ class CreateTriggerResponse(CallToolResult):
     isError: bool = Field(..., description="Whether the operation resulted in an error")
     content: List[TextContent] = Field(..., description="Content of the response")
     trigger_name: str = Field(..., description="Name of the created trigger")
-    operation: str = Field(default="create", description="Operation performed")
+    operation: str = Field(default="create-trigger", description="Creates a new trigger.")
 
 
 class DeleteTriggerResponse(CallToolResult):
@@ -155,7 +155,7 @@ class DeleteTriggerResponse(CallToolResult):
     isError: bool = Field(..., description="Whether the operation resulted in an error")
     content: List[TextContent] = Field(..., description="Content of the response")
     trigger_name: str = Field(..., description="Name of the deleted trigger")
-    operation: str = Field(default="delete", description="Operation performed")
+    operation: str = Field(default="delete-trigger", description="Deletes a specified trigger. If the trigger is not found, no exception is thrown.")
 
 
 class GetTriggerResponse(CallToolResult):
@@ -167,7 +167,7 @@ class GetTriggerResponse(CallToolResult):
     trigger_details: Dict[str, Any] = Field(
         ..., description="Complete trigger definition"
     )
-    operation: str = Field(default="get", description="Operation performed")
+    operation: str = Field(default="get-trigger", description="Retrieves the definition of a trigger.")
 
 
 class GetTriggersResponse(CallToolResult):
@@ -177,7 +177,7 @@ class GetTriggersResponse(CallToolResult):
     content: List[TextContent] = Field(..., description="Content of the response")
     triggers: List[Dict[str, Any]] = Field(..., description="List of triggers")
     next_token: Optional[str] = Field(None, description="Token for pagination")
-    operation: str = Field(default="list", description="Operation performed")
+    operation: str = Field(default="get-triggers", description="Gets all the triggers associated with a job.")
 
 
 class StartTriggerResponse(CallToolResult):
@@ -186,7 +186,7 @@ class StartTriggerResponse(CallToolResult):
     isError: bool = Field(..., description="Whether the operation resulted in an error")
     content: List[TextContent] = Field(..., description="Content of the response")
     trigger_name: str = Field(..., description="Name of the trigger")
-    operation: str = Field(default="start", description="Operation performed")
+    operation: str = Field(default="start-trigger", description="Starts an existing trigger.")
 
 
 class StopTriggerResponse(CallToolResult):
@@ -195,7 +195,7 @@ class StopTriggerResponse(CallToolResult):
     isError: bool = Field(..., description="Whether the operation resulted in an error")
     content: List[TextContent] = Field(..., description="Content of the response")
     trigger_name: str = Field(..., description="Name of the trigger")
-    operation: str = Field(default="stop", description="Operation performed")
+    operation: str = Field(default="stop-trigger", description="Stops a specified trigger.")
 
 
 # Response models for Job Runs
@@ -272,7 +272,7 @@ class CreateSessionResponse(CallToolResult):
     session: Optional[Dict[str, Any]] = Field(
         None, description="Complete session object"
     )
-    operation: str = Field(default="create", description="Operation performed")
+    operation: str = Field(default="create-session", description="Created a new session.")
 
 
 class DeleteSessionResponse(CallToolResult):
@@ -281,7 +281,7 @@ class DeleteSessionResponse(CallToolResult):
     isError: bool = Field(..., description="Whether the operation resulted in an error")
     content: List[TextContent] = Field(..., description="Content of the response")
     session_id: str = Field(..., description="ID of the deleted session")
-    operation: str = Field(default="delete", description="Operation performed")
+    operation: str = Field(default="delete-session", description="Deleted the session.")
 
 
 class GetSessionResponse(CallToolResult):
@@ -293,7 +293,7 @@ class GetSessionResponse(CallToolResult):
     session: Optional[Dict[str, Any]] = Field(
         None, description="Complete session object"
     )
-    operation: str = Field(default="get", description="Operation performed")
+    operation: str = Field(default="get-session", description="Retrieves the session.")
 
 
 class ListSessionsResponse(CallToolResult):
@@ -305,7 +305,7 @@ class ListSessionsResponse(CallToolResult):
     ids: Optional[List[str]] = Field(None, description="List of session IDs")
     count: int = Field(..., description="Number of sessions found")
     next_token: Optional[str] = Field(None, description="Token for pagination")
-    operation: str = Field(default="list", description="Operation performed")
+    operation: str = Field(default="list-sessions", description="Retrieve a list of sessions.")
 
 
 class StopSessionResponse(CallToolResult):
@@ -314,7 +314,7 @@ class StopSessionResponse(CallToolResult):
     isError: bool = Field(..., description="Whether the operation resulted in an error")
     content: List[TextContent] = Field(..., description="Content of the response")
     session_id: str = Field(..., description="ID of the stopped session")
-    operation: str = Field(default="stop", description="Operation performed")
+    operation: str = Field(default="stop-session", description="Stops the session.")
 
 
 # Response models for Statements
@@ -325,7 +325,7 @@ class RunStatementResponse(CallToolResult):
     content: List[TextContent] = Field(..., description="Content of the response")
     session_id: str = Field(..., description="ID of the session")
     statement_id: int = Field(..., description="ID of the statement")
-    operation: str = Field(default="run", description="Operation performed")
+    operation: str = Field(default="run-statement", description="Executes the statement.")
 
 
 class CancelStatementResponse(CallToolResult):
@@ -335,7 +335,7 @@ class CancelStatementResponse(CallToolResult):
     content: List[TextContent] = Field(..., description="Content of the response")
     session_id: str = Field(..., description="ID of the session")
     statement_id: int = Field(..., description="ID of the canceled statement")
-    operation: str = Field(default="cancel", description="Operation performed")
+    operation: str = Field(default="cancel-statement", description="Cancels the statement.")
 
 
 class GetStatementResponse(CallToolResult):
@@ -348,7 +348,7 @@ class GetStatementResponse(CallToolResult):
     statement: Optional[Dict[str, Any]] = Field(
         None, description="Complete statement definition"
     )
-    operation: str = Field(default="get", description="Operation performed")
+    operation: str = Field(default="get-statement", description="Retrieves the statement.")
 
 
 class ListStatementsResponse(CallToolResult):
@@ -360,7 +360,7 @@ class ListStatementsResponse(CallToolResult):
     statements: List[Dict[str, Any]] = Field(..., description="List of statements")
     count: int = Field(..., description="Number of statements found")
     next_token: Optional[str] = Field(None, description="Token for pagination")
-    operation: str = Field(default="list", description="Operation performed")
+    operation: str = Field(default="list-statements", description="Lists statements for the session.")
 
 
 # Response models for Usage Profiles
