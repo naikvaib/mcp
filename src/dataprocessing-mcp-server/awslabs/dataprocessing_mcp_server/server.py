@@ -27,6 +27,9 @@ import argparse
 from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
+from awslabs.dataprocessing_mcp_server.handlers.glue.glue_commons_handler import (
+    GlueCommonsHandler,
+)
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
 
@@ -70,6 +73,17 @@ It enables you to create, manage, and monitor data processing workflows.
 2. Delete a table: `manage_aws_glue_tables(operation='delete-table', database_name='my-database', table_name='my-table')`
 3. Delete a connection: `manage_aws_glue_connections(operation='delete-connection', connection_name='my-connection')`
 4. Delete a database: `manage_aws_glue_databases(operation='delete-database', database_name='my-database')`
+
+### Glue Usage Profiles
+1. Create a profile: `manage_aws_glue_usage_profiles(operation='create-profile', profile_name='my-usage-profile, description='my description of the usage profile', configuration={...}, tags={...})`
+2. Delete a profile: `manage_aws_glue_usage_profiles(operation='delete-profile', profile_name='my-usage-profile)`
+3. Get profile details: `manage_aws_glue_usage_profiles(operation='get-profile', profile_name='my-usage-profile)`
+4. Update a profile: `manage_aws_glue_usage_profiles(operation='update-profile', profile_name='my-usage-profile, description='my description of the usage profile', configuration={...})`
+
+### Glue Security Configurations
+1. Create a security configuration: `manage_aws_glue_security(operation='create-security-configuration', config_name='my-config, encryption_configuration={...})`
+2. Delete a security configuration: `manage_aws_glue_security(operation='delete-security-configuration', config_name='my-config)`
+3. Get a security configuration: `manage_aws_glue_security(operation='get-security-configuration', config_name='my-config)`
 
 """
 
@@ -135,6 +149,11 @@ def main():
 
     # Initialize handlers - all tools are always registered, access control is handled within tools
     GlueDataCatalogHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    GlueCommonsHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
