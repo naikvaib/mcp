@@ -14,37 +14,33 @@
 
 """GlueInteractiveSessionsHandler for Data Processing MCP Server."""
 
-import os
+from awslabs.dataprocessing_mcp_server.models.glue_models import (
+    CancelStatementResponse,
+    CreateSessionResponse,
+    DeleteSessionResponse,
+    GetSessionResponse,
+    GetStatementResponse,
+    ListSessionsResponse,
+    ListStatementsResponse,
+    RunStatementResponse,
+    StopSessionResponse,
+)
 from awslabs.dataprocessing_mcp_server.utils.aws_helper import AwsHelper
 from awslabs.dataprocessing_mcp_server.utils.logging_helper import (
     LogLevel,
     log_with_request_id,
 )
-from awslabs.dataprocessing_mcp_server.models.glue_models import (
-    CreateSessionResponse,
-    DeleteSessionResponse,
-    GetSessionResponse,
-    ListSessionsResponse,
-    StopSessionResponse,
-    RunStatementResponse,
-    CancelStatementResponse,
-    GetStatementResponse,
-    ListStatementsResponse,
-)
-
+from botocore.exceptions import ClientError
 from mcp.server.fastmcp import Context
 from mcp.types import TextContent
-from pydantic import Field, BaseModel
-from typing import Dict, List, Optional, Tuple, Union, cast, Any
-from botocore.exceptions import ClientError
+from pydantic import Field
+from typing import Any, Dict, List, Optional, Union
 
 
 class GlueInteractiveSessionsHandler:
     """Handler for Amazon Glue Interactive Sessions operations."""
 
-    def __init__(
-        self, mcp, allow_write: bool = False, allow_sensitive_data_access: bool = False
-    ):
+    def __init__(self, mcp, allow_write: bool = False, allow_sensitive_data_access: bool = False):
         """Initialize the Glue Interactive Sessions handler.
 
         Args:
@@ -55,13 +51,11 @@ class GlueInteractiveSessionsHandler:
         self.mcp = mcp
         self.allow_write = allow_write
         self.allow_sensitive_data_access = allow_sensitive_data_access
-        self.glue_client = AwsHelper.create_boto3_client("glue")
+        self.glue_client = AwsHelper.create_boto3_client('glue')
 
         # Register tools
-        self.mcp.tool(name="manage_aws_glue_sessions")(self.manage_aws_glue_sessions)
-        self.mcp.tool(name="manage_aws_glue_statements")(
-            self.manage_aws_glue_statements
-        )
+        self.mcp.tool(name='manage_aws_glue_sessions')(self.manage_aws_glue_sessions)
+        self.mcp.tool(name='manage_aws_glue_statements')(self.manage_aws_glue_statements)
 
     async def manage_aws_glue_sessions(
         self,
@@ -72,15 +66,15 @@ class GlueInteractiveSessionsHandler:
         ),
         session_id: Optional[str] = Field(
             None,
-            description="ID of the session (required for delete-session, get-session, and stop-session operations).",
+            description='ID of the session (required for delete-session, get-session, and stop-session operations).',
         ),
         description: Optional[str] = Field(
             None,
-            description="Description of the session (optional for create-session operation).",
+            description='Description of the session (optional for create-session operation).',
         ),
         role: Optional[str] = Field(
             None,
-            description="IAM Role ARN (required for create-session operation).",
+            description='IAM Role ARN (required for create-session operation).',
         ),
         command: Optional[Dict[str, str]] = Field(
             None,
@@ -88,55 +82,55 @@ class GlueInteractiveSessionsHandler:
         ),
         timeout: Optional[int] = Field(
             None,
-            description="Number of minutes before session times out (optional for create-session operation).",
+            description='Number of minutes before session times out (optional for create-session operation).',
         ),
         idle_timeout: Optional[int] = Field(
             None,
-            description="Number of minutes when idle before session times out (optional for create-session operation).",
+            description='Number of minutes when idle before session times out (optional for create-session operation).',
         ),
         default_arguments: Optional[Dict[str, str]] = Field(
             None,
-            description="Map of key-value pairs for session arguments (optional for create-session operation).",
+            description='Map of key-value pairs for session arguments (optional for create-session operation).',
         ),
         connections: Optional[Dict[str, List[str]]] = Field(
             None,
-            description="Connections to use for the session (optional for create-session operation).",
+            description='Connections to use for the session (optional for create-session operation).',
         ),
         max_capacity: Optional[float] = Field(
             None,
-            description="Number of Glue data processing units (DPUs) to allocate (optional for create-session operation).",
+            description='Number of Glue data processing units (DPUs) to allocate (optional for create-session operation).',
         ),
         number_of_workers: Optional[int] = Field(
             None,
-            description="Number of workers to use for the session (optional for create-session operation).",
+            description='Number of workers to use for the session (optional for create-session operation).',
         ),
         worker_type: Optional[str] = Field(
             None,
-            description="Type of predefined worker (G.1X, G.2X, G.4X, G.8X, Z.2X) (optional for create-session operation).",
+            description='Type of predefined worker (G.1X, G.2X, G.4X, G.8X, Z.2X) (optional for create-session operation).',
         ),
         security_configuration: Optional[str] = Field(
             None,
-            description="Name of the SecurityConfiguration structure (optional for create-session operation).",
+            description='Name of the SecurityConfiguration structure (optional for create-session operation).',
         ),
         glue_version: Optional[str] = Field(
             None,
-            description="Glue version to use (must be greater than 2.0) (optional for create-session operation).",
+            description='Glue version to use (must be greater than 2.0) (optional for create-session operation).',
         ),
         tags: Optional[Dict[str, str]] = Field(
             None,
-            description="Map of key-value pairs (tags) for the session (optional for create-session operation).",
+            description='Map of key-value pairs (tags) for the session (optional for create-session operation).',
         ),
         request_origin: Optional[str] = Field(
             None,
-            description="Origin of the request (optional for all operations).",
+            description='Origin of the request (optional for all operations).',
         ),
         max_results: Optional[int] = Field(
             None,
-            description="Maximum number of results to return for list-sessions operation.",
+            description='Maximum number of results to return for list-sessions operation.',
         ),
         next_token: Optional[str] = Field(
             None,
-            description="Pagination token for list-sessions operation.",
+            description='Pagination token for list-sessions operation.',
         ),
     ) -> Union[
         CreateSessionResponse,
@@ -167,14 +161,11 @@ class GlueInteractiveSessionsHandler:
         ```python
         # Create a new Spark ETL session
         {
-          "operation": "create-session",
-          "session_id": "my-spark-session",
-          "role": "arn:aws:iam::123456789012:role/GlueInteractiveSessionRole",
-          "command": {
-            "Name": "glueetl",
-            "PythonVersion": "3"
-          },
-          "glue_version": "3.0"
+            'operation': 'create-session',
+            'session_id': 'my-spark-session',
+            'role': 'arn:aws:iam::123456789012:role/GlueInteractiveSessionRole',
+            'command': {'Name': 'glueetl', 'PythonVersion': '3'},
+            'glue_version': '3.0',
         }
         ```
 
@@ -204,82 +195,78 @@ class GlueInteractiveSessionsHandler:
         """
         try:
             if not self.allow_write and operation not in [
-                "get-session",
-                "list-sessions",
+                'get-session',
+                'list-sessions',
             ]:
-                error_message = (
-                    f"Operation {operation} is not allowed without write access"
-                )
+                error_message = f'Operation {operation} is not allowed without write access'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
 
-                if operation == "create-session":
+                if operation == 'create-session':
                     return CreateSessionResponse(
                         isError=True,
-                        content=[TextContent(type="text", text=error_message)],
-                        session_id="",
+                        content=[TextContent(type='text', text=error_message)],
+                        session_id='',
                         session=None,
                     )
-                elif operation == "delete-session":
+                elif operation == 'delete-session':
                     return DeleteSessionResponse(
                         isError=True,
-                        content=[TextContent(type="text", text=error_message)],
-                        session_id="",
+                        content=[TextContent(type='text', text=error_message)],
+                        session_id='',
                     )
-                elif operation == "stop-session":
+                elif operation == 'stop-session':
                     return StopSessionResponse(
                         isError=True,
-                        content=[TextContent(type="text", text=error_message)],
-                        session_id="",
+                        content=[TextContent(type='text', text=error_message)],
+                        session_id='',
                     )
 
-            if operation == "create-session":
+            if operation == 'create-session':
                 if not role or not command:
-                    raise ValueError(
-                        "role and command are required for create-session operation"
-                    )
+                    raise ValueError('role and command are required for create-session operation')
 
                 # Prepare create session parameters
                 create_params = {
-                    "Id": session_id,
-                    "Role": role,
-                    "Command": command,
+                    'Id': session_id,
+                    'Role': role,
+                    'Command': command,
                 }
 
                 # Add optional parameters if provided
                 if description:
-                    create_params["Description"] = description
+                    create_params['Description'] = description
                 if timeout:
-                    create_params["Timeout"] = timeout
+                    create_params['Timeout'] = timeout
                 if idle_timeout:
-                    create_params["IdleTimeout"] = idle_timeout
+                    create_params['IdleTimeout'] = idle_timeout
                 if default_arguments:
-                    create_params["DefaultArguments"] = default_arguments
+                    create_params['DefaultArguments'] = default_arguments
                 if connections:
-                    create_params["Connections"] = connections
+                    create_params['Connections'] = connections
                 if max_capacity:
-                    create_params["MaxCapacity"] = max_capacity
+                    create_params['MaxCapacity'] = max_capacity
                 if number_of_workers:
-                    create_params["NumberOfWorkers"] = number_of_workers
+                    create_params['NumberOfWorkers'] = number_of_workers
                 if worker_type:
-                    create_params["WorkerType"] = worker_type
+                    create_params['WorkerType'] = worker_type
                 if security_configuration:
-                    create_params["SecurityConfiguration"] = security_configuration
+                    create_params['SecurityConfiguration'] = security_configuration
                 if glue_version:
-                    create_params["GlueVersion"] = glue_version
+                    create_params['GlueVersion'] = glue_version
 
                 # Add MCP management tags
-                resource_tags = AwsHelper.prepare_resource_tags("GlueSession")
+                resource_tags = AwsHelper.prepare_resource_tags('GlueSession')
 
                 # Merge user-provided tags with MCP tags
                 if tags:
                     merged_tags = tags.copy()
                     merged_tags.update(resource_tags)
-                    create_params["Tags"] = merged_tags
+                    create_params['Tags'] = merged_tags
                 else:
-                    create_params["Tags"] = resource_tags
+                    create_params['Tags'] = resource_tags
 
                 if request_origin:
-                    create_params["RequestOrigin"] = request_origin
+                    create_params['RequestOrigin'] = request_origin
 
                 # Create the session
                 response = self.glue_client.create_session(**create_params)
@@ -288,67 +275,61 @@ class GlueInteractiveSessionsHandler:
                     isError=False,
                     content=[
                         TextContent(
-                            type="text",
-                            text=f"Successfully created session {response.get('Session', {}).get('Id', '')}",
+                            type='text',
+                            text=f'Successfully created session {response.get("Session", {}).get("Id", "")}',
                         )
                     ],
-                    session_id=response.get("Session", {}).get("Id", ""),
-                    session=response.get("Session", {}),
+                    session_id=response.get('Session', {}).get('Id', ''),
+                    session=response.get('Session', {}),
                 )
 
-            elif operation == "delete-session":
+            elif operation == 'delete-session':
                 if session_id is None:
-                    raise ValueError(
-                        "session_id is required for delete-session operation"
-                    )
+                    raise ValueError('session_id is required for delete-session operation')
 
                 # First check if the session is managed by MCP
                 try:
                     # Get the session to check if it's managed by MCP
-                    get_params = {"Id": session_id}
+                    get_params = {'Id': session_id}
                     if request_origin:
-                        get_params["RequestOrigin"] = request_origin
+                        get_params['RequestOrigin'] = request_origin
 
                     response = self.glue_client.get_session(**get_params)
-                    session = response.get("Session", {})
-                    tags = session.get("Tags", {})
+                    session = response.get('Session', {})
+                    tags = session.get('Tags', {})
 
                     # Construct the ARN for the session
-                    region = AwsHelper.get_aws_region() or "us-east-1"
+                    region = AwsHelper.get_aws_region() or 'us-east-1'
                     account_id = AwsHelper.get_aws_account_id()
-                    session_arn = (
-                        f"arn:aws:glue:{region}:{account_id}:session/{session_id}"
-                    )
+                    session_arn = f'arn:aws:glue:{region}:{account_id}:session/{session_id}'
 
                     # Check if the session is managed by MCP
-                    if not AwsHelper.is_resource_mcp_managed(
-                        self.glue_client, session_arn, {}
-                    ):
-                        error_message = f"Cannot delete session {session_id} - it is not managed by the MCP server (missing required tags)"
+                    if not AwsHelper.is_resource_mcp_managed(self.glue_client, session_arn, {}):
+                        error_message = f'Cannot delete session {session_id} - it is not managed by the MCP server (missing required tags)'
                         log_with_request_id(ctx, LogLevel.ERROR, error_message)
                         return DeleteSessionResponse(
                             isError=True,
-                            content=[TextContent(type="text", text=error_message)],
+                            content=[TextContent(type='text', text=error_message)],
                             session_id=session_id,
-                            operation="delete-session",
+                            operation='delete-session',
                         )
                 except ClientError as e:
-                    if e.response["Error"]["Code"] == "EntityNotFoundException":
-                        error_message = f"Session {session_id} not found"
+                    if e.response['Error']['Code'] == 'EntityNotFoundException':
+                        error_message = f'Session {session_id} not found'
                         log_with_request_id(ctx, LogLevel.ERROR, error_message)
                         return DeleteSessionResponse(
                             isError=True,
-                            content=[TextContent(type="text", text=error_message)],
+                            content=[TextContent(type='text', text=error_message)],
                             session_id=session_id,
-                            operation="delete-session",
+                            operation='delete-session',
                         )
                     else:
                         raise e
 
                 # Prepare delete session parameters
-                delete_params = {"Id": session_id}
+                delete_params = {'Id': session_id}
                 if request_origin:
-                    delete_params["RequestOrigin"] = request_origin
+                    delete_params['RequestOrigin'] = request_origin
 
                 # Delete the session
                 response = self.glue_client.delete_session(**delete_params)
@@ -357,22 +338,22 @@ class GlueInteractiveSessionsHandler:
                     isError=False,
                     content=[
                         TextContent(
-                            type="text",
-                            text=f"Successfully deleted session {session_id}",
+                            type='text',
+                            text=f'Successfully deleted session {session_id}',
                         )
                     ],
                     session_id=session_id,
-                    operation="delete-session",
+                    operation='delete-session',
                 )
 
-            elif operation == "get-session":
+            elif operation == 'get-session':
                 if session_id is None:
-                    raise ValueError("session_id is required for get-session operation")
+                    raise ValueError('session_id is required for get-session operation')
 
                 # Prepare get session parameters
-                get_params = {"Id": session_id}
+                get_params = {'Id': session_id}
                 if request_origin:
-                    get_params["RequestOrigin"] = request_origin
+                    get_params['RequestOrigin'] = request_origin
 
                 # Get the session
                 response = self.glue_client.get_session(**get_params)
@@ -381,91 +362,83 @@ class GlueInteractiveSessionsHandler:
                     isError=False,
                     content=[
                         TextContent(
-                            type="text",
-                            text=f"Successfully retrieved session {session_id}",
+                            type='text',
+                            text=f'Successfully retrieved session {session_id}',
                         )
                     ],
                     session_id=session_id,
-                    session=response.get("Session", {}),
+                    session=response.get('Session', {}),
                 )
 
-            elif operation == "list-sessions":
+            elif operation == 'list-sessions':
                 # Prepare list sessions parameters
                 params: Dict[str, Any] = {}
                 if max_results is not None:
-                    params["MaxResults"] = str(max_results)
+                    params['MaxResults'] = str(max_results)
                 if next_token is not None:
-                    params["NextToken"] = next_token
+                    params['NextToken'] = next_token
                 if tags:
-                    params["Tags"] = tags
+                    params['Tags'] = tags
                 if request_origin:
-                    params["RequestOrigin"] = request_origin
+                    params['RequestOrigin'] = request_origin
 
                 # List sessions
                 response = self.glue_client.list_sessions(**params)
 
                 return ListSessionsResponse(
                     isError=False,
-                    content=[
-                        TextContent(type="text", text="Successfully retrieved sessions")
-                    ],
-                    sessions=response.get("Sessions", []),
-                    ids=response.get("Ids", []),
-                    next_token=response.get("NextToken"),
-                    count=len(response.get("Sessions", [])),
+                    content=[TextContent(type='text', text='Successfully retrieved sessions')],
+                    sessions=response.get('Sessions', []),
+                    ids=response.get('Ids', []),
+                    next_token=response.get('NextToken'),
+                    count=len(response.get('Sessions', [])),
                 )
 
-            elif operation == "stop-session":
+            elif operation == 'stop-session':
                 if session_id is None:
-                    raise ValueError(
-                        "session_id is required for stop-session operation"
-                    )
+                    raise ValueError('session_id is required for stop-session operation')
 
                 # First check if the session is managed by MCP
                 try:
                     # Get the session to check if it's managed by MCP
-                    get_params = {"Id": session_id}
+                    get_params = {'Id': session_id}
                     if request_origin:
-                        get_params["RequestOrigin"] = request_origin
+                        get_params['RequestOrigin'] = request_origin
 
                     response = self.glue_client.get_session(**get_params)
-                    session = response.get("Session", {})
-                    tags = session.get("Tags", {})
+                    session = response.get('Session', {})
+                    tags = session.get('Tags', {})
 
                     # Construct the ARN for the session
-                    region = AwsHelper.get_aws_region() or "us-east-1"
+                    region = AwsHelper.get_aws_region() or 'us-east-1'
                     account_id = AwsHelper.get_aws_account_id()
-                    session_arn = (
-                        f"arn:aws:glue:{region}:{account_id}:session/{session_id}"
-                    )
+                    session_arn = f'arn:aws:glue:{region}:{account_id}:session/{session_id}'
 
                     # Check if the session is managed by MCP
-                    if not AwsHelper.is_resource_mcp_managed(
-                        self.glue_client, session_arn, {}
-                    ):
-                        error_message = f"Cannot stop session {session_id} - it is not managed by the MCP server (missing required tags)"
+                    if not AwsHelper.is_resource_mcp_managed(self.glue_client, session_arn, {}):
+                        error_message = f'Cannot stop session {session_id} - it is not managed by the MCP server (missing required tags)'
                         log_with_request_id(ctx, LogLevel.ERROR, error_message)
                         return StopSessionResponse(
                             isError=True,
-                            content=[TextContent(type="text", text=error_message)],
+                            content=[TextContent(type='text', text=error_message)],
                             session_id=session_id,
                         )
                 except ClientError as e:
-                    if e.response["Error"]["Code"] == "EntityNotFoundException":
-                        error_message = f"Session {session_id} not found"
+                    if e.response['Error']['Code'] == 'EntityNotFoundException':
+                        error_message = f'Session {session_id} not found'
                         log_with_request_id(ctx, LogLevel.ERROR, error_message)
                         return StopSessionResponse(
                             isError=True,
-                            content=[TextContent(type="text", text=error_message)],
+                            content=[TextContent(type='text', text=error_message)],
                             session_id=session_id,
                         )
                     else:
                         raise e
 
                 # Prepare stop session parameters
-                stop_params = {"Id": session_id}
+                stop_params = {'Id': session_id}
                 if request_origin:
-                    stop_params["RequestOrigin"] = request_origin
+                    stop_params['RequestOrigin'] = request_origin
 
                 # Stop the session
                 response = self.glue_client.stop_session(**stop_params)
@@ -474,35 +447,33 @@ class GlueInteractiveSessionsHandler:
                     isError=False,
                     content=[
                         TextContent(
-                            type="text",
-                            text=f"Successfully stopped session {session_id}",
+                            type='text',
+                            text=f'Successfully stopped session {session_id}',
                         )
                     ],
                     session_id=session_id,
                 )
 
             else:
-                error_message = f"Invalid operation: {operation}. Must be one of: create-session, delete-session, get-session, list-sessions, stop-session"
+                error_message = f'Invalid operation: {operation}. Must be one of: create-session, delete-session, get-session, list-sessions, stop-session'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
                 return GetSessionResponse(
                     isError=True,
-                    content=[TextContent(type="text", text=error_message)],
-                    session_id=session_id or "",
+                    content=[TextContent(type='text', text=error_message)],
+                    session_id=session_id or '',
                     session={},
                 )
 
         except ValueError as e:
-            log_with_request_id(
-                ctx, LogLevel.ERROR, f"Parameter validation error: {str(e)}"
-            )
+            log_with_request_id(ctx, LogLevel.ERROR, f'Parameter validation error: {str(e)}')
             raise
         except Exception as e:
-            error_message = f"Error in manage_aws_glue_sessions: {str(e)}"
+            error_message = f'Error in manage_aws_glue_sessions: {str(e)}'
             log_with_request_id(ctx, LogLevel.ERROR, error_message)
             return GetSessionResponse(
                 isError=True,
-                content=[TextContent(type="text", text=error_message)],
-                session_id=session_id or "",
+                content=[TextContent(type='text', text=error_message)],
+                session_id=session_id or '',
                 session={},
             )
 
@@ -515,27 +486,27 @@ class GlueInteractiveSessionsHandler:
         ),
         session_id: str = Field(
             ...,
-            description="ID of the session (required for all operations).",
+            description='ID of the session (required for all operations).',
         ),
         statement_id: Optional[int] = Field(
             None,
-            description="ID of the statement (required for cancel-statement and get-statement operations).",
+            description='ID of the statement (required for cancel-statement and get-statement operations).',
         ),
         code: Optional[str] = Field(
             None,
-            description="Code to execute for run-statement operation (up to 68000 characters).",
+            description='Code to execute for run-statement operation (up to 68000 characters).',
         ),
         request_origin: Optional[str] = Field(
             None,
-            description="Origin of the request (optional for all operations).",
+            description='Origin of the request (optional for all operations).',
         ),
         max_results: Optional[int] = Field(
             None,
-            description="Maximum number of results to return for list-statements operation.",
+            description='Maximum number of results to return for list-statements operation.',
         ),
         next_token: Optional[str] = Field(
             None,
-            description="Pagination token for list-statements operation.",
+            description='Pagination token for list-statements operation.',
         ),
     ) -> Union[
         RunStatementResponse,
@@ -543,7 +514,7 @@ class GlueInteractiveSessionsHandler:
         GetStatementResponse,
         ListStatementsResponse,
     ]:
-        """Manage AWS Glue Interactive Session Statements for executing code and retrieving results.
+        r"""Manage AWS Glue Interactive Session Statements for executing code and retrieving results.
 
         This tool provides operations for executing code, canceling running statements, and retrieving
         results within Glue Interactive Sessions. It enables interactive data processing, exploration,
@@ -564,9 +535,9 @@ class GlueInteractiveSessionsHandler:
         ```python
         # Run a PySpark statement in a session
         {
-          "operation": "run-statement",
-          "session_id": "my-spark-session",
-          "code": "df = spark.read.csv('s3://my-bucket/data.csv', header=True)\ndf.show(5)"
+            'operation': 'run-statement',
+            'session_id': 'my-spark-session',
+            'code': "df = spark.read.csv('s3://my-bucket/data.csv', header=True)\ndf.show(5)",
         }
         ```
 
@@ -585,40 +556,38 @@ class GlueInteractiveSessionsHandler:
         """
         try:
             if not self.allow_write and operation not in [
-                "get-statement",
-                "list-statements",
+                'get-statement',
+                'list-statements',
             ]:
-                error_message = (
-                    f"Operation {operation} is not allowed without write access"
-                )
+                error_message = f'Operation {operation} is not allowed without write access'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
 
-                if operation == "run-statement":
+                if operation == 'run-statement':
                     return RunStatementResponse(
                         isError=True,
-                        content=[TextContent(type="text", text=error_message)],
-                        session_id="",
+                        content=[TextContent(type='text', text=error_message)],
+                        session_id='',
                         statement_id=0,
                     )
-                elif operation == "cancel-statement":
+                elif operation == 'cancel-statement':
                     return CancelStatementResponse(
                         isError=True,
-                        content=[TextContent(type="text", text=error_message)],
-                        session_id="",
+                        content=[TextContent(type='text', text=error_message)],
+                        session_id='',
                         statement_id=0,
                     )
 
-            if operation == "run-statement":
+            if operation == 'run-statement':
                 if code is None:
-                    raise ValueError("code is required for run-statement operation")
+                    raise ValueError('code is required for run-statement operation')
 
                 # Prepare run statement parameters
                 run_params = {
-                    "SessionId": session_id,
-                    "Code": code,
+                    'SessionId': session_id,
+                    'Code': code,
                 }
                 if request_origin:
-                    run_params["RequestOrigin"] = request_origin
+                    run_params['RequestOrigin'] = request_origin
 
                 # Run the statement
                 response = self.glue_client.run_statement(**run_params)
@@ -627,27 +596,25 @@ class GlueInteractiveSessionsHandler:
                     isError=False,
                     content=[
                         TextContent(
-                            type="text",
-                            text=f"Successfully ran statement in session {session_id}",
+                            type='text',
+                            text=f'Successfully ran statement in session {session_id}',
                         )
                     ],
                     session_id=session_id,
-                    statement_id=response.get("Id", 0),
+                    statement_id=response.get('Id', 0),
                 )
 
-            elif operation == "cancel-statement":
+            elif operation == 'cancel-statement':
                 if statement_id is None:
-                    raise ValueError(
-                        "statement_id is required for cancel-statement operation"
-                    )
+                    raise ValueError('statement_id is required for cancel-statement operation')
 
                 # Prepare cancel statement parameters
                 cancel_params = {
-                    "SessionId": session_id,
-                    "Id": statement_id,
+                    'SessionId': session_id,
+                    'Id': statement_id,
                 }
                 if request_origin:
-                    cancel_params["RequestOrigin"] = request_origin
+                    cancel_params['RequestOrigin'] = request_origin
 
                 # Cancel the statement
                 self.glue_client.cancel_statement(**cancel_params)
@@ -656,27 +623,25 @@ class GlueInteractiveSessionsHandler:
                     isError=False,
                     content=[
                         TextContent(
-                            type="text",
-                            text=f"Successfully canceled statement {statement_id} in session {session_id}",
+                            type='text',
+                            text=f'Successfully canceled statement {statement_id} in session {session_id}',
                         )
                     ],
                     session_id=session_id,
                     statement_id=statement_id,
                 )
 
-            elif operation == "get-statement":
+            elif operation == 'get-statement':
                 if statement_id is None:
-                    raise ValueError(
-                        "statement_id is required for get-statement operation"
-                    )
+                    raise ValueError('statement_id is required for get-statement operation')
 
                 # Prepare get statement parameters
                 get_params = {
-                    "SessionId": session_id,
-                    "Id": statement_id,
+                    'SessionId': session_id,
+                    'Id': statement_id,
                 }
                 if request_origin:
-                    get_params["RequestOrigin"] = request_origin
+                    get_params['RequestOrigin'] = request_origin
 
                 # Get the statement
                 response = self.glue_client.get_statement(**get_params)
@@ -685,24 +650,24 @@ class GlueInteractiveSessionsHandler:
                     isError=False,
                     content=[
                         TextContent(
-                            type="text",
-                            text=f"Successfully retrieved statement {statement_id} in session {session_id}",
+                            type='text',
+                            text=f'Successfully retrieved statement {statement_id} in session {session_id}',
                         )
                     ],
                     session_id=session_id,
                     statement_id=statement_id,
-                    statement=response.get("Statement", {}),
+                    statement=response.get('Statement', {}),
                 )
 
-            elif operation == "list-statements":
+            elif operation == 'list-statements':
                 # Prepare list statements parameters
-                params = {"SessionId": session_id}
+                params = {'SessionId': session_id}
                 if max_results is not None:
-                    params["MaxResults"] = str(max_results)
+                    params['MaxResults'] = str(max_results)
                 if next_token is not None:
-                    params["NextToken"] = next_token
+                    params['NextToken'] = next_token
                 if request_origin:
-                    params["RequestOrigin"] = request_origin
+                    params['RequestOrigin'] = request_origin
 
                 # List statements
                 response = self.glue_client.list_statements(**params)
@@ -711,38 +676,36 @@ class GlueInteractiveSessionsHandler:
                     isError=False,
                     content=[
                         TextContent(
-                            type="text",
-                            text=f"Successfully retrieved statements for session {session_id}",
+                            type='text',
+                            text=f'Successfully retrieved statements for session {session_id}',
                         )
                     ],
                     session_id=session_id,
-                    statements=response.get("Statements", []),
-                    next_token=response.get("NextToken"),
-                    count=len(response.get("Statements", [])),
+                    statements=response.get('Statements', []),
+                    next_token=response.get('NextToken'),
+                    count=len(response.get('Statements', [])),
                 )
 
             else:
-                error_message = f"Invalid operation: {operation}. Must be one of: run-statement, cancel-statement, get-statement, list-statements"
+                error_message = f'Invalid operation: {operation}. Must be one of: run-statement, cancel-statement, get-statement, list-statements'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
                 return GetStatementResponse(
                     isError=True,
-                    content=[TextContent(type="text", text=error_message)],
+                    content=[TextContent(type='text', text=error_message)],
                     session_id=session_id,
                     statement_id=statement_id or 0,
                     statement={},
                 )
 
         except ValueError as e:
-            log_with_request_id(
-                ctx, LogLevel.ERROR, f"Parameter validation error: {str(e)}"
-            )
+            log_with_request_id(ctx, LogLevel.ERROR, f'Parameter validation error: {str(e)}')
             raise
         except Exception as e:
-            error_message = f"Error in manage_aws_glue_statements: {str(e)}"
+            error_message = f'Error in manage_aws_glue_statements: {str(e)}'
             log_with_request_id(ctx, LogLevel.ERROR, error_message)
             return GetStatementResponse(
                 isError=True,
-                content=[TextContent(type="text", text=error_message)],
+                content=[TextContent(type='text', text=error_message)],
                 session_id=session_id,
                 statement_id=statement_id or 0,
                 statement={},
