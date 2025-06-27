@@ -1011,3 +1011,442 @@ class TestDataCatalogManager:
             assert result.operation == 'delete-catalog'
             assert len(result.content) == 1
             assert result.content[0].text == f'Successfully deleted catalog: {catalog_id}'
+
+    @pytest.mark.asyncio
+    async def test_delete_catalog_not_mcp_managed(self, manager, mock_ctx, mock_glue_client):
+        """Test that delete_catalog returns an error when the catalog is not MCP managed."""
+        # Setup
+        catalog_id = 'test-catalog'
+
+        # Mock the get_catalog response to indicate the catalog is not MCP managed
+        mock_glue_client.get_catalog.return_value = {
+            'Catalog': {'Name': 'Test Catalog', 'Parameters': {}}
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=False,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                return_value='123456789012',
+            ),
+        ):
+            # Call the method
+            result = await manager.delete_catalog(mock_ctx, catalog_id=catalog_id)
+
+            # Verify that the Glue client was not called to delete the catalog
+            mock_glue_client.delete_catalog.assert_not_called()
+
+            # Verify the response
+            assert isinstance(result, DeleteCatalogResponse)
+            assert result.isError is True
+            assert result.catalog_id == catalog_id
+            assert result.operation == 'delete-catalog'
+            assert len(result.content) == 1
+            assert 'not managed by the MCP server' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_delete_catalog_not_found(self, manager, mock_ctx, mock_glue_client):
+        """Test that delete_catalog returns an error when the catalog is not found."""
+        # Setup
+        catalog_id = 'test-catalog'
+
+        # Mock the get_catalog to raise EntityNotFoundException
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Catalog not found'}
+        }
+        mock_glue_client.get_catalog.side_effect = ClientError(error_response, 'GetCatalog')
+
+        # Call the method
+        result = await manager.delete_catalog(mock_ctx, catalog_id=catalog_id)
+
+        # Verify that the Glue client was not called to delete the catalog
+        mock_glue_client.delete_catalog.assert_not_called()
+
+        # Verify the response
+        assert isinstance(result, DeleteCatalogResponse)
+        assert result.isError is True
+        assert result.catalog_id == catalog_id
+        assert result.operation == 'delete-catalog'
+        assert len(result.content) == 1
+        assert 'Catalog test-catalog not found' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_delete_catalog_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that delete_catalog returns an error response when the Glue API call fails."""
+        # Setup
+        catalog_id = 'test-catalog'
+
+        # Mock the get_catalog response to indicate the catalog is MCP managed
+        mock_glue_client.get_catalog.return_value = {
+            'Catalog': {
+                'Name': 'Test Catalog',
+                'Parameters': {'mcp:managed': 'true', 'mcp:ResourceType': 'GlueCatalog'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                return_value='123456789012',
+            ),
+        ):
+            # Mock the Glue client to raise an exception
+            error_response = {
+                'Error': {'Code': 'ValidationException', 'Message': 'Invalid catalog ID'}
+            }
+            mock_glue_client.delete_catalog.side_effect = ClientError(
+                error_response, 'DeleteCatalog'
+            )
+
+            # Call the method
+            result = await manager.delete_catalog(mock_ctx, catalog_id=catalog_id)
+
+            # Verify the response
+            assert isinstance(result, DeleteCatalogResponse)
+            assert result.isError is True
+            assert result.catalog_id == catalog_id
+            assert result.operation == 'delete-catalog'
+            assert len(result.content) == 1
+            assert 'Failed to delete catalog' in result.content[0].text
+            assert 'ValidationException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_update_partition_not_mcp_managed(self, manager, mock_ctx, mock_glue_client):
+        """Test that update_partition returns an error when the partition is not MCP managed."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        partition_values = ['2023', '01', '01']
+        partition_input = {
+            'StorageDescriptor': {
+                'Location': 's3://test-bucket/test-db/test-table/year=2023/month=01/day=01/'
+            }
+        }
+
+        # Mock the get_partition response to indicate the partition is not MCP managed
+        mock_glue_client.get_partition.return_value = {
+            'Partition': {
+                'Values': partition_values,
+                'DatabaseName': database_name,
+                'TableName': table_name,
+                'Parameters': {},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=False,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                return_value='123456789012',
+            ),
+        ):
+            # Call the method
+            result = await manager.update_partition(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                partition_values=partition_values,
+                partition_input=partition_input,
+            )
+
+            # Verify that the Glue client was not called to update the partition
+            mock_glue_client.update_partition.assert_not_called()
+
+            # Verify the response
+            assert isinstance(result, UpdatePartitionResponse)
+            assert result.isError is True
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.partition_values == partition_values
+            assert result.operation == 'update-partition'
+            assert len(result.content) == 1
+            assert 'not managed by the MCP server' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_update_partition_not_found(self, manager, mock_ctx, mock_glue_client):
+        """Test that update_partition returns an error when the partition is not found."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        partition_values = ['2023', '01', '01']
+        partition_input = {
+            'StorageDescriptor': {
+                'Location': 's3://test-bucket/test-db/test-table/year=2023/month=01/day=01/'
+            }
+        }
+
+        # Mock the get_partition to raise EntityNotFoundException
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Partition not found'}
+        }
+        mock_glue_client.get_partition.side_effect = ClientError(error_response, 'GetPartition')
+
+        # Call the method
+        result = await manager.update_partition(
+            mock_ctx,
+            database_name=database_name,
+            table_name=table_name,
+            partition_values=partition_values,
+            partition_input=partition_input,
+        )
+
+        # Verify that the Glue client was not called to update the partition
+        mock_glue_client.update_partition.assert_not_called()
+
+        # Verify the response
+        assert isinstance(result, UpdatePartitionResponse)
+        assert result.isError is True
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.partition_values == partition_values
+        assert result.operation == 'update-partition'
+        assert len(result.content) == 1
+        assert (
+            f'Partition in table {database_name}.{table_name} not found' in result.content[0].text
+        )
+
+    @pytest.mark.asyncio
+    async def test_update_partition_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that update_partition returns an error response when the Glue API call fails."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        partition_values = ['2023', '01', '01']
+        partition_input = {
+            'StorageDescriptor': {
+                'Location': 's3://test-bucket/test-db/test-table/year=2023/month=01/day=01/'
+            }
+        }
+        catalog_id = '123456789012'
+
+        # Mock the get_partition response to indicate the partition is MCP managed
+        mock_glue_client.get_partition.return_value = {
+            'Partition': {
+                'Values': partition_values,
+                'DatabaseName': database_name,
+                'TableName': table_name,
+                'Parameters': {'mcp:managed': 'true', 'mcp:ResourceType': 'GluePartition'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                return_value='123456789012',
+            ),
+        ):
+            # Mock the Glue client to raise an exception
+            error_response = {
+                'Error': {'Code': 'ValidationException', 'Message': 'Invalid partition input'}
+            }
+            mock_glue_client.update_partition.side_effect = ClientError(
+                error_response, 'UpdatePartition'
+            )
+
+            # Call the method
+            result = await manager.update_partition(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                partition_values=partition_values,
+                partition_input=partition_input,
+                catalog_id=catalog_id,
+            )
+
+            # Verify the response
+            assert isinstance(result, UpdatePartitionResponse)
+            assert result.isError is True
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.partition_values == partition_values
+            assert result.operation == 'update-partition'
+            assert len(result.content) == 1
+            assert 'Failed to update partition' in result.content[0].text
+            assert 'ValidationException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_delete_partition_not_mcp_managed(self, manager, mock_ctx, mock_glue_client):
+        """Test that delete_partition returns an error when the partition is not MCP managed."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        partition_values = ['2023', '01', '01']
+
+        # Mock the get_partition response to indicate the partition is not MCP managed
+        mock_glue_client.get_partition.return_value = {
+            'Partition': {
+                'Values': partition_values,
+                'DatabaseName': database_name,
+                'TableName': table_name,
+                'Parameters': {},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=False,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                return_value='123456789012',
+            ),
+        ):
+            # Call the method
+            result = await manager.delete_partition(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                partition_values=partition_values,
+            )
+
+            # Verify that the Glue client was not called to delete the partition
+            mock_glue_client.delete_partition.assert_not_called()
+
+            # Verify the response
+            assert isinstance(result, DeletePartitionResponse)
+            assert result.isError is True
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.partition_values == partition_values
+            assert result.operation == 'delete-partition'
+            assert len(result.content) == 1
+            assert 'not managed by the MCP server' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_delete_partition_not_found(self, manager, mock_ctx, mock_glue_client):
+        """Test that delete_partition returns an error when the partition is not found."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        partition_values = ['2023', '01', '01']
+
+        # Mock the get_partition to raise EntityNotFoundException
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Partition not found'}
+        }
+        mock_glue_client.get_partition.side_effect = ClientError(error_response, 'GetPartition')
+
+        # Call the method
+        result = await manager.delete_partition(
+            mock_ctx,
+            database_name=database_name,
+            table_name=table_name,
+            partition_values=partition_values,
+        )
+
+        # Verify that the Glue client was not called to delete the partition
+        mock_glue_client.delete_partition.assert_not_called()
+
+        # Verify the response
+        assert isinstance(result, DeletePartitionResponse)
+        assert result.isError is True
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.partition_values == partition_values
+        assert result.operation == 'delete-partition'
+        assert len(result.content) == 1
+        assert (
+            f'Partition in table {database_name}.{table_name} not found' in result.content[0].text
+        )
+
+    @pytest.mark.asyncio
+    async def test_delete_partition_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that delete_partition returns an error response when the Glue API call fails."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        partition_values = ['2023', '01', '01']
+        catalog_id = '123456789012'
+
+        # Mock the get_partition response to indicate the partition is MCP managed
+        mock_glue_client.get_partition.return_value = {
+            'Partition': {
+                'Values': partition_values,
+                'DatabaseName': database_name,
+                'TableName': table_name,
+                'Parameters': {'mcp:managed': 'true', 'mcp:ResourceType': 'GluePartition'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                return_value='123456789012',
+            ),
+        ):
+            # Mock the Glue client to raise an exception
+            error_response = {
+                'Error': {'Code': 'ValidationException', 'Message': 'Invalid partition values'}
+            }
+            mock_glue_client.delete_partition.side_effect = ClientError(
+                error_response, 'DeletePartition'
+            )
+
+            # Call the method
+            result = await manager.delete_partition(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                partition_values=partition_values,
+                catalog_id=catalog_id,
+            )
+
+            # Verify the response
+            assert isinstance(result, DeletePartitionResponse)
+            assert result.isError is True
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.partition_values == partition_values
+            assert result.operation == 'delete-partition'
+            assert len(result.content) == 1
+            assert 'Failed to delete partition' in result.content[0].text
+            assert 'ValidationException' in result.content[0].text
