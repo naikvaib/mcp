@@ -24,6 +24,9 @@ Environment Variables:
 """
 
 import argparse
+from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler import (
+    EMREc2InstanceHandler,
+)
 from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
@@ -38,7 +41,7 @@ from mcp.server.fastmcp import FastMCP
 SERVER_INSTRUCTIONS = """
 # AWS Data Processing MCP Server
 
-This MCP server provides tools for managing AWS data processing services including Glue Data Catalog.
+This MCP server provides tools for managing AWS data processing services including Glue Data Catalog and EMR EC2 instances.
 It enables you to create, manage, and monitor data processing workflows.
 
 ## Usage Notes
@@ -84,6 +87,15 @@ It enables you to create, manage, and monitor data processing workflows.
 1. Create a security configuration: `manage_aws_glue_security(operation='create-security-configuration', config_name='my-config, encryption_configuration={...})`
 2. Delete a security configuration: `manage_aws_glue_security(operation='delete-security-configuration', config_name='my-config)`
 3. Get a security configuration: `manage_aws_glue_security(operation='get-security-configuration', config_name='my-config)`
+
+### EMR EC2 Instance Management
+1. Add instance fleet: `manage_aws_emr_ec2_instances(operation='add-instance-fleet', cluster_id='j-123ABC456DEF', instance_fleet={'InstanceFleetType': 'TASK', 'TargetOnDemandCapacity': 2})`
+2. Add instance groups: `manage_aws_emr_ec2_instances(operation='add-instance-groups', cluster_id='j-123ABC456DEF', instance_groups=[{'InstanceRole': 'TASK', 'InstanceType': 'm5.xlarge', 'InstanceCount': 2}])`
+3. List instance fleets: `manage_aws_emr_ec2_instances(operation='list-instance-fleets', cluster_id='j-123ABC456DEF')`
+4. List instances: `manage_aws_emr_ec2_instances(operation='list-instances', cluster_id='j-123ABC456DEF')`
+5. List supported instance types: `manage_aws_emr_ec2_instances(operation='list-supported-instance-types', release_label='emr-6.10.0')`
+6. Modify instance fleet: `manage_aws_emr_ec2_instances(operation='modify-instance-fleet', cluster_id='j-123ABC456DEF', instance_fleet_id='if-123ABC', instance_fleet_config={'TargetOnDemandCapacity': 4})`
+7. Modify instance groups: `manage_aws_emr_ec2_instances(operation='modify-instance-groups', instance_group_configs=[{'InstanceGroupId': 'ig-123ABC', 'InstanceCount': 3}])`
 
 """
 
@@ -154,6 +166,11 @@ def main():
         allow_sensitive_data_access=allow_sensitive_data_access,
     )
     GlueCommonsHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    EMREc2InstanceHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
