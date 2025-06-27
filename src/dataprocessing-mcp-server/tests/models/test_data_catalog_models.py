@@ -1,13 +1,16 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
-# with the License. A copy of the License is located at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES
-# OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
-# and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Tests for the Data Catalog models."""
 
@@ -93,7 +96,10 @@ class TestDatabaseSummary:
     def test_missing_required_fields(self):
         """Test that creating a DatabaseSummary without required fields raises an error."""
         with pytest.raises(ValidationError):
-            DatabaseSummary()
+            # Missing name parameter
+            DatabaseSummary(
+                description='Test', location_uri='s3://test', creation_time='2023-01-01'
+            )
 
 
 class TestTableSummary:
@@ -202,13 +208,30 @@ class TestConnectionSummary:
     def test_missing_required_fields(self):
         """Test that creating a ConnectionSummary without required fields raises an error."""
         with pytest.raises(ValidationError):
-            ConnectionSummary(name='test-conn')
+            # Missing connection_type parameter
+            ConnectionSummary(
+                name='test-conn',
+                physical_connection_requirements={},
+                creation_time='2023-01-01',
+                last_updated_time='2023-01-02',
+            )
 
         with pytest.raises(ValidationError):
-            ConnectionSummary(connection_type='JDBC')
+            # Missing name parameter
+            ConnectionSummary(
+                connection_type='JDBC',
+                physical_connection_requirements={},
+                creation_time='2023-01-01',
+                last_updated_time='2023-01-02',
+            )
 
         with pytest.raises(ValidationError):
-            ConnectionSummary()
+            # Missing both required parameters
+            ConnectionSummary(
+                physical_connection_requirements={},
+                creation_time='2023-01-01',
+                last_updated_time='2023-01-02',
+            )
 
 
 class TestPartitionSummary:
@@ -254,16 +277,35 @@ class TestPartitionSummary:
     def test_missing_required_fields(self):
         """Test that creating a PartitionSummary without required fields raises an error."""
         with pytest.raises(ValidationError):
-            PartitionSummary(values=['2023', '01', '01'], database_name='test-db')
+            # Missing table_name parameter
+            PartitionSummary(
+                values=['2023', '01', '01'],
+                database_name='test-db',
+                creation_time='2023-01-01',
+                last_access_time='2023-01-02',
+            )
 
         with pytest.raises(ValidationError):
-            PartitionSummary(values=['2023', '01', '01'], table_name='test-table')
+            # Missing database_name parameter
+            PartitionSummary(
+                values=['2023', '01', '01'],
+                table_name='test-table',
+                creation_time='2023-01-01',
+                last_access_time='2023-01-02',
+            )
 
         with pytest.raises(ValidationError):
-            PartitionSummary(database_name='test-db', table_name='test-table')
+            # Missing values parameter
+            PartitionSummary(
+                database_name='test-db',
+                table_name='test-table',
+                creation_time='2023-01-01',
+                last_access_time='2023-01-02',
+            )
 
         with pytest.raises(ValidationError):
-            PartitionSummary()
+            # Missing all required parameters
+            PartitionSummary(creation_time='2023-01-01', last_access_time='2023-01-02')
 
 
 class TestCatalogSummary:
@@ -296,7 +338,10 @@ class TestCatalogSummary:
     def test_missing_required_fields(self):
         """Test that creating a CatalogSummary without required fields raises an error."""
         with pytest.raises(ValidationError):
-            CatalogSummary()
+            # Missing catalog_id parameter
+            CatalogSummary(
+                name='Test Catalog', description='Test description', creation_time='2023-01-01'
+            )
 
 
 class TestDatabaseResponseModels:
