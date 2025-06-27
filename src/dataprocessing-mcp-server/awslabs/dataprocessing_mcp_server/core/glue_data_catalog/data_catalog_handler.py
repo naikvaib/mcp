@@ -99,7 +99,7 @@ class DataCatalogManager:
             if 'Parameters' not in connection_input:
                 connection_input['Parameters'] = {}
             for key, value in resource_tags.items():
-                connection_input['Parameters'][key] = str(value)
+                connection_input['Parameters'][key] = value
 
             kwargs = {'ConnectionInput': connection_input}
             if catalog_id:
@@ -1091,7 +1091,7 @@ class DataCatalogManager:
             if 'Parameters' not in catalog_input:
                 catalog_input['Parameters'] = {}
             for key, value in resource_tags.items():
-                catalog_input['Parameters'][key] = str(value)
+                catalog_input['Parameters'][key] = value
 
             kwargs = {
                 'Name': catalog_name,
