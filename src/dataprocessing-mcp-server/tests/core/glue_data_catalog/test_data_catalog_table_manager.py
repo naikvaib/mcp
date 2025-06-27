@@ -1,13 +1,16 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
-# with the License. A copy of the License is located at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES
-# OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
-# and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Tests for the DataCatalogTableManager class."""
 
@@ -615,3 +618,270 @@ class TestDataCatalogTableManager:
         assert result.tables[1].storage_descriptor['Columns'][0]['Name'] == 'id'
         assert result.tables[1].storage_descriptor['Columns'][1]['Name'] == 'value'
         assert result.tables[1].partition_keys[0]['Name'] == 'date'
+
+    @pytest.mark.asyncio
+    async def test_get_table_not_found(self, manager, mock_ctx, mock_glue_client):
+        """Test that get_table returns an error when the table is not found."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'nonexistent-table'
+        catalog_id = '123456789012'
+
+        # Mock the get_table to raise EntityNotFoundException
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Table not found'}
+        }
+        mock_glue_client.get_table.side_effect = ClientError(error_response, 'GetTable')
+
+        # Call the method
+        result = await manager.get_table(
+            mock_ctx, database_name=database_name, table_name=table_name, catalog_id=catalog_id
+        )
+
+        # Verify the response
+        assert isinstance(result, GetTableResponse)
+        assert result.isError is True
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.operation == 'get-table'
+        assert len(result.content) == 1
+        assert 'Failed to get table' in result.content[0].text
+        assert 'EntityNotFoundException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_update_table_not_found(self, manager, mock_ctx, mock_glue_client):
+        """Test that update_table returns an error when the table is not found."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'nonexistent-table'
+        table_input = {
+            'StorageDescriptor': {
+                'Columns': [{'Name': 'id', 'Type': 'int'}, {'Name': 'name', 'Type': 'string'}]
+            }
+        }
+        catalog_id = '123456789012'
+
+        # Mock the get_table to raise EntityNotFoundException
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Table not found'}
+        }
+        mock_glue_client.get_table.side_effect = ClientError(error_response, 'GetTable')
+
+        # Call the method
+        result = await manager.update_table(
+            mock_ctx,
+            database_name=database_name,
+            table_name=table_name,
+            table_input=table_input,
+            catalog_id=catalog_id,
+        )
+
+        # Verify that the Glue client was not called to update the table
+        mock_glue_client.update_table.assert_not_called()
+
+        # Verify the response
+        assert isinstance(result, UpdateTableResponse)
+        assert result.isError is True
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.operation == 'update-table'
+        assert len(result.content) == 1
+        assert f'Table {database_name}.{table_name} not found' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_update_table_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that update_table returns an error response when the Glue API call fails."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        table_input = {
+            'StorageDescriptor': {
+                'Columns': [{'Name': 'id', 'Type': 'int'}, {'Name': 'name', 'Type': 'string'}]
+            }
+        }
+        catalog_id = '123456789012'
+
+        # Mock the get_table response to indicate the table is MCP managed
+        mock_glue_client.get_table.return_value = {
+            'Table': {
+                'Name': table_name,
+                'DatabaseName': database_name,
+                'Parameters': {'mcp:managed': 'true'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+        ):
+            # Mock the Glue client to raise an exception
+            error_response = {
+                'Error': {'Code': 'ValidationException', 'Message': 'Invalid table input'}
+            }
+            mock_glue_client.update_table.side_effect = ClientError(error_response, 'UpdateTable')
+
+            # Call the method
+            result = await manager.update_table(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                table_input=table_input,
+                catalog_id=catalog_id,
+            )
+
+            # Verify the response
+            assert isinstance(result, UpdateTableResponse)
+            assert result.isError is True
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.operation == 'update-table'
+            assert len(result.content) == 1
+            assert 'Failed to update table' in result.content[0].text
+            assert 'ValidationException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_list_tables_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that list_tables returns an error response when the Glue API call fails."""
+        # Setup
+        database_name = 'test-db'
+        max_results = 10
+        catalog_id = '123456789012'
+
+        # Mock the Glue client to raise an exception
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Database not found'}
+        }
+        mock_glue_client.get_tables.side_effect = ClientError(error_response, 'GetTables')
+
+        # Call the method
+        result = await manager.list_tables(
+            mock_ctx, database_name=database_name, max_results=max_results, catalog_id=catalog_id
+        )
+
+        # Verify the response
+        assert isinstance(result, ListTablesResponse)
+        assert result.isError is True
+        assert result.database_name == database_name
+        assert result.tables == []
+        assert result.count == 0
+        assert result.operation == 'list-tables'
+        assert len(result.content) == 1
+        assert 'Failed to list tables' in result.content[0].text
+        assert 'EntityNotFoundException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_search_tables_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that search_tables returns an error response when the Glue API call fails."""
+        # Setup
+        search_text = 'test'
+        max_results = 10
+        catalog_id = '123456789012'
+
+        # Mock the Glue client to raise an exception
+        error_response = {
+            'Error': {'Code': 'ValidationException', 'Message': 'Invalid search text'}
+        }
+        mock_glue_client.search_tables.side_effect = ClientError(error_response, 'SearchTables')
+
+        # Call the method
+        result = await manager.search_tables(
+            mock_ctx, search_text=search_text, max_results=max_results, catalog_id=catalog_id
+        )
+
+        # Verify the response
+        assert isinstance(result, SearchTablesResponse)
+        assert result.isError is True
+        assert result.search_text == search_text
+        assert result.tables == []
+        assert result.count == 0
+        assert result.operation == 'search-tables'
+        assert len(result.content) == 1
+        assert 'Failed to search tables' in result.content[0].text
+        assert 'ValidationException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_delete_table_not_found(self, manager, mock_ctx, mock_glue_client):
+        """Test that delete_table returns an error when the table is not found."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'nonexistent-table'
+        catalog_id = '123456789012'
+
+        # Mock the get_table to raise EntityNotFoundException
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Table not found'}
+        }
+        mock_glue_client.get_table.side_effect = ClientError(error_response, 'GetTable')
+
+        # Call the method
+        result = await manager.delete_table(
+            mock_ctx, database_name=database_name, table_name=table_name, catalog_id=catalog_id
+        )
+
+        # Verify that the Glue client was not called to delete the table
+        mock_glue_client.delete_table.assert_not_called()
+
+        # Verify the response
+        assert isinstance(result, DeleteTableResponse)
+        assert result.isError is True
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.operation == 'delete-table'
+        assert len(result.content) == 1
+        assert f'Table {database_name}.{table_name} not found' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_delete_table_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that delete_table returns an error response when the Glue API call fails."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        catalog_id = '123456789012'
+
+        # Mock the get_table response to indicate the table is MCP managed
+        mock_glue_client.get_table.return_value = {
+            'Table': {
+                'Name': table_name,
+                'DatabaseName': database_name,
+                'Parameters': {'mcp:managed': 'true'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+        ):
+            # Mock the Glue client to raise an exception
+            error_response = {
+                'Error': {'Code': 'InternalServiceException', 'Message': 'Internal service error'}
+            }
+            mock_glue_client.delete_table.side_effect = ClientError(error_response, 'DeleteTable')
+
+            # Call the method
+            result = await manager.delete_table(
+                mock_ctx, database_name=database_name, table_name=table_name, catalog_id=catalog_id
+            )
+
+            # Verify the response
+            assert isinstance(result, DeleteTableResponse)
+            assert result.isError is True
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.operation == 'delete-table'
+            assert len(result.content) == 1
+            assert 'Failed to delete table' in result.content[0].text
+            assert 'InternalServiceException' in result.content[0].text
