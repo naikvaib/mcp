@@ -30,6 +30,12 @@ from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import
 from awslabs.dataprocessing_mcp_server.handlers.glue.glue_commons_handler import (
     GlueCommonsHandler,
 )
+from awslabs.dataprocessing_mcp_server.handlers.glue.glue_interactive_sessions_handler import (
+    GlueInteractiveSessionsHandler,
+)
+from awslabs.dataprocessing_mcp_server.handlers.glue.glue_worklows_handler import (
+    GlueWorkflowAndTriggerHandler,
+)
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
 
@@ -84,6 +90,12 @@ It enables you to create, manage, and monitor data processing workflows.
 1. Create a security configuration: `manage_aws_glue_security(operation='create-security-configuration', config_name='my-config, encryption_configuration={...})`
 2. Delete a security configuration: `manage_aws_glue_security(operation='delete-security-configuration', config_name='my-config)`
 3. Get a security configuration: `manage_aws_glue_security(operation='get-security-configuration', config_name='my-config)`
+
+### Glue Interactive Sessions
+1. Create a session: `manage_aws_glue_sessions(operation='create-session', session_definition={...})`
+2. Run a statement: `manage_aws_glue_statements(operation='run-statement', session_id='session-id', code='print("Hello, world!")')`
+3. Get statement results: `manage_aws_glue_statements(operation='get-statement', session_id='session-id', statement_id='statement-id')`
+4. Stop a session: `manage_aws_glue_sessions(operation='stop-session', session_id='session-id')`
 
 """
 
@@ -154,6 +166,16 @@ def main():
         allow_sensitive_data_access=allow_sensitive_data_access,
     )
     GlueCommonsHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    GlueInteractiveSessionsHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    GlueWorkflowAndTriggerHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
