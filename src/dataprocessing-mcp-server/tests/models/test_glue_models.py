@@ -55,7 +55,7 @@ class TestWorkflowResponses:
         )
         assert response.isError is False
         assert response.workflow_name == "test-workflow"
-        assert response.operation == "create"
+        assert response.operation == "create-workflow"
 
     def test_get_workflow_response(self):
         response = GetWorkflowResponse(
@@ -67,7 +67,7 @@ class TestWorkflowResponses:
         assert response.isError is False
         assert response.workflow_name == "test-workflow"
         assert response.workflow_details == sample_dict
-        assert response.operation == "get"
+        assert response.operation == "get-workflow"
 
 
 class TestTriggerResponses:
@@ -79,7 +79,7 @@ class TestTriggerResponses:
         )
         assert response.isError is False
         assert response.trigger_name == "test-trigger"
-        assert response.operation == "create"
+        assert response.operation == "create-trigger"
 
     def test_get_triggers_response(self):
         response = GetTriggersResponse(
@@ -91,7 +91,7 @@ class TestTriggerResponses:
         assert response.isError is False
         assert response.triggers == sample_list
         assert response.next_token == "next-page"
-        assert response.operation == "list"
+        assert response.operation == "get-triggers"
 
 
 class TestSessionResponses:
@@ -105,7 +105,7 @@ class TestSessionResponses:
         assert response.isError is False
         assert response.session_id == "session-123"
         assert response.session == sample_dict
-        assert response.operation == "create"
+        assert response.operation == "create-session"
 
     def test_list_sessions_response(self):
         response = ListSessionsResponse(
@@ -121,7 +121,7 @@ class TestSessionResponses:
         assert response.count == 2
         assert response.ids == ["session-1", "session-2"]
         assert response.next_token == "next-page"
-        assert response.operation == "list"
+        assert response.operation == "list-sessions"
 
 
 class TestSecurityResponses:
@@ -219,7 +219,7 @@ def test_error_responses():
 def test_optional_fields():
     """Test responses with optional fields"""
     # Test response with optional next_token
-    list_response = GetWorkflowsResponse(
+    list_response = ListWorkflowsResponse(
         isError=False,
         content=sample_text_content,
         workflows=sample_list,
