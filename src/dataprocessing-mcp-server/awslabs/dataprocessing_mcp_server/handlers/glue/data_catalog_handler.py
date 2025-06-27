@@ -513,7 +513,7 @@ class GlueDataCatalogHandler:
                 isError=True,
                 content=[TextContent(type='text', text=error_message)],
                 database_name=database_name,
-                table_name=table_name or '',
+                table_name='',  # Always use empty string for table_name in error responses
                 table_definition={},
                 creation_time='',
                 last_access_time='',
@@ -603,7 +603,7 @@ class GlueDataCatalogHandler:
                         isError=True,
                         content=[TextContent(type='text', text=error_message)],
                         connection_name='',
-                        operation='delete-connectionte',
+                        operation='delete-connection',
                         catalog_id='',
                     )
                 elif operation == 'update-connection' or operation == 'update':
@@ -704,7 +704,7 @@ class GlueDataCatalogHandler:
             return GetConnectionResponse(
                 isError=True,
                 content=[TextContent(type='text', text=error_message)],
-                connection_name=connection_name or '',
+                connection_name='',  # Always use empty string for connection_name in error responses
                 connection_type='',
                 connection_properties={},
                 physical_connection_requirements=None,
@@ -714,7 +714,7 @@ class GlueDataCatalogHandler:
                 status='',
                 status_reason='',
                 last_connection_validation_time='',
-                catalog_id=catalog_id or '',
+                catalog_id='',  # Always use empty string for catalog_id in error responses
                 operation='get',
             )
 
@@ -800,7 +800,8 @@ class GlueDataCatalogHandler:
         try:
             if not self.allow_write and operation not in [
                 'get-partition',
-                'getlist-partitions',
+                'get',
+                'list-partitions',
                 'list',
             ]:
                 error_message = f'Operation {operation} is not allowed without write access'
@@ -871,7 +872,7 @@ class GlueDataCatalogHandler:
                     catalog_id=catalog_id,
                 )
 
-            elif operation == 'get-partition' or 'get':
+            elif operation == 'get-partition' or operation == 'get':
                 if partition_values is None:
                     raise ValueError('partition_values is required for get-partition operation')
                 return await self.data_catalog_manager.get_partition(
@@ -932,7 +933,7 @@ class GlueDataCatalogHandler:
                 content=[TextContent(type='text', text=error_message)],
                 database_name=database_name,
                 table_name=table_name,
-                partition_values=partition_values or [],
+                partition_values=[],  # Always use empty list for partition_values in error responses
                 partition_definition={},
                 creation_time='',
                 last_access_time='',

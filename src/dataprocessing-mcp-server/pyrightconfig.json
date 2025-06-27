@@ -5,8 +5,8 @@
   "include": [
     "awslabs"
   ],
-  "reportArgumentType": false,
-  "reportAttributeAccessIssue": false,
+  "reportArgumentType": true,
+  "reportAttributeAccessIssue": true,
   "reportCallIssue": false,
   "reportOptionalSubscript": false
 }
