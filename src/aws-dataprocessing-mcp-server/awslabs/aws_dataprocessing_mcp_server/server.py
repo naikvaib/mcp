@@ -36,11 +36,11 @@ from awslabs.aws_dataprocessing_mcp_server.handlers.athena.athena_workgroup_hand
 from awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
-from awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_etl_handler import (
-    GlueEtlJobsHandler,
-)
 from awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler import (
     GlueCommonsHandler,
+)
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_etl_handler import (
+    GlueEtlJobsHandler,
 )
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
