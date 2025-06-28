@@ -1450,3 +1450,621 @@ class TestDataCatalogManager:
             assert len(result.content) == 1
             assert 'Failed to delete partition' in result.content[0].text
             assert 'ValidationException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_get_connection_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that get_connection returns an error response when the Glue API call fails."""
+        # Setup
+        connection_name = 'test-connection'
+        catalog_id = '123456789012'
+
+        # Mock the Glue client to raise an exception
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Connection not found'}
+        }
+        mock_glue_client.get_connection.side_effect = ClientError(error_response, 'GetConnection')
+
+        # Call the method
+        result = await manager.get_connection(
+            mock_ctx, connection_name=connection_name, catalog_id=catalog_id
+        )
+
+        # Verify the response
+        assert isinstance(result, GetConnectionResponse)
+        assert result.isError is True
+        assert result.connection_name == connection_name
+        assert result.catalog_id == catalog_id
+        assert result.operation == 'get-connection'
+        assert len(result.content) == 1
+        assert 'Failed to get connection' in result.content[0].text
+        assert 'EntityNotFoundException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_get_connection_with_all_parameters(self, manager, mock_ctx, mock_glue_client):
+        """Test that get_connection handles all optional parameters correctly."""
+        # Setup
+        connection_name = 'test-connection'
+        catalog_id = '123456789012'
+        hide_password = True
+        apply_override_for_compute_environment = 'test-env'
+
+        # Mock the get_connection response
+        mock_glue_client.get_connection.return_value = {
+            'Connection': {
+                'Name': connection_name,
+                'ConnectionType': 'JDBC',
+                'ConnectionProperties': {
+                    'JDBC_CONNECTION_URL': 'jdbc:mysql://localhost:3306/test'
+                },
+            }
+        }
+
+        # Call the method
+        result = await manager.get_connection(
+            mock_ctx,
+            connection_name=connection_name,
+            catalog_id=catalog_id,
+            hide_password=hide_password,
+            apply_override_for_compute_environment=apply_override_for_compute_environment,
+        )
+
+        # Verify that the Glue client was called with the correct parameters
+        mock_glue_client.get_connection.assert_called_once_with(
+            Name=connection_name,
+            CatalogId=catalog_id,
+            HidePassword='true',  # pragma: allowlist secret
+            ApplyOverrideForComputeEnvironment=apply_override_for_compute_environment,
+        )
+
+        # Verify the response
+        assert isinstance(result, GetConnectionResponse)
+        assert result.isError is False
+        assert result.connection_name == connection_name
+        assert result.catalog_id == catalog_id
+        assert result.operation == 'get-connection'
+
+    @pytest.mark.asyncio
+    async def test_list_connections_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that list_connections returns an error response when the Glue API call fails."""
+        # Setup
+        catalog_id = '123456789012'
+
+        # Mock the Glue client to raise an exception
+        error_response = {
+            'Error': {'Code': 'InternalServiceException', 'Message': 'Internal service error'}
+        }
+        mock_glue_client.get_connections.side_effect = ClientError(
+            error_response, 'GetConnections'
+        )
+
+        # Call the method
+        result = await manager.list_connections(mock_ctx, catalog_id=catalog_id)
+
+        # Verify the response
+        assert isinstance(result, ListConnectionsResponse)
+        assert result.isError is True
+        assert result.catalog_id == catalog_id
+        assert result.operation == 'list-connections'
+        assert len(result.content) == 1
+        assert 'Failed to list connections' in result.content[0].text
+        assert 'InternalServiceException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_list_connections_empty_result(self, manager, mock_ctx, mock_glue_client):
+        """Test that list_connections handles empty results correctly."""
+        # Setup
+        catalog_id = '123456789012'
+
+        # Mock the get_connections response with empty list
+        mock_glue_client.get_connections.return_value = {'ConnectionList': []}
+
+        # Call the method
+        result = await manager.list_connections(mock_ctx, catalog_id=catalog_id)
+
+        # Verify the response
+        assert isinstance(result, ListConnectionsResponse)
+        assert result.isError is False
+        assert result.catalog_id == catalog_id
+        assert result.connections == []
+        assert result.count == 0
+        assert result.operation == 'list-connections'
+        assert len(result.content) == 1
+        assert 'Successfully listed 0 connections' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_create_partition_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that create_partition returns an error response when the Glue API call fails."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        partition_values = ['2023', '01', '01']
+        partition_input = {
+            'StorageDescriptor': {
+                'Location': 's3://test-bucket/test-db/test-table/year=2023/month=01/day=01/'
+            }
+        }
+
+        # Mock the AWS helper prepare_resource_tags method
+        with patch(
+            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            return_value={'mcp:managed': 'true'},
+        ):
+            # Mock the Glue client to raise an exception
+            error_response = {
+                'Error': {'Code': 'AlreadyExistsException', 'Message': 'Partition already exists'}
+            }
+            mock_glue_client.create_partition.side_effect = ClientError(
+                error_response, 'CreatePartition'
+            )
+
+            # Call the method
+            result = await manager.create_partition(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                partition_values=partition_values,
+                partition_input=partition_input,
+            )
+
+            # Verify the response
+            assert isinstance(result, CreatePartitionResponse)
+            assert result.isError is True
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.partition_values == partition_values
+            assert result.operation == 'create-partition'
+            assert len(result.content) == 1
+            assert 'Failed to create partition' in result.content[0].text
+            assert 'AlreadyExistsException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_get_partition_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that get_partition returns an error response when the Glue API call fails."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        partition_values = ['2023', '01', '01']
+        catalog_id = '123456789012'
+
+        # Mock the Glue client to raise an exception
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Partition not found'}
+        }
+        mock_glue_client.get_partition.side_effect = ClientError(error_response, 'GetPartition')
+
+        # Call the method
+        result = await manager.get_partition(
+            mock_ctx,
+            database_name=database_name,
+            table_name=table_name,
+            partition_values=partition_values,
+            catalog_id=catalog_id,
+        )
+
+        # Verify the response
+        assert isinstance(result, GetPartitionResponse)
+        assert result.isError is True
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.partition_values == partition_values
+        assert result.operation == 'get-partitionet'  # Note: There's a typo in the original code
+        assert len(result.content) == 1
+        assert 'Failed to get partition' in result.content[0].text
+        assert 'EntityNotFoundException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_list_partitions_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that list_partitions returns an error response when the Glue API call fails."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+
+        # Mock the Glue client to raise an exception
+        error_response = {
+            'Error': {'Code': 'InternalServiceException', 'Message': 'Internal service error'}
+        }
+        mock_glue_client.get_partitions.side_effect = ClientError(error_response, 'GetPartitions')
+
+        # Call the method
+        result = await manager.list_partitions(
+            mock_ctx, database_name=database_name, table_name=table_name
+        )
+
+        # Verify the response
+        assert isinstance(result, ListPartitionsResponse)
+        assert result.isError is True
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.operation == 'list-partitions'
+        assert len(result.content) == 1
+        assert 'Failed to list partitions' in result.content[0].text
+        assert 'InternalServiceException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_list_partitions_empty_result(self, manager, mock_ctx, mock_glue_client):
+        """Test that list_partitions handles empty results correctly."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+
+        # Mock the get_partitions response with empty list
+        mock_glue_client.get_partitions.return_value = {'Partitions': []}
+
+        # Call the method
+        result = await manager.list_partitions(
+            mock_ctx, database_name=database_name, table_name=table_name
+        )
+
+        # Verify the response
+        assert isinstance(result, ListPartitionsResponse)
+        assert result.isError is False
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.partitions == []
+        assert result.count == 0
+        assert result.operation == 'list-partitions'
+        assert len(result.content) == 1
+        assert (
+            f'Successfully listed 0 partitions in table {database_name}.{table_name}'
+            in result.content[0].text
+        )
+
+    @pytest.mark.asyncio
+    async def test_list_partitions_with_all_parameters(self, manager, mock_ctx, mock_glue_client):
+        """Test that list_partitions handles all optional parameters correctly."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        max_results = 10
+        expression = "year='2023'"
+        catalog_id = '123456789012'
+        segment = {'SegmentNumber': 0, 'TotalSegments': 1}
+        exclude_column_schema = True
+        transaction_id = 'test-transaction-id'
+        query_as_of_time = '2023-01-01T00:00:00Z'
+
+        # Mock the get_partitions response
+        mock_glue_client.get_partitions.return_value = {'Partitions': []}
+
+        # Call the method
+        result = await manager.list_partitions(
+            mock_ctx,
+            database_name=database_name,
+            table_name=table_name,
+            max_results=max_results,
+            expression=expression,
+            catalog_id=catalog_id,
+            segment=segment,
+            exclude_column_schema=exclude_column_schema,
+            transaction_id=transaction_id,
+            query_as_of_time=query_as_of_time,
+        )
+
+        # Verify that the Glue client was called with the correct parameters
+        mock_glue_client.get_partitions.assert_called_once_with(
+            DatabaseName=database_name,
+            TableName=table_name,
+            MaxResults=str(max_results),
+            Expression=expression,
+            CatalogId=catalog_id,
+            Segment=segment,
+            ExcludeColumnSchema='true',
+            TransactionId=transaction_id,
+            QueryAsOfTime=query_as_of_time,
+        )
+
+        # Verify the response
+        assert isinstance(result, ListPartitionsResponse)
+        assert result.isError is False
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.operation == 'list-partitions'
+
+    @pytest.mark.asyncio
+    async def test_create_catalog_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that create_catalog returns an error response when the Glue API call fails."""
+        # Setup
+        catalog_name = 'test-catalog'
+        catalog_input = {'Description': 'Test catalog', 'Type': 'GLUE'}
+
+        # Mock the AWS helper prepare_resource_tags method
+        with patch(
+            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            return_value={'mcp:managed': 'true'},
+        ):
+            # Mock the Glue client to raise an exception
+            error_response = {
+                'Error': {'Code': 'AlreadyExistsException', 'Message': 'Catalog already exists'}
+            }
+            mock_glue_client.create_catalog.side_effect = ClientError(
+                error_response, 'CreateCatalog'
+            )
+
+            # Call the method
+            result = await manager.create_catalog(
+                mock_ctx, catalog_name=catalog_name, catalog_input=catalog_input
+            )
+
+            # Verify the response
+            assert isinstance(result, CreateCatalogResponse)
+            assert result.isError is True
+            assert result.catalog_id == catalog_name
+            assert result.operation == 'create-catalog'
+            assert len(result.content) == 1
+            assert 'Failed to create catalog' in result.content[0].text
+            assert 'AlreadyExistsException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_get_catalog_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that get_catalog returns an error response when the Glue API call fails."""
+        # Setup
+        catalog_id = 'test-catalog'
+
+        # Mock the Glue client to raise an exception
+        error_response = {
+            'Error': {'Code': 'EntityNotFoundException', 'Message': 'Catalog not found'}
+        }
+        mock_glue_client.get_catalog.side_effect = ClientError(error_response, 'GetCatalog')
+
+        # Call the method
+        result = await manager.get_catalog(mock_ctx, catalog_id=catalog_id)
+
+        # Verify the response
+        assert isinstance(result, GetCatalogResponse)
+        assert result.isError is True
+        assert result.catalog_id == catalog_id
+        assert result.operation == 'get-catalog'
+        assert len(result.content) == 1
+        assert 'Failed to get catalog' in result.content[0].text
+        assert 'EntityNotFoundException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_create_connection_with_empty_parameters(
+        self, manager, mock_ctx, mock_glue_client
+    ):
+        """Test that create_connection handles empty parameters correctly."""
+        # Setup
+        connection_name = 'test-connection'
+        connection_input = {
+            'ConnectionType': 'JDBC',
+            'ConnectionProperties': {
+                'JDBC_CONNECTION_URL': 'jdbc:mysql://localhost:3306/test',
+            },
+        }
+
+        # Mock the AWS helper prepare_resource_tags method
+        with patch(
+            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            return_value={'mcp:managed': 'true'},
+        ):
+            # Call the method
+            result = await manager.create_connection(
+                mock_ctx, connection_name=connection_name, connection_input=connection_input
+            )
+
+            # Verify that the Glue client was called with the correct parameters
+            mock_glue_client.create_connection.assert_called_once()
+            call_args = mock_glue_client.create_connection.call_args[1]
+
+            assert call_args['ConnectionInput']['Name'] == connection_name
+            assert call_args['ConnectionInput']['ConnectionType'] == 'JDBC'
+            assert (
+                call_args['ConnectionInput']['ConnectionProperties']['JDBC_CONNECTION_URL']
+                == 'jdbc:mysql://localhost:3306/test'
+            )
+
+            # Verify that the MCP tags were added to Parameters
+            assert call_args['ConnectionInput']['Parameters']['mcp:managed'] == 'true'
+
+            # Verify the response
+            assert isinstance(result, CreateConnectionResponse)
+            assert result.isError is False
+            assert result.connection_name == connection_name
+            assert result.operation == 'create-connection'
+
+    @pytest.mark.asyncio
+    async def test_update_connection_with_empty_parameters(
+        self, manager, mock_ctx, mock_glue_client
+    ):
+        """Test that update_connection handles empty parameters correctly."""
+        # Setup
+        connection_name = 'test-connection'
+        connection_input = {
+            'ConnectionType': 'JDBC',
+            'ConnectionProperties': {
+                'JDBC_CONNECTION_URL': 'jdbc:mysql://localhost:3306/test-updated',
+            },
+        }
+
+        # Mock the get_connection response to indicate the connection is MCP managed
+        mock_glue_client.get_connection.return_value = {
+            'Connection': {
+                'Name': connection_name,
+                'Parameters': {'mcp:managed': 'true', 'mcp:ResourceType': 'GlueConnection'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                return_value='123456789012',
+            ),
+        ):
+            # Call the method
+            result = await manager.update_connection(
+                mock_ctx, connection_name=connection_name, connection_input=connection_input
+            )
+
+            # Verify that the Glue client was called with the correct parameters
+            mock_glue_client.update_connection.assert_called_once()
+            call_args = mock_glue_client.update_connection.call_args[1]
+
+            assert call_args['Name'] == connection_name
+            assert call_args['ConnectionInput']['Name'] == connection_name
+            assert call_args['ConnectionInput']['ConnectionType'] == 'JDBC'
+            assert (
+                call_args['ConnectionInput']['ConnectionProperties']['JDBC_CONNECTION_URL']
+                == 'jdbc:mysql://localhost:3306/test-updated'
+            )
+
+            # Verify that the MCP tags were preserved
+            assert call_args['ConnectionInput']['Parameters']['mcp:managed'] == 'true'
+            assert (
+                call_args['ConnectionInput']['Parameters']['mcp:ResourceType'] == 'GlueConnection'
+            )
+
+            # Verify the response
+            assert isinstance(result, UpdateConnectionResponse)
+            assert result.isError is False
+            assert result.connection_name == connection_name
+            assert result.operation == 'update-connection'
+
+    @pytest.mark.asyncio
+    async def test_update_connection_with_new_parameters(
+        self, manager, mock_ctx, mock_glue_client
+    ):
+        """Test that update_connection handles new parameters correctly."""
+        # Setup
+        connection_name = 'test-connection'
+        connection_input = {
+            'ConnectionType': 'JDBC',
+            'ConnectionProperties': {
+                'JDBC_CONNECTION_URL': 'jdbc:mysql://localhost:3306/test-updated',
+            },
+            'Parameters': {'new-param': 'new-value'},
+        }
+
+        # Mock the get_connection response to indicate the connection is MCP managed
+        mock_glue_client.get_connection.return_value = {
+            'Connection': {
+                'Name': connection_name,
+                'Parameters': {'mcp:managed': 'true', 'mcp:ResourceType': 'GlueConnection'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                return_value='123456789012',
+            ),
+        ):
+            # Call the method
+            result = await manager.update_connection(
+                mock_ctx, connection_name=connection_name, connection_input=connection_input
+            )
+
+            # Verify that the Glue client was called with the correct parameters
+            mock_glue_client.update_connection.assert_called_once()
+            call_args = mock_glue_client.update_connection.call_args[1]
+
+            assert call_args['Name'] == connection_name
+            assert call_args['ConnectionInput']['Name'] == connection_name
+            assert call_args['ConnectionInput']['ConnectionType'] == 'JDBC'
+            assert (
+                call_args['ConnectionInput']['ConnectionProperties']['JDBC_CONNECTION_URL']
+                == 'jdbc:mysql://localhost:3306/test-updated'
+            )
+
+            # Verify that the MCP tags were preserved and new parameters were added
+            assert call_args['ConnectionInput']['Parameters']['mcp:managed'] == 'true'
+            assert (
+                call_args['ConnectionInput']['Parameters']['mcp:ResourceType'] == 'GlueConnection'
+            )
+            assert call_args['ConnectionInput']['Parameters']['new-param'] == 'new-value'
+
+            # Verify the response
+            assert isinstance(result, UpdateConnectionResponse)
+            assert result.isError is False
+            assert result.connection_name == connection_name
+            assert result.operation == 'update-connection'
+
+    @pytest.mark.asyncio
+    async def test_update_partition_with_new_parameters(self, manager, mock_ctx, mock_glue_client):
+        """Test that update_partition handles new parameters correctly."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        partition_values = ['2023', '01', '01']
+        partition_input = {
+            'StorageDescriptor': {
+                'Location': 's3://test-bucket/test-db/test-table/year=2023/month=01/day=01/'
+            },
+            'Parameters': {'new-param': 'new-value'},
+        }
+
+        # Mock the get_partition response to indicate the partition is MCP managed
+        mock_glue_client.get_partition.return_value = {
+            'Partition': {
+                'Values': partition_values,
+                'DatabaseName': database_name,
+                'TableName': table_name,
+                'Parameters': {'mcp:managed': 'true', 'mcp:ResourceType': 'GluePartition'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                return_value='123456789012',
+            ),
+        ):
+            # Call the method
+            result = await manager.update_partition(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                partition_values=partition_values,
+                partition_input=partition_input,
+            )
+
+            # Verify that the Glue client was called with the correct parameters
+            mock_glue_client.update_partition.assert_called_once()
+            call_args = mock_glue_client.update_partition.call_args[1]
+
+            assert call_args['DatabaseName'] == database_name
+            assert call_args['TableName'] == table_name
+            assert call_args['PartitionValueList'] == partition_values
+            assert (
+                call_args['PartitionInput']['StorageDescriptor']['Location']
+                == 's3://test-bucket/test-db/test-table/year=2023/month=01/day=01/'
+            )
+
+            # Verify that the MCP tags were preserved and new parameters were added
+            assert call_args['PartitionInput']['Parameters']['mcp:managed'] == 'true'
+            assert call_args['PartitionInput']['Parameters']['mcp:ResourceType'] == 'GluePartition'
+            assert call_args['PartitionInput']['Parameters']['new-param'] == 'new-value'
+
+            # Verify the response
+            assert isinstance(result, UpdatePartitionResponse)
+            assert result.isError is False
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.partition_values == partition_values
+            assert result.operation == 'update-partition'
