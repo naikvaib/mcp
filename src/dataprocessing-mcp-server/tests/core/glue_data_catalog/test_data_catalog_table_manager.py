@@ -168,6 +168,100 @@ class TestDataCatalogTableManager:
             assert 'AlreadyExistsException' in result.content[0].text
 
     @pytest.mark.asyncio
+    async def test_create_table_without_parameters(self, manager, mock_ctx, mock_glue_client):
+        """Test that create_table handles the case where table_input doesn't have Parameters."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        table_input = {
+            'StorageDescriptor': {
+                'Columns': [{'Name': 'id', 'Type': 'int'}, {'Name': 'name', 'Type': 'string'}],
+                'Location': 's3://test-bucket/test-db/test-table/',
+            },
+            'TableType': 'EXTERNAL_TABLE',
+        }
+        # Note: No Parameters field in table_input
+
+        # Mock the AWS helper prepare_resource_tags method
+        with patch(
+            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            return_value={'mcp:managed': 'true'},
+        ):
+            # Call the method
+            result = await manager.create_table(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                table_input=table_input,
+            )
+
+            # Verify that the Glue client was called with the correct parameters
+            mock_glue_client.create_table.assert_called_once()
+            call_args = mock_glue_client.create_table.call_args[1]
+
+            # Verify that Parameters was created with MCP tags
+            assert 'Parameters' in call_args['TableInput']
+            assert call_args['TableInput']['Parameters'] == {'mcp:managed': 'true'}
+
+            # Verify the response
+            assert isinstance(result, CreateTableResponse)
+            assert result.isError is False
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.operation == 'create-table'
+
+    @pytest.mark.asyncio
+    async def test_create_table_with_all_optional_params(
+        self, manager, mock_ctx, mock_glue_client
+    ):
+        """Test that create_table handles all optional parameters correctly."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        table_input = {
+            'StorageDescriptor': {
+                'Columns': [{'Name': 'id', 'Type': 'int'}],
+            },
+            'Parameters': {'existing_param': 'value'},
+        }
+        partition_indexes = [{'Keys': ['year', 'month']}]
+        transaction_id = 'test-transaction-id'
+        open_table_format_input = {'FormatType': 'iceberg'}
+
+        # Mock the AWS helper prepare_resource_tags method
+        with patch(
+            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            return_value={'mcp:managed': 'true'},
+        ):
+            # Call the method
+            result = await manager.create_table(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                table_input=table_input,
+                partition_indexes=partition_indexes,
+                transaction_id=transaction_id,
+                open_table_format_input=open_table_format_input,
+            )
+
+            # Verify that the Glue client was called with the correct parameters
+            mock_glue_client.create_table.assert_called_once()
+            call_args = mock_glue_client.create_table.call_args[1]
+
+            # Verify all optional parameters were passed correctly
+            assert call_args['PartitionIndexes'] == partition_indexes
+            assert call_args['TransactionId'] == transaction_id
+            assert call_args['OpenTableFormatInput'] == open_table_format_input
+
+            # Verify that MCP tags were added to existing Parameters
+            assert call_args['TableInput']['Parameters']['existing_param'] == 'value'
+            assert call_args['TableInput']['Parameters']['mcp:managed'] == 'true'
+
+            # Verify the response
+            assert isinstance(result, CreateTableResponse)
+            assert result.isError is False
+
+    @pytest.mark.asyncio
     async def test_delete_table_success(self, manager, mock_ctx, mock_glue_client):
         """Test that delete_table returns a successful response when the Glue API call succeeds."""
         # Setup
@@ -747,6 +841,75 @@ class TestDataCatalogTableManager:
             assert 'ValidationException' in result.content[0].text
 
     @pytest.mark.asyncio
+    async def test_update_table_with_optional_params(self, manager, mock_ctx, mock_glue_client):
+        """Test that update_table handles all optional parameters correctly."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        table_input = {
+            'StorageDescriptor': {
+                'Columns': [{'Name': 'id', 'Type': 'int'}],
+            },
+        }
+        skip_archive = True
+        transaction_id = 'test-transaction-id'
+        version_id = 'test-version-id'
+        view_update_action = 'REPLACE'
+        force = True
+
+        # Mock the get_table response to indicate the table is MCP managed
+        mock_glue_client.get_table.return_value = {
+            'Table': {
+                'Name': table_name,
+                'DatabaseName': database_name,
+                'Parameters': {'mcp:managed': 'true'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+        ):
+            # Call the method with all optional parameters
+            result = await manager.update_table(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                table_input=table_input,
+                skip_archive=skip_archive,
+                transaction_id=transaction_id,
+                version_id=version_id,
+                view_update_action=view_update_action,
+                force=force,
+            )
+
+            # Verify that the Glue client was called with the correct parameters
+            mock_glue_client.update_table.assert_called_once()
+            call_args = mock_glue_client.update_table.call_args[1]
+
+            assert call_args['DatabaseName'] == database_name
+            assert call_args['TableInput']['Name'] == table_name
+            assert call_args['SkipArchive'] == skip_archive
+            assert call_args['TransactionId'] == transaction_id
+            assert call_args['VersionId'] == version_id
+            assert call_args['ViewUpdateAction'] == view_update_action
+            assert call_args['Force'] == force
+
+            # Verify the response
+            assert isinstance(result, UpdateTableResponse)
+            assert result.isError is False
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.operation == 'update-table'
+
+    @pytest.mark.asyncio
     async def test_list_tables_error(self, manager, mock_ctx, mock_glue_client):
         """Test that list_tables returns an error response when the Glue API call fails."""
         # Setup
@@ -777,6 +940,61 @@ class TestDataCatalogTableManager:
         assert 'EntityNotFoundException' in result.content[0].text
 
     @pytest.mark.asyncio
+    async def test_list_tables_with_optional_params(self, manager, mock_ctx, mock_glue_client):
+        """Test that list_tables handles all optional parameters correctly."""
+        # Setup
+        database_name = 'test-db'
+        expression = 'table*'
+        next_token = 'next-token-value'
+        transaction_id = 'test-transaction-id'
+        query_as_of_time = datetime(2023, 1, 1, 0, 0, 0)
+        include_status_details = True
+        attributes_to_get = ['Name', 'Owner']
+
+        # Mock the get_tables response
+        mock_glue_client.get_tables.return_value = {
+            'TableList': [
+                {
+                    'Name': 'table1',
+                    'DatabaseName': database_name,
+                    'Owner': 'owner1',
+                    'CreateTime': datetime(2023, 1, 1, 0, 0, 0),
+                }
+            ]
+        }
+
+        # Call the method with all optional parameters
+        result = await manager.list_tables(
+            mock_ctx,
+            database_name=database_name,
+            expression=expression,
+            next_token=next_token,
+            transaction_id=transaction_id,
+            query_as_of_time=query_as_of_time,
+            include_status_details=include_status_details,
+            attributes_to_get=attributes_to_get,
+        )
+
+        # Verify that the Glue client was called with the correct parameters
+        mock_glue_client.get_tables.assert_called_once_with(
+            DatabaseName=database_name,
+            Expression=expression,
+            NextToken=next_token,
+            TransactionId=transaction_id,
+            QueryAsOfTime=query_as_of_time,
+            IncludeStatusDetails=include_status_details,
+            AttributesToGet=attributes_to_get,
+        )
+
+        # Verify the response
+        assert isinstance(result, ListTablesResponse)
+        assert result.isError is False
+        assert result.database_name == database_name
+        assert len(result.tables) == 1
+        assert result.count == 1
+        assert result.operation == 'list-tables'
+
+    @pytest.mark.asyncio
     async def test_search_tables_error(self, manager, mock_ctx, mock_glue_client):
         """Test that search_tables returns an error response when the Glue API call fails."""
         # Setup
@@ -805,6 +1023,58 @@ class TestDataCatalogTableManager:
         assert len(result.content) == 1
         assert 'Failed to search tables' in result.content[0].text
         assert 'ValidationException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_search_tables_with_optional_params(self, manager, mock_ctx, mock_glue_client):
+        """Test that search_tables handles all optional parameters correctly."""
+        # Setup
+        search_text = 'test'
+        next_token = 'next-token-value'
+        filters = [{'Key': 'DatabaseName', 'Value': 'test-db'}]
+        sort_criteria = [{'FieldName': 'Name', 'Sort': 'ASC'}]
+        resource_share_type = 'ALL'
+        include_status_details = True
+
+        # Mock the search_tables response
+        mock_glue_client.search_tables.return_value = {
+            'TableList': [
+                {
+                    'Name': 'test_table1',
+                    'DatabaseName': 'db1',
+                    'Owner': 'owner1',
+                    'CreateTime': datetime(2023, 1, 1, 0, 0, 0),
+                }
+            ]
+        }
+
+        # Call the method with all optional parameters
+        result = await manager.search_tables(
+            mock_ctx,
+            search_text=search_text,
+            next_token=next_token,
+            filters=filters,
+            sort_criteria=sort_criteria,
+            resource_share_type=resource_share_type,
+            include_status_details=include_status_details,
+        )
+
+        # Verify that the Glue client was called with the correct parameters
+        mock_glue_client.search_tables.assert_called_once_with(
+            SearchText=search_text,
+            NextToken=next_token,
+            Filters=filters,
+            SortCriteria=sort_criteria,
+            ResourceShareType=resource_share_type,
+            IncludeStatusDetails=include_status_details,
+        )
+
+        # Verify the response
+        assert isinstance(result, SearchTablesResponse)
+        assert result.isError is False
+        assert result.search_text == search_text
+        assert len(result.tables) == 1
+        assert result.count == 1
+        assert result.operation == 'search-tables'
 
     @pytest.mark.asyncio
     async def test_delete_table_not_found(self, manager, mock_ctx, mock_glue_client):
@@ -885,3 +1155,97 @@ class TestDataCatalogTableManager:
             assert len(result.content) == 1
             assert 'Failed to delete table' in result.content[0].text
             assert 'InternalServiceException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_delete_table_with_transaction_id(self, manager, mock_ctx, mock_glue_client):
+        """Test that delete_table handles the transaction_id parameter correctly."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        transaction_id = 'test-transaction-id'
+
+        # Mock the get_table response to indicate the table is MCP managed
+        mock_glue_client.get_table.return_value = {
+            'Table': {
+                'Name': table_name,
+                'DatabaseName': database_name,
+                'Parameters': {'mcp:managed': 'true'},
+            }
+        }
+
+        # Mock the AWS helper is_resource_mcp_managed method
+        with (
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                return_value=True,
+            ),
+            patch(
+                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                return_value='us-east-1',
+            ),
+        ):
+            # Call the method with transaction_id
+            result = await manager.delete_table(
+                mock_ctx,
+                database_name=database_name,
+                table_name=table_name,
+                transaction_id=transaction_id,
+            )
+
+            # Verify that the Glue client was called with the correct parameters
+            mock_glue_client.delete_table.assert_called_once_with(
+                DatabaseName=database_name, Name=table_name, TransactionId=transaction_id
+            )
+
+            # Verify the response
+            assert isinstance(result, DeleteTableResponse)
+            assert result.isError is False
+            assert result.database_name == database_name
+            assert result.table_name == table_name
+            assert result.operation == 'delete-table'
+
+    @pytest.mark.asyncio
+    async def test_get_table_with_optional_params(self, manager, mock_ctx, mock_glue_client):
+        """Test that get_table handles all optional parameters correctly."""
+        # Setup
+        database_name = 'test-db'
+        table_name = 'test-table'
+        transaction_id = 'test-transaction-id'
+        query_as_of_time = datetime(2023, 1, 1, 0, 0, 0)
+        include_status_details = True
+
+        # Mock the get_table response
+        mock_glue_client.get_table.return_value = {
+            'Table': {
+                'Name': table_name,
+                'DatabaseName': database_name,
+                'CreateTime': datetime(2023, 1, 1, 0, 0, 0),
+                'Parameters': {'mcp:managed': 'true'},
+            }
+        }
+
+        # Call the method with all optional parameters
+        result = await manager.get_table(
+            mock_ctx,
+            database_name=database_name,
+            table_name=table_name,
+            transaction_id=transaction_id,
+            query_as_of_time=query_as_of_time,
+            include_status_details=include_status_details,
+        )
+
+        # Verify that the Glue client was called with the correct parameters
+        mock_glue_client.get_table.assert_called_once_with(
+            DatabaseName=database_name,
+            Name=table_name,
+            TransactionId=transaction_id,
+            QueryAsOfTime=query_as_of_time,
+            IncludeStatusDetails=include_status_details,
+        )
+
+        # Verify the response
+        assert isinstance(result, GetTableResponse)
+        assert result.isError is False
+        assert result.database_name == database_name
+        assert result.table_name == table_name
+        assert result.operation == 'get-table'
