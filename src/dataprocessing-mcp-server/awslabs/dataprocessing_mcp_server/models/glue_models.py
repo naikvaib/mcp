@@ -195,7 +195,7 @@ class BatchStopJobRunResponse(CallToolResult):
     """Response model for batch stop job run operation."""
 
     job_name: str = Field(..., description='Name of the job')
-    successful_submissions: List[str] = Field(
+    successful_submissions: List[Dict[str, Any]] = Field(
         ..., description='List of successfully stopped job run IDs'
     )
     failed_submissions: List[Dict[str, Any]] = Field(
