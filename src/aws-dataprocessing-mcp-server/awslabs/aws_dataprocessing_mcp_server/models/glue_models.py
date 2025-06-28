@@ -224,7 +224,7 @@ class BatchStopJobRunResponse(CallToolResult):
     isError: bool = Field(..., description='Whether the operation resulted in an error')
     content: List[TextContent] = Field(..., description='Content of the response')
     job_name: str = Field(..., description='Name of the job')
-    successful_submissions: List[str] = Field(
+    successful_submissions: List[Dict[str, Any]] = Field(
         ..., description='List of successfully stopped job run IDs'
     )
     failed_submissions: List[Dict[str, Any]] = Field(
