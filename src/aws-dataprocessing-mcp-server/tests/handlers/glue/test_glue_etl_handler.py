@@ -600,7 +600,7 @@ async def test_get_job_run_with_predecessors(handler, mock_glue_client):
 
 
 @pytest.mark.asyncio
-async def test_initialization_parameters():
+async def test_initialization_parameters(mock_aws_helper):
     mcp = Mock()
     handler = GlueEtlJobsHandler(mcp, allow_write=True, allow_sensitive_data_access=True)
 
