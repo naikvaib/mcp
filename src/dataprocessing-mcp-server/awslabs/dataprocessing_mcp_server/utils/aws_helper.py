@@ -143,10 +143,8 @@ class AwsHelper:
             Dictionary of tags
         """
         try:
-            response = glue_client.get_tags(
-                ResourceArn=f"arn:aws:glue:*:*:job/{job_name}"
-            )
-            return response.get("Tags", {})
+            response = glue_client.get_tags(ResourceArn=f'arn:aws:glue:*:*:job/{job_name}')
+            return response.get('Tags', {})
         except ClientError:
             return {}
 
