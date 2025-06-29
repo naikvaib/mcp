@@ -6,11 +6,13 @@ from unittest.mock import Mock, patch
 
 @pytest.fixture
 def mock_glue_client():
+    """Create a mock glue client instance for testing."""
     return Mock()
 
 
 @pytest.fixture
 def mock_aws_helper():
+    """Create a mock AwsHelper instance for testing."""
     with patch(
         'awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_etl_handler.AwsHelper'
     ) as mock:
@@ -24,17 +26,20 @@ def mock_aws_helper():
 
 @pytest.fixture
 def handler(mock_aws_helper):
+    """Create a mock GlueEtlJobsHandler instance for testing."""
     mcp = Mock()
     return GlueEtlJobsHandler(mcp, allow_write=True)
 
 
 @pytest.fixture
 def mock_context():
+    """Create a mock context instance for testing."""
     return Mock(spec=Context)
 
 
 @pytest.fixture
 def basic_job_definition():
+    """Create a sample job definition for testing."""
     return {
         'Role': 'arn:aws:iam::123456789012:role/GlueETLRole',
         'Command': {'Name': 'glueetl', 'ScriptLocation': 's3://bucket/script.py'},
@@ -44,6 +49,7 @@ def basic_job_definition():
 
 @pytest.mark.asyncio
 async def test_create_job_success(handler, mock_glue_client):
+    """Test successful creation of a Glue job."""
     handler.glue_client = mock_glue_client
     mock_glue_client.create_job.return_value = {'Name': 'test-job'}
 
@@ -65,6 +71,7 @@ async def test_create_job_success(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_create_job_missing_parameters(handler):
+    """Test that creating a job fails when the job_name and job_definition args are missing."""
     ctx = Mock()
     with pytest.raises(ValueError):
         await handler.manage_aws_glue_jobs(
@@ -74,6 +81,7 @@ async def test_create_job_missing_parameters(handler):
 
 @pytest.mark.asyncio
 async def test_delete_job_success(handler, mock_glue_client):
+    """Test successful deletion of a Glue job."""
     handler.glue_client = mock_glue_client
     mock_glue_client.get_job.return_value = {'Job': {'Parameters': {}}}
 
@@ -86,6 +94,7 @@ async def test_delete_job_success(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_get_job_success(handler, mock_glue_client):
+    """Test successful retrieval of a Glue job."""
     handler.glue_client = mock_glue_client
     mock_glue_client.get_job.return_value = {'Job': {'Name': 'test-job'}}
 
@@ -98,6 +107,7 @@ async def test_get_job_success(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_get_jobs_success(handler, mock_glue_client):
+    """Test successful retrieval of multiple Glue jobs."""
     handler.glue_client = mock_glue_client
     mock_glue_client.get_jobs.return_value = {
         'Jobs': [{'Name': 'job1'}, {'Name': 'job2'}],
@@ -116,6 +126,7 @@ async def test_get_jobs_success(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_start_job_run_success(handler, mock_glue_client):
+    """Test successful start of a Glue job run."""
     handler.glue_client = mock_glue_client
     mock_glue_client.start_job_run.return_value = {'JobRunId': 'run123'}
 
@@ -135,6 +146,7 @@ async def test_start_job_run_success(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_stop_job_run_success(handler, mock_glue_client):
+    """Test successful termination of a Glue job run."""
     handler.glue_client = mock_glue_client
 
     ctx = Mock()
@@ -148,6 +160,7 @@ async def test_stop_job_run_success(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_create_job_operation_without_write_permission(handler):
+    """Test that creating a job fails when write access is disabled."""
     handler.allow_write = False
 
     ctx = Mock()
@@ -162,6 +175,7 @@ async def test_create_job_operation_without_write_permission(handler):
 
 @pytest.mark.asyncio
 async def test_delete_job_operation_without_write_permission(handler):
+    """Test that deleting a job fails when write access is disabled."""
     handler.allow_write = False
 
     ctx = Mock()
@@ -176,146 +190,95 @@ async def test_delete_job_operation_without_write_permission(handler):
 
 @pytest.mark.asyncio
 async def test_create_job_operation_invalid_arguments(handler):
+    """Test that creating a job fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(ctx, operation='create-job', job_name=None)
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='create-job', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_delete_job_operation_invalid_arguments(handler):
+    """Test that deleting a job fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(ctx, operation='delete-job', job_name=None)
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='delete-job', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_get_job_operation_invalid_arguments(handler):
+    """Test that retrieving a job fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(ctx, operation='get-job', job_name=None)
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='get-job', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_update_job_operation_invalid_arguments(handler):
+    """Test that updating a job fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(ctx, operation='update-job', job_name=None)
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='update-job', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_start_job_run_operation_invalid_arguments(handler):
+    """Test that starting a job run fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(
-            ctx, operation='start-job-run', job_name=None
-        )
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='start-job-run', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_stop_job_run_operation_invalid_arguments(handler):
+    """Test that stopping a job run fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(ctx, operation='stop-job-run', job_name=None)
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='stop-job-run', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_get_job_run_operation_invalid_arguments(handler):
+    """Test that retrieving a job run fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(ctx, operation='get-job-run', job_name=None)
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='get-job-run', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_get_job_runs_operation_invalid_arguments(handler):
+    """Test that retrieving multiple job runs fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(ctx, operation='get-job-runs', job_name=None)
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='get-job-runs', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_batch_stop_job_run_operation_invalid_arguments(handler):
+    """Test that stopping multiple job runs fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(
-            ctx, operation='batch-stop-job-run', job_name=None
-        )
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='batch-stop-job-run', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_get_job_bookmark_operation_invalid_arguments(handler):
+    """Test that retrieving job bookmark details fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(
-            ctx, operation='get-job-bookmark', job_name=None
-        )
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='get-job-bookmark', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_reset_job_bookmark_operation_invalid_arguments(handler):
+    """Test that resetting a job bookmark fails when required arguments are missing."""
     ctx = Mock()
-    try:
-        response = await handler.manage_aws_glue_jobs(
-            ctx, operation='reset-job-bookmark', job_name=None
-        )
-    except ValueError as e:
-        assert 'job_name' in str(e)
-        assert 'required' in str(e)
-        return
-    assert False
+    with pytest.raises(ValueError):
+        await handler.manage_aws_glue_jobs(ctx, operation='reset-job-bookmark', job_name=None)
 
 
 @pytest.mark.asyncio
 async def test_start_job_run_operation_without_write_permission(handler):
+    """Test that starting a job run fails when write access is disabled."""
     handler.allow_write = False
 
     ctx = Mock()
@@ -330,6 +293,7 @@ async def test_start_job_run_operation_without_write_permission(handler):
 
 @pytest.mark.asyncio
 async def test_stop_job_run_operation_without_write_permission(handler):
+    """Test that stopping a job run fails when write access is disabled."""
     handler.allow_write = False
 
     ctx = Mock()
@@ -344,6 +308,7 @@ async def test_stop_job_run_operation_without_write_permission(handler):
 
 @pytest.mark.asyncio
 async def test_batch_stop_job_run_operation_without_write_permission(handler):
+    """Test that stopping multiple job runs fails when write access is disabled."""
     handler.allow_write = False
 
     ctx = Mock()
@@ -358,6 +323,7 @@ async def test_batch_stop_job_run_operation_without_write_permission(handler):
 
 @pytest.mark.asyncio
 async def test_update_job_operation_without_write_permission(handler):
+    """Test that updating a job fails when write access is disabled."""
     handler.allow_write = False
 
     ctx = Mock()
@@ -370,6 +336,7 @@ async def test_update_job_operation_without_write_permission(handler):
 
 @pytest.mark.asyncio
 async def test_invalid_operation(handler):
+    """Test that running manage_aws_glue_jobs with an invalid operation results in an error."""
     ctx = Mock()
     response = await handler.manage_aws_glue_jobs(
         ctx, operation='invalid-operation', job_name='test-job'
@@ -380,6 +347,7 @@ async def test_invalid_operation(handler):
 
 @pytest.mark.asyncio
 async def test_client_error_handling(handler, mock_glue_client):
+    """Test that calling get-job on a non-existent job results in an error."""
     handler.glue_client = mock_glue_client
     mock_glue_client.get_job.side_effect = ClientError(
         {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Not found'}}, 'GetJob'
@@ -393,6 +361,7 @@ async def test_client_error_handling(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_update_job_does_not_exist(handler, mock_glue_client):
+    """Test that calling update-job on a non-existent job results in an error."""
     handler.glue_client = mock_glue_client
     mock_glue_client.get_job.side_effect = ClientError(
         {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Not found'}}, 'GetJob'
@@ -406,6 +375,7 @@ async def test_update_job_does_not_exist(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_create_job_with_tags(handler, mock_glue_client, basic_job_definition):
+    """Test the creation of a job with tags."""
     handler.glue_client = mock_glue_client
     job_definition = basic_job_definition.copy()
     job_definition['Tags'] = {'custom-tag': 'value'}
@@ -423,6 +393,7 @@ async def test_create_job_with_tags(handler, mock_glue_client, basic_job_definit
 
 @pytest.mark.asyncio
 async def test_update_job_non_mcp_managed(handler, mock_glue_client, mock_aws_helper):
+    """Test that attempting to update a job without the correct MCP tag results in an error."""
     handler.glue_client = mock_glue_client
     mock_aws_helper.is_resource_mcp_managed.return_value = False
 
@@ -437,6 +408,7 @@ async def test_update_job_non_mcp_managed(handler, mock_glue_client, mock_aws_he
 # Job run operation tests
 @pytest.mark.asyncio
 async def test_start_job_run_with_all_parameters(handler, mock_glue_client):
+    """Test starting a job run."""
     handler.glue_client = mock_glue_client
     mock_glue_client.start_job_run.return_value = {'JobRunId': 'run123'}
 
@@ -465,6 +437,7 @@ async def test_start_job_run_with_all_parameters(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_start_job_run_with_max_capacity(handler, mock_glue_client):
+    """Test starting a job run with an adjusted max capacity."""
     mock_glue_client.start_job_run.return_value = {
         'JobRunId': 'runid',
     }
@@ -486,6 +459,7 @@ async def test_start_job_run_with_max_capacity(handler, mock_glue_client):
 # Bookmark operation tests
 @pytest.mark.asyncio
 async def test_get_job_bookmark_success(handler, mock_glue_client):
+    """Test retrieving details about a job bookmark."""
     handler.glue_client = mock_glue_client
     mock_glue_client.get_job_bookmark.return_value = {
         'JobBookmarkEntry': {'JobName': 'test-job', 'Version': 1, 'Run': 0}
@@ -501,6 +475,7 @@ async def test_get_job_bookmark_success(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_reset_job_bookmark_with_run_id(handler, mock_glue_client):
+    """Test resetting a job bookmark."""
     handler.glue_client = mock_glue_client
 
     response = await handler.manage_aws_glue_jobs(
@@ -514,6 +489,7 @@ async def test_reset_job_bookmark_with_run_id(handler, mock_glue_client):
 # Batch operations tests
 @pytest.mark.asyncio
 async def test_batch_stop_job_run_multiple_ids(handler, mock_glue_client):
+    """Test stopping multiple job runs."""
     handler.glue_client = mock_glue_client
     mock_glue_client.batch_stop_job_run.return_value = {
         'SuccessfulSubmissions': [{'JobRunId': 'run1'}, {'JobRunId': 'run2'}],
@@ -531,6 +507,7 @@ async def test_batch_stop_job_run_multiple_ids(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_batch_stop_job_run_with_failures(handler, mock_glue_client):
+    """Test stopping multiple job runs with a mix of successful and failed submissions."""
     handler.glue_client = mock_glue_client
     mock_glue_client.batch_stop_job_run.return_value = {
         'SuccessfulSubmissions': [{'JobRunId': 'run1'}],
@@ -549,6 +526,7 @@ async def test_batch_stop_job_run_with_failures(handler, mock_glue_client):
 # Error handling tests
 @pytest.mark.asyncio
 async def test_get_job_runs_with_client_error(handler, mock_glue_client):
+    """Test handling of internal service exception for retrieving multiple job runs."""
     handler.glue_client = mock_glue_client
     mock_glue_client.get_job_runs.side_effect = ClientError(
         {'Error': {'Code': 'InternalServiceException', 'Message': 'Internal error'}}, 'GetJobRuns'
@@ -564,6 +542,7 @@ async def test_get_job_runs_with_client_error(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_pagination_parameters(handler, mock_glue_client):
+    """Test handling of pagination parameters for retrieving multiple job runs."""
     handler.glue_client = mock_glue_client
     mock_glue_client.get_job_runs.return_value = {'JobRuns': [], 'NextToken': 'next-token'}
 
@@ -583,6 +562,7 @@ async def test_pagination_parameters(handler, mock_glue_client):
 # Security and validation tests
 @pytest.mark.asyncio
 async def test_get_job_run_with_predecessors(handler, mock_glue_client):
+    """Test handling of predecessors for retrieving multiple job runs."""
     handler.glue_client = mock_glue_client
     mock_glue_client.get_job_run.return_value = {'Name': 'test-job', 'JobRun': {}}
 
@@ -601,6 +581,7 @@ async def test_get_job_run_with_predecessors(handler, mock_glue_client):
 
 @pytest.mark.asyncio
 async def test_initialization_parameters(mock_aws_helper):
+    """Test initialization of parameters for GlueEtlJobsHandler object."""
     mcp = Mock()
     handler = GlueEtlJobsHandler(mcp, allow_write=True, allow_sensitive_data_access=True)
 
@@ -610,13 +591,8 @@ async def test_initialization_parameters(mock_aws_helper):
 
 
 @pytest.mark.asyncio
-async def test_missing_required_parameters(handler):
-    with pytest.raises(ValueError):
-        await handler.manage_aws_glue_jobs(Mock(), operation='get-job-run')
-
-
-@pytest.mark.asyncio
 async def test_invalid_execution_class(handler, mock_glue_client):
+    """Test that passing an invalid execution class results in an error."""
     handler.glue_client = mock_glue_client
     mock_glue_client.start_job_run.side_effect = ClientError(
         {'Error': {'Code': 'ValidationException', 'Message': 'Invalid execution class'}},

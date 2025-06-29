@@ -361,6 +361,7 @@ class TestAwsHelper:
         assert result is False
 
     def test_get_resource_tags_glue_job(self):
+        """Test that get_resource_tags_glue_job returns the correct tags."""
         mock_glue_client = MagicMock()
         mock_glue_client.get_tags.return_value = {
             'Tags': {MCP_MANAGED_TAG_KEY: MCP_MANAGED_TAG_VALUE}
@@ -370,6 +371,7 @@ class TestAwsHelper:
         assert result[MCP_MANAGED_TAG_KEY] == MCP_MANAGED_TAG_VALUE
 
     def test_get_resource_tags_for_untagged_glue_job(self):
+        """Test that get_resource_tags_glue_job returns an empty dict when get-tags returns no tags."""
         mock_glue_client = MagicMock()
         mock_glue_client.get_tags.return_value = {'Tags': {}}
 
@@ -377,6 +379,7 @@ class TestAwsHelper:
         assert len(result) == 0
 
     def test_get_resource_tags_for_glue_job_client_error(self):
+        """Test that get_resource_tags_glue_job returns an empty dict when get-tags returns a ClientError."""
         mock_glue_client = MagicMock()
         mock_glue_client.get_tags.side_effect = ClientError(
             {'Error': {'Code': 'AccessDeniedException', 'Message': 'Access denied'}},
