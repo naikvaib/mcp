@@ -33,6 +33,9 @@ from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import
 from awslabs.dataprocessing_mcp_server.handlers.glue.glue_commons_handler import (
     GlueCommonsHandler,
 )
+from awslabs.dataprocessing_mcp_server.handlers.glue.glue_etl_handler import (
+    GlueEtlJobsHandler,
+)
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
 
@@ -52,6 +55,20 @@ It enables you to create, manage, and monitor data processing workflows.
 - IAM roles and permissions are critical for data processing services to access data sources and targets.
 
 ## Common Workflows
+
+### Glue ETL Jobs
+1. Create a Glue job: `manage_aws_glue_jobs(operation='create-job', job_name='my-job', job_definition={...})`
+2. Delete a Glue job: `manage_aws_glue_jobs(operation='delete-job', job_name='my-job')`
+3. Get Glue job details: `manage_aws_glue_jobs(operation='get-job', job_name='my-job')`
+4. List Glue jobs: `manage_aws_glue_jobs(operation='get-jobs')`
+5. Update a Glue job: `manage_aws_glue_jobs(operation='update-job', job_name='my-job', job_definition={...})`
+6. Run a Glue job: `manage_aws_glue_jobs(operation='start-job-run', job_name='my-job')`
+7. Stop a Glue job run: `manage_aws_glue_jobs(operation='stop-job-run', job_name='my-job', job_run_id='my-job-run-id')`
+8. Get Glue job run details: `manage_aws_glue_jobs(operation='get-job-run', job_name='my-job', job_run_id='my-job-run-id')`
+9. Get all Glue job runs for a job: `manage_aws_glue_jobs(operation='get-job-runs', job_name='my-job')`
+10. Stop multiple Glue job runs: `manage_aws_glue_jobs(operation='batch-stop-job-run', job_name='my-job', job_run_ids=[...])`
+11. Get Glue job bookmark details: `manage_aws_glue_jobs(operation='get-job-bookmark', job_name='my-job')`
+12. Reset a Glue job bookmark: `manage_aws_glue_jobs(operation='reset-job-bookmark', job_name='my-job')`
 
 ### Setting Up a Data Catalog
 1. Create a database: `manage_aws_glue_databases(operation='create-database', database_name='my-database', description='My database')`
@@ -161,6 +178,11 @@ def main():
 
     # Initialize handlers - all tools are always registered, access control is handled within tools
     GlueDataCatalogHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    GlueEtlJobsHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
