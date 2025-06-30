@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Response models for Query Management
-from mcp.types import CallToolResult, TextContent
+from mcp.types import CallToolResult
 from pydantic import Field
 from typing import Any, Dict, List, Optional
 
