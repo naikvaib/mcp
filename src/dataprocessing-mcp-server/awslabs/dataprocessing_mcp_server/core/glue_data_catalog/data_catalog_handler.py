@@ -101,7 +101,7 @@ class DataCatalogManager:
             for key, value in resource_tags.items():
                 connection_input['Parameters'][key] = value
 
-            kwargs = {'ConnectionInput': connection_input}
+            kwargs: Dict[str, Any] = {'ConnectionInput': connection_input}
             if catalog_id:
                 kwargs['CatalogId'] = catalog_id
 
@@ -579,7 +579,7 @@ class DataCatalogManager:
             for key, value in resource_tags.items():
                 partition_input['Parameters'][key] = str(value)
 
-            kwargs = {
+            kwargs: Dict[str, Any] = {
                 'DatabaseName': database_name,
                 'TableName': table_name,
                 'PartitionInput': partition_input,
@@ -854,7 +854,7 @@ class DataCatalogManager:
             ListPartitionsResponse with the list of partitions
         """
         try:
-            kwargs = {
+            kwargs: Dict[str, Any] = {
                 'DatabaseName': database_name,
                 'TableName': table_name,
             }
