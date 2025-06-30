@@ -703,7 +703,8 @@ async def test_start_workflow_run_no_write_access(mock_create_client):
     assert len(result.content) == 1
     assert result.content[0].type == 'text'
     assert (
-        'Operation start-workflow-run is not allowed without write access' in result.content[0].text
+        'Operation start-workflow-run is not allowed without write access'
+        in result.content[0].text
     )
 
     # Verify that start_workflow_run was NOT called
@@ -822,7 +823,7 @@ async def test_manage_aws_glue_workflows_general_exception(mock_create_client):
     """Test handling of general exceptions in manage_aws_glue_workflows."""
     # Create a mock Glue client that raises an exception
     mock_glue_client = MagicMock()
-    mock_glue_client.get_workflow.side_effect = Exception("Test exception")
+    mock_glue_client.get_workflow.side_effect = Exception('Test exception')
     mock_create_client.return_value = mock_glue_client
 
     # Create a mock MCP server
@@ -1614,6 +1615,8 @@ async def test_trigger_not_found(mock_create_client):
 
     # Verify that delete_trigger was NOT called
     mock_glue_client.delete_trigger.assert_not_called()
+
+
 @pytest.mark.asyncio
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags')
@@ -1644,7 +1647,9 @@ async def test_create_workflow_without_description(mock_prepare_tags, mock_creat
 @pytest.mark.asyncio
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags')
-async def test_create_workflow_without_default_run_properties(mock_prepare_tags, mock_create_client):
+async def test_create_workflow_without_default_run_properties(
+    mock_prepare_tags, mock_create_client
+):
     """Test creating workflow without DefaultRunProperties parameter."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -1699,7 +1704,9 @@ async def test_create_workflow_without_max_concurrent_runs(mock_prepare_tags, mo
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_delete_workflow_client_error(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_delete_workflow_client_error(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test delete workflow with non-EntityNotFoundException ClientError."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -1717,7 +1724,7 @@ async def test_delete_workflow_client_error(mock_get_account_id, mock_get_region
     result = await handler.manage_aws_glue_workflows(
         mock_ctx, operation='delete-workflow', workflow_name='test-workflow'
     )
-    
+
     assert result.isError
     assert 'Error in manage_aws_glue_workflows' in result.content[0].text
 
@@ -1760,9 +1767,7 @@ async def test_list_workflows_without_pagination(mock_create_client):
 
     mock_glue_client.list_workflows.return_value = {'Workflows': ['workflow1']}
 
-    result = await handler.manage_aws_glue_workflows(
-        mock_ctx, operation='list-workflows'
-    )
+    result = await handler.manage_aws_glue_workflows(mock_ctx, operation='list-workflows')
 
     assert not result.isError
 
@@ -1771,7 +1776,9 @@ async def test_list_workflows_without_pagination(mock_create_client):
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_start_workflow_run_client_error(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_start_workflow_run_client_error(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test start workflow run with non-EntityNotFoundException ClientError."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -1789,7 +1796,7 @@ async def test_start_workflow_run_client_error(mock_get_account_id, mock_get_reg
     result = await handler.manage_aws_glue_workflows(
         mock_ctx, operation='start-workflow-run', workflow_name='test-workflow'
     )
-    
+
     assert result.isError
     assert 'Error in manage_aws_glue_workflows' in result.content[0].text
 
@@ -1954,7 +1961,9 @@ async def test_create_trigger_without_user_tags(mock_prepare_tags, mock_create_c
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_delete_trigger_client_error(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_delete_trigger_client_error(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test delete trigger with non-EntityNotFoundException ClientError."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -1972,7 +1981,7 @@ async def test_delete_trigger_client_error(mock_get_account_id, mock_get_region,
     result = await handler.manage_aws_glue_triggers(
         mock_ctx, operation='delete-trigger', trigger_name='test-trigger'
     )
-    
+
     assert result.isError
     assert 'Error in manage_aws_glue_triggers' in result.content[0].text
 
@@ -1990,9 +1999,7 @@ async def test_get_triggers_without_pagination(mock_create_client):
 
     mock_glue_client.get_triggers.return_value = {'Triggers': []}
 
-    result = await handler.manage_aws_glue_triggers(
-        mock_ctx, operation='get-triggers'
-    )
+    result = await handler.manage_aws_glue_triggers(mock_ctx, operation='get-triggers')
 
     assert not result.isError
 
@@ -2001,7 +2008,9 @@ async def test_get_triggers_without_pagination(mock_create_client):
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_start_trigger_client_error(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_start_trigger_client_error(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test start trigger with non-EntityNotFoundException ClientError."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -2019,7 +2028,7 @@ async def test_start_trigger_client_error(mock_get_account_id, mock_get_region, 
     result = await handler.manage_aws_glue_triggers(
         mock_ctx, operation='start-trigger', trigger_name='test-trigger'
     )
-    
+
     assert result.isError
     assert 'Error in manage_aws_glue_triggers' in result.content[0].text
 
@@ -2046,7 +2055,7 @@ async def test_stop_trigger_client_error(mock_get_account_id, mock_get_region, m
     result = await handler.manage_aws_glue_triggers(
         mock_ctx, operation='stop-trigger', trigger_name='test-trigger'
     )
-    
+
     assert result.isError
     assert 'Error in manage_aws_glue_triggers' in result.content[0].text
 
@@ -2067,7 +2076,9 @@ async def test_triggers_no_write_access_fallback(mock_create_client):
     )
 
     assert result.isError
-    assert 'Operation unknown-operation is not allowed without write access' in result.content[0].text
+    assert (
+        'Operation unknown-operation is not allowed without write access' in result.content[0].text
+    )
 
 
 @pytest.mark.asyncio
@@ -2088,6 +2099,8 @@ async def test_triggers_general_exception(mock_create_client):
 
     assert result.isError
     assert 'Error in manage_aws_glue_triggers: Test exception' in result.content[0].text
+
+
 @pytest.mark.asyncio
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags')
@@ -2119,7 +2132,9 @@ async def test_create_workflow_with_description_only(mock_prepare_tags, mock_cre
 @pytest.mark.asyncio
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags')
-async def test_create_workflow_with_default_run_properties_only(mock_prepare_tags, mock_create_client):
+async def test_create_workflow_with_default_run_properties_only(
+    mock_prepare_tags, mock_create_client
+):
     """Test creating workflow with DefaultRunProperties parameter only."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -2147,7 +2162,9 @@ async def test_create_workflow_with_default_run_properties_only(mock_prepare_tag
 @pytest.mark.asyncio
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags')
-async def test_create_workflow_with_max_concurrent_runs_only(mock_prepare_tags, mock_create_client):
+async def test_create_workflow_with_max_concurrent_runs_only(
+    mock_prepare_tags, mock_create_client
+):
     """Test creating workflow with MaxConcurrentRuns parameter only."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -2175,7 +2192,9 @@ async def test_create_workflow_with_max_concurrent_runs_only(mock_prepare_tags, 
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_delete_workflow_entity_not_found(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_delete_workflow_entity_not_found(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test delete workflow when workflow is not found."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -2187,7 +2206,8 @@ async def test_delete_workflow_entity_not_found(mock_get_account_id, mock_get_re
     mock_ctx = MagicMock(spec=Context)
 
     mock_glue_client.get_workflow.side_effect = ClientError(
-        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Workflow not found'}}, 'get_workflow'
+        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Workflow not found'}},
+        'get_workflow',
     )
 
     result = await handler.manage_aws_glue_workflows(
@@ -2220,7 +2240,7 @@ async def test_get_workflow_with_include_graph_true(mock_create_client):
 
     assert not result.isError
     args, kwargs = mock_glue_client.get_workflow.call_args
-    assert kwargs['IncludeGraph'] == True
+    assert kwargs['IncludeGraph']
 
 
 @pytest.mark.asyncio
@@ -2271,7 +2291,9 @@ async def test_list_workflows_with_next_token(mock_create_client):
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_start_workflow_run_entity_not_found(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_start_workflow_run_entity_not_found(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test start workflow run when workflow is not found."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -2283,7 +2305,8 @@ async def test_start_workflow_run_entity_not_found(mock_get_account_id, mock_get
     mock_ctx = MagicMock(spec=Context)
 
     mock_glue_client.get_workflow.side_effect = ClientError(
-        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Workflow not found'}}, 'get_workflow'
+        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Workflow not found'}},
+        'get_workflow',
     )
 
     result = await handler.manage_aws_glue_workflows(
@@ -2334,7 +2357,9 @@ async def test_start_workflow_run_with_run_properties(
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_delete_trigger_entity_not_found(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_delete_trigger_entity_not_found(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test delete trigger when trigger is not found."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -2346,7 +2371,8 @@ async def test_delete_trigger_entity_not_found(mock_get_account_id, mock_get_reg
     mock_ctx = MagicMock(spec=Context)
 
     mock_glue_client.get_trigger.side_effect = ClientError(
-        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Trigger not found'}}, 'get_trigger'
+        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Trigger not found'}},
+        'get_trigger',
     )
 
     result = await handler.manage_aws_glue_triggers(
@@ -2405,7 +2431,9 @@ async def test_get_triggers_with_next_token(mock_create_client):
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_start_trigger_entity_not_found(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_start_trigger_entity_not_found(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test start trigger when trigger is not found."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -2417,7 +2445,8 @@ async def test_start_trigger_entity_not_found(mock_get_account_id, mock_get_regi
     mock_ctx = MagicMock(spec=Context)
 
     mock_glue_client.get_trigger.side_effect = ClientError(
-        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Trigger not found'}}, 'get_trigger'
+        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Trigger not found'}},
+        'get_trigger',
     )
 
     result = await handler.manage_aws_glue_triggers(
@@ -2432,7 +2461,9 @@ async def test_start_trigger_entity_not_found(mock_get_account_id, mock_get_regi
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_stop_trigger_entity_not_found(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_stop_trigger_entity_not_found(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test stop trigger when trigger is not found."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -2444,7 +2475,8 @@ async def test_stop_trigger_entity_not_found(mock_get_account_id, mock_get_regio
     mock_ctx = MagicMock(spec=Context)
 
     mock_glue_client.get_trigger.side_effect = ClientError(
-        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Trigger not found'}}, 'get_trigger'
+        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Trigger not found'}},
+        'get_trigger',
     )
 
     result = await handler.manage_aws_glue_triggers(

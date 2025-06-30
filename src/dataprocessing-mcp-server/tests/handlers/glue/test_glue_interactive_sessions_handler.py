@@ -933,6 +933,7 @@ async def test_missing_statement_id_for_get_statement(mock_create_client):
         )
     assert 'statement_id is required' in str(excinfo.value)
 
+
 @pytest.mark.asyncio
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 async def test_delete_session_no_write_access(mock_create_client):
@@ -1056,7 +1057,9 @@ async def test_create_session_without_user_tags(mock_prepare_tags, mock_create_c
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_delete_session_client_error(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_delete_session_client_error(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test delete session with non-EntityNotFoundException ClientError."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -1074,7 +1077,7 @@ async def test_delete_session_client_error(mock_get_account_id, mock_get_region,
     result = await handler.manage_aws_glue_sessions(
         mock_ctx, operation='delete-session', session_id='test-session'
     )
-    
+
     assert result.isError
     assert 'Error in manage_aws_glue_sessions' in result.content[0].text
 
@@ -1155,7 +1158,7 @@ async def test_stop_session_client_error(mock_get_account_id, mock_get_region, m
     result = await handler.manage_aws_glue_sessions(
         mock_ctx, operation='stop-session', session_id='test-session'
     )
-    
+
     assert result.isError
     assert 'Error in manage_aws_glue_sessions' in result.content[0].text
 
@@ -1232,7 +1235,9 @@ async def test_cancel_statement_no_write_access(mock_create_client):
     )
 
     assert result.isError
-    assert 'Operation cancel-statement is not allowed without write access' in result.content[0].text
+    assert (
+        'Operation cancel-statement is not allowed without write access' in result.content[0].text
+    )
 
 
 @pytest.mark.asyncio
@@ -1296,9 +1301,7 @@ async def test_get_statement_with_request_origin(mock_create_client):
     handler.glue_client = mock_glue_client
     mock_ctx = MagicMock(spec=Context)
 
-    mock_glue_client.get_statement.return_value = {
-        'Statement': {'Id': 1, 'State': 'AVAILABLE'}
-    }
+    mock_glue_client.get_statement.return_value = {'Statement': {'Id': 1, 'State': 'AVAILABLE'}}
 
     result = await handler.manage_aws_glue_statements(
         mock_ctx,
@@ -1408,6 +1411,7 @@ async def test_statements_general_exception(mock_create_client):
     assert result.isError
     assert 'Error in manage_aws_glue_statements: Test exception' in result.content[0].text
 
+
 @pytest.mark.asyncio
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
@@ -1427,16 +1431,17 @@ async def test_stop_session_not_mcp_managed(
     handler.glue_client = mock_glue_client
     mock_ctx = MagicMock(spec=Context)
 
-    mock_glue_client.get_session.return_value = {
-        'Session': {'Id': 'test-session', 'Tags': {}}
-    }
+    mock_glue_client.get_session.return_value = {'Session': {'Id': 'test-session', 'Tags': {}}}
 
     result = await handler.manage_aws_glue_sessions(
         mock_ctx, operation='stop-session', session_id='test-session'
     )
 
     assert result.isError
-    assert 'Cannot stop session test-session - it is not managed by the MCP server' in result.content[0].text
+    assert (
+        'Cannot stop session test-session - it is not managed by the MCP server'
+        in result.content[0].text
+    )
 
 
 @pytest.mark.asyncio
@@ -1455,7 +1460,8 @@ async def test_stop_session_not_found(mock_get_account_id, mock_get_region, mock
     mock_ctx = MagicMock(spec=Context)
 
     mock_glue_client.get_session.side_effect = ClientError(
-        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Session not found'}}, 'get_session'
+        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Session not found'}},
+        'get_session',
     )
 
     result = await handler.manage_aws_glue_sessions(
@@ -1464,6 +1470,7 @@ async def test_stop_session_not_found(mock_get_account_id, mock_get_region, mock
 
     assert result.isError
     assert 'Session test-session not found' in result.content[0].text
+
 
 @pytest.mark.asyncio
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
@@ -1583,11 +1590,15 @@ async def test_create_session_individual_params(mock_prepare_tags, mock_create_c
     )
 
     assert mock_glue_client.create_session.call_count == 10
+
+
 @pytest.mark.asyncio
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
-async def test_delete_session_entity_not_found(mock_get_account_id, mock_get_region, mock_create_client):
+async def test_delete_session_entity_not_found(
+    mock_get_account_id, mock_get_region, mock_create_client
+):
     """Test delete session when session is not found."""
     mock_glue_client = MagicMock()
     mock_create_client.return_value = mock_glue_client
@@ -1599,7 +1610,8 @@ async def test_delete_session_entity_not_found(mock_get_account_id, mock_get_reg
     mock_ctx = MagicMock(spec=Context)
 
     mock_glue_client.get_session.side_effect = ClientError(
-        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Session not found'}}, 'get_session'
+        {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Session not found'}},
+        'get_session',
     )
 
     result = await handler.manage_aws_glue_sessions(
@@ -1648,9 +1660,7 @@ async def test_list_sessions_without_optional_params(mock_create_client):
         'Ids': ['session1'],
     }
 
-    result = await handler.manage_aws_glue_sessions(
-        mock_ctx, operation='list-sessions'
-    )
+    result = await handler.manage_aws_glue_sessions(mock_ctx, operation='list-sessions')
 
     assert not result.isError
 
@@ -1716,9 +1726,7 @@ async def test_get_statement_without_request_origin(mock_create_client):
     handler.glue_client = mock_glue_client
     mock_ctx = MagicMock(spec=Context)
 
-    mock_glue_client.get_statement.return_value = {
-        'Statement': {'Id': 1, 'State': 'AVAILABLE'}
-    }
+    mock_glue_client.get_statement.return_value = {'Statement': {'Id': 1, 'State': 'AVAILABLE'}}
 
     result = await handler.manage_aws_glue_statements(
         mock_ctx, operation='get-statement', session_id='test-session', statement_id=1
