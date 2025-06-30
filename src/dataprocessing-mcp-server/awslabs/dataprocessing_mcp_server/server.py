@@ -24,6 +24,9 @@ Environment Variables:
 """
 
 import argparse
+from awslabs.dataprocessing_mcp_server.handlers.athena.athena_query_handler import (
+    AthenaQueryHandler,
+)
 from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler import (
     EMREc2InstanceHandler,
 )
@@ -114,6 +117,12 @@ It enables you to create, manage, and monitor data processing workflows.
 6. Modify instance fleet: `manage_aws_emr_ec2_instances(operation='modify-instance-fleet', cluster_id='j-123ABC456DEF', instance_fleet_id='if-123ABC', instance_fleet_config={'TargetOnDemandCapacity': 4})`
 7. Modify instance groups: `manage_aws_emr_ec2_instances(operation='modify-instance-groups', instance_group_configs=[{'InstanceGroupId': 'ig-123ABC', 'InstanceCount': 3}])`
 
+### Athena Queries
+1. Execute a query: `manage_aws_athena_queries(operation='start-query-execution', query='SELECT * FROM my_table', work_group='my-workgroup')`
+2. Get query results: `manage_aws_athena_queries(operation='get-query-results', query_execution_id='query-id')`
+3. Get query execution details: `manage_aws_athena_queries(operation='get-query-execution', query_execution_id='query-id')`
+4. Stop a running query: `manage_aws_athena_queries(operation='stop-query-execution', query_execution_id='query-id')`
+5. Get query runtime statistics: `manage_aws_athena_queries(operation='get-query-runtime-statistics', query_execution_id='query-id')`
 """
 
 SERVER_DEPENDENCIES = [
@@ -193,6 +202,11 @@ def main():
         allow_sensitive_data_access=allow_sensitive_data_access,
     )
     EMREc2InstanceHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    AthenaQueryHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
