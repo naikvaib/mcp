@@ -579,7 +579,7 @@ class DataCatalogManager:
             for key, value in resource_tags.items():
                 partition_input['Parameters'][key] = str(value)
 
-            kwargs = {
+            kwargs: Dict[str, Any] = {
                 'DatabaseName': database_name,
                 'TableName': table_name,
                 'PartitionInput': partition_input,
