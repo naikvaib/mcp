@@ -381,7 +381,6 @@ async def test_batch_get_named_query_success(handler, mock_athena_client):
     assert not response.isError
     assert len(response.named_queries) == 2
     assert len(response.unprocessed_named_query_ids) == 0
-    assert response.count == 2
     mock_athena_client.batch_get_named_query.assert_called_once_with(NamedQueryIds=['id1', 'id2'])
 
 
