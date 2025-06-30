@@ -10,6 +10,8 @@ Integrating the DataProcessing MCP server into AI code assistants transforms dat
 ### AWS Glue Integration
 
 * Data Catalog Management: Enables users to explore, create, and manage databases, tables, and partitions through natural language requests, automatically translating them into appropriate AWS Glue Data Catalog operations.
+* Interactive Sessions: Provides interactive development environment for Spark and Ray workloads, enabling data exploration, debugging, and iterative development through managed Jupyter-like sessions.
+* Workflows and Triggers: Orchestrates complex ETL activities through visual workflows and automated triggers, supporting scheduled, conditional, and event-based execution patterns.
 
 
 ## Prerequisites
@@ -215,8 +217,6 @@ Specifies the AWS region where Glue,EMR clusters or Athena are managed, which wi
 | manage_aws_glue_partitions | Manage AWS Glue Data Catalog partitions | create-partition, delete-partition, get-partition, list-partitions, update-partition | --allow-write flag for create/delete/update operations, database and table must exist, appropriate AWS permissions |
 | manage_aws_glue_catalog | Manage AWS Glue Data Catalog | create-catalog, delete-catalog, get-catalog, list-catalogs, import-catalog-to-glue | --allow-write flag for create/delete/import operations, appropriate AWS permissions |
 
-## Athena
-
 ### Athena Query Handler Tools
 
 | Tool Name | Description | Key Operations | Requirements |
@@ -224,6 +224,19 @@ Specifies the AWS region where Glue,EMR clusters or Athena are managed, which wi
 | manage_aws_athena_query_executions | Execute and manage AWS Athena SQL queries | batch-get-query-execution, get-query-execution, get-query-results, get-query-runtime-statistics, list-query-executions, start-query-execution, stop-query-execution | --allow-write flag for start/stop operations, appropriate AWS permissions |
 | manage_aws_athena_named_queries | Manage saved SQL queries in AWS Athena | batch-get-named-query, create-named-query, delete-named-query, get-named-query, list-named-queries, update-named-query | --allow-write flag for create/delete/update operations, appropriate AWS permissions |
 
+### Glue Interactive Sessions Handler Tools
+
+| Tool Name | Description | Key Operations | Requirements |
+|-----------|-------------|----------------|--------------|
+| manage_aws_glue_sessions | Manage AWS Glue Interactive Sessions for Spark and Ray workloads | create-session, delete-session, get-session, list-sessions, stop-session | --allow-write flag for create/delete/stop operations, appropriate AWS permissions |
+| manage_aws_glue_statements | Execute and manage code statements within Glue Interactive Sessions | run-statement, cancel-statement, get-statement, list-statements | --allow-write flag for run/cancel operations, active session required |
+
+### Glue Workflows and Triggers Handler Tools
+
+| Tool Name | Description | Key Operations | Requirements |
+|-----------|-------------|----------------|--------------|
+| manage_aws_glue_workflows | Orchestrate complex ETL activities through visual workflows | create-workflow, delete-workflow, get-workflow, list-workflows, start-workflow-run | --allow-write flag for create/delete/start operations, appropriate AWS permissions |
+| manage_aws_glue_triggers | Automate workflow and job execution with scheduled or event-based triggers | create-trigger, delete-trigger, get-trigger, get-triggers, start-trigger, stop-trigger | --allow-write flag for create/delete/start/stop operations, appropriate AWS permissions |
 
 
 ## Version

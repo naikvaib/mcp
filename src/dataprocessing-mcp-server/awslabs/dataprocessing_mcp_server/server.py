@@ -42,6 +42,12 @@ from awslabs.dataprocessing_mcp_server.handlers.glue.glue_commons_handler import
 from awslabs.dataprocessing_mcp_server.handlers.glue.glue_etl_handler import (
     GlueEtlJobsHandler,
 )
+from awslabs.dataprocessing_mcp_server.handlers.glue.glue_interactive_sessions_handler import (
+    GlueInteractiveSessionsHandler,
+)
+from awslabs.dataprocessing_mcp_server.handlers.glue.glue_worklows_handler import (
+    GlueWorkflowAndTriggerHandler,
+)
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
 
@@ -61,6 +67,13 @@ It enables you to create, manage, and monitor data processing workflows.
 - IAM roles and permissions are critical for data processing services to access data sources and targets.
 
 ## Common Workflows
+
+### Athena Queries
+1. Execute a query: `manage_aws_athena_queries(operation='start-query-execution', query='SELECT * FROM my_table', work_group='my-workgroup')`
+2. Get query results: `manage_aws_athena_queries(operation='get-query-results', query_execution_id='query-id')`
+3. Get query execution details: `manage_aws_athena_queries(operation='get-query-execution', query_execution_id='query-id')`
+4. Stop a running query: `manage_aws_athena_queries(operation='stop-query-execution', query_execution_id='query-id')`
+5. Get query runtime statistics: `manage_aws_athena_queries(operation='get-query-runtime-statistics', query_execution_id='query-id')`
 
 ### Glue ETL Jobs
 1. Create a Glue job: `manage_aws_glue_jobs(operation='create-job', job_name='my-job', job_definition={...})`
@@ -127,12 +140,30 @@ It enables you to create, manage, and monitor data processing workflows.
 4. List steps: `manage_aws_emr_ec2_steps(operation='list-steps', cluster_id='j-123ABC456DEF')`
 5. List steps with filters: `manage_aws_emr_ec2_steps(operation='list-steps', cluster_id='j-123ABC456DEF', step_states=['RUNNING', 'COMPLETED'])`
 
-### Athena Queries
-1. Execute a query: `manage_aws_athena_queries(operation='start-query-execution', query='SELECT * FROM my_table', work_group='my-workgroup')`
-2. Get query results: `manage_aws_athena_queries(operation='get-query-results', query_execution_id='query-id')`
-3. Get query execution details: `manage_aws_athena_queries(operation='get-query-execution', query_execution_id='query-id')`
-4. Stop a running query: `manage_aws_athena_queries(operation='stop-query-execution', query_execution_id='query-id')`
-5. Get query runtime statistics: `manage_aws_athena_queries(operation='get-query-runtime-statistics', query_execution_id='query-id')`
+### Glue Interactive Sessions
+1. Create a session: `manage_aws_glue_sessions(operation='create-session', session_id='my-spark-session', role='arn:aws:iam::123456789012:role/GlueInteractiveSessionRole', command={'Name': 'glueetl', 'PythonVersion': '3'}, glue_version='4.0')`
+2. Get session details: `manage_aws_glue_sessions(operation='get-session', session_id='my-spark-session')`
+3. List all sessions: `manage_aws_glue_sessions(operation='list-sessions')`
+4. Stop a session: `manage_aws_glue_sessions(operation='stop-session', session_id='my-spark-session')`
+5. Delete a session: `manage_aws_glue_sessions(operation='delete-session', session_id='my-spark-session')`
+6. Run a statement: `manage_aws_glue_statements(operation='run-statement', session_id='my-spark-session', code='df = spark.read.csv("s3://bucket/data.csv", header=True); df.show(5)')`
+7. Get statement results: `manage_aws_glue_statements(operation='get-statement', session_id='my-spark-session', statement_id=1)`
+8. List statements in session: `manage_aws_glue_statements(operation='list-statements', session_id='my-spark-session')`
+9. Cancel a running statement: `manage_aws_glue_statements(operation='cancel-statement', session_id='my-spark-session', statement_id=1)`
+
+### Glue Workflows and Triggers
+1. Create a workflow: `manage_aws_glue_workflows(operation='create-workflow', workflow_name='my-etl-workflow', workflow_definition={'Description': 'ETL workflow for daily data processing', 'DefaultRunProperties': {'ENV': 'production'}, 'MaxConcurrentRuns': 1})`
+2. Get workflow details: `manage_aws_glue_workflows(operation='get-workflow', workflow_name='my-etl-workflow')`
+3. List all workflows: `manage_aws_glue_workflows(operation='list-workflows')`
+4. Start a workflow run: `manage_aws_glue_workflows(operation='start-workflow-run', workflow_name='my-etl-workflow', workflow_definition={'run_properties': {'EXECUTION_DATE': '2023-06-19'}})`
+5. Delete a workflow: `manage_aws_glue_workflows(operation='delete-workflow', workflow_name='my-etl-workflow')`
+6. Create a scheduled trigger: `manage_aws_glue_triggers(operation='create-trigger', trigger_name='daily-etl-trigger', trigger_definition={'Type': 'SCHEDULED', 'Schedule': 'cron(0 12 * * ? *)', 'Actions': [{'JobName': 'process-daily-data'}], 'Description': 'Trigger for daily ETL job', 'StartOnCreation': True})`
+7. Create a conditional trigger: `manage_aws_glue_triggers(operation='create-trigger', trigger_name='data-arrival-trigger', trigger_definition={'Type': 'CONDITIONAL', 'Actions': [{'JobName': 'process-new-data'}], 'Predicate': {'Conditions': [{'LogicalOperator': 'EQUALS', 'JobName': 'crawl-new-data', 'State': 'SUCCEEDED'}]}})`
+8. Get trigger details: `manage_aws_glue_triggers(operation='get-trigger', trigger_name='daily-etl-trigger')`
+9. List all triggers: `manage_aws_glue_triggers(operation='get-triggers')`
+10. Start a trigger: `manage_aws_glue_triggers(operation='start-trigger', trigger_name='daily-etl-trigger')`
+11. Stop a trigger: `manage_aws_glue_triggers(operation='stop-trigger', trigger_name='daily-etl-trigger')`
+12. Delete a trigger: `manage_aws_glue_triggers(operation='delete-trigger', trigger_name='daily-etl-trigger')`
 """
 
 SERVER_DEPENDENCIES = [
@@ -217,6 +248,16 @@ def main():
         allow_sensitive_data_access=allow_sensitive_data_access,
     )
     EMREc2StepsHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    GlueInteractiveSessionsHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    GlueWorkflowAndTriggerHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
