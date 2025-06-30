@@ -156,7 +156,9 @@ class TestAddSteps:
             assert result.step_ids == ['s-12345ABCDEF', 's-67890GHIJKL']
             assert result.count == 2
 
-    async def test_add_steps_with_execution_role(self, steps_handler_with_write_access, mock_context):
+    async def test_add_steps_with_execution_role(
+        self, steps_handler_with_write_access, mock_context
+    ):
         """Test add-steps with ExecutionRoleArn."""
         with patch.object(steps_handler_with_write_access, 'emr_client') as mock_emr_client:
             mock_emr_client.add_job_flow_steps.return_value = {'StepIds': ['s-12345ABCDEF']}
@@ -192,10 +194,13 @@ class TestAddSteps:
         result = await steps_handler_with_write_access.manage_aws_emr_ec2_steps(
             ctx=mock_context, operation='add-steps', cluster_id='j-12345ABCDEF'
         )
-        
+
         assert result.isError is True
         error_text = ' '.join(content.text for content in result.content)
-        assert 'steps is required for add-steps operation' in error_text or 'Error in manage_aws_emr_ec2_steps' in error_text
+        assert (
+            'steps is required for add-steps operation' in error_text
+            or 'Error in manage_aws_emr_ec2_steps' in error_text
+        )
 
 
 class TestCancelSteps:
@@ -255,10 +260,13 @@ class TestCancelSteps:
         result = await steps_handler_with_write_access.manage_aws_emr_ec2_steps(
             ctx=mock_context, operation='cancel-steps', cluster_id='j-12345ABCDEF'
         )
-        
+
         assert result.isError is True
         error_text = ' '.join(content.text for content in result.content)
-        assert 'step_ids is required for cancel-steps operation' in error_text or 'Error in manage_aws_emr_ec2_steps' in error_text
+        assert (
+            'step_ids is required for cancel-steps operation' in error_text
+            or 'Error in manage_aws_emr_ec2_steps' in error_text
+        )
 
     async def test_cancel_steps_invalid_step_id(
         self, steps_handler_with_write_access, mock_context
@@ -311,10 +319,13 @@ class TestDescribeStep:
             result = await steps_handler_with_write_access.manage_aws_emr_ec2_steps(
                 ctx=mock_context, operation='describe-step', cluster_id='j-12345ABCDEF'
             )
-            
+
             assert result.isError is True
             error_text = ' '.join(content.text for content in result.content)
-            assert 'step_id is required for describe-step operation' in error_text or 'Error in manage_aws_emr_ec2_steps' in error_text
+            assert (
+                'step_id is required for describe-step operation' in error_text
+                or 'Error in manage_aws_emr_ec2_steps' in error_text
+            )
         except Exception as e:
             # ValidationError from pydantic is expected when step field is missing
             assert 'ValidationError' in str(type(e)) or 'step_id is required' in str(e)
@@ -330,13 +341,13 @@ class TestListSteps:
                 'Steps': [{'Id': 's-12345ABCDEF', 'Name': 'Test Step'}],
                 'Marker': 'next-marker',
             }
-            
+
             result = await steps_handler_with_write_access.manage_aws_emr_ec2_steps(
                 ctx=mock_context, operation='list-steps', cluster_id='j-12345ABCDEF'
             )
-            
+
             # Verify results without checking mock calls
-            assert result.isError is False            
+            assert result.isError is False
             assert result.cluster_id == 'j-12345ABCDEF'
             assert result.count == 1
             assert result.marker == 'next-marker'
@@ -375,10 +386,13 @@ class TestListSteps:
                 cluster_id='j-12345ABCDEF',
                 step_states=[123],  # Invalid non-string state
             )
-            
+
             assert result.isError is True
             error_text = ' '.join(content.text for content in result.content)
-            assert 'Invalid step state: 123. Must be a string.' in error_text or 'Error in manage_aws_emr_ec2_steps' in error_text
+            assert (
+                'Invalid step state: 123. Must be a string.' in error_text
+                or 'Error in manage_aws_emr_ec2_steps' in error_text
+            )
         except Exception as e:
             # ValidationError is expected for invalid data
             assert 'ValidationError' in str(type(e)) or 'Invalid step state' in str(e)
@@ -400,7 +414,9 @@ class TestErrorHandling:
         """Test handling of AWS client errors."""
         with patch.object(steps_handler_with_write_access, 'emr_client') as mock_emr_client:
             mock_emr_client.list_steps.side_effect = ClientError(
-                error_response={'Error': {'Code': 'ValidationException', 'Message': 'Invalid cluster'}},
+                error_response={
+                    'Error': {'Code': 'ValidationException', 'Message': 'Invalid cluster'}
+                },
                 operation_name='ListSteps',
             )
 
@@ -411,4 +427,7 @@ class TestErrorHandling:
             assert result.isError is True
             error_text = ' '.join(content.text for content in result.content)
             # Check for either error message format
-            assert 'Error in manage_aws_emr_ec2_steps' in error_text or 'ValidationException' in error_text
+            assert (
+                'Error in manage_aws_emr_ec2_steps' in error_text
+                or 'ValidationException' in error_text
+            )
