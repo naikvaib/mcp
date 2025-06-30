@@ -81,8 +81,6 @@ class GetQueryRuntimeStatisticsResponse(CallToolResult):
 class ListQueryExecutionsResponse(CallToolResult):
     """Response model for list query executions operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     query_execution_ids: List[str] = Field(..., description='List of query execution IDs')
     count: int = Field(..., description='Number of query executions found')
     next_token: Optional[str] = Field(None, description='Token for pagination')
@@ -92,8 +90,6 @@ class ListQueryExecutionsResponse(CallToolResult):
 class StartQueryExecutionResponse(CallToolResult):
     """Response model for start query execution operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     query_execution_id: str = Field(..., description='ID of the started query execution')
     operation: str = Field(default='start-query-execution', description='Operation performed')
 
@@ -101,8 +97,6 @@ class StartQueryExecutionResponse(CallToolResult):
 class StopQueryExecutionResponse(CallToolResult):
     """Response model for stop query execution operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     query_execution_id: str = Field(..., description='ID of the stopped query execution')
     operation: str = Field(default='stop-query-execution', description='Operation performed')
 
@@ -113,8 +107,6 @@ class StopQueryExecutionResponse(CallToolResult):
 class BatchGetNamedQueryResponse(CallToolResult):
     """Response model for batch get named query operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     named_queries: List[Dict[str, Any]] = Field(..., description='List of named queries')
     unprocessed_named_query_ids: List[Dict[str, Any]] = Field(
         ..., description='List of unprocessed named query IDs'
@@ -125,8 +117,6 @@ class BatchGetNamedQueryResponse(CallToolResult):
 class CreateNamedQueryResponse(CallToolResult):
     """Response model for create named query operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     named_query_id: str = Field(..., description='ID of the created named query')
     operation: str = Field(default='create-named-query', description='Operation performed')
 
@@ -134,8 +124,6 @@ class CreateNamedQueryResponse(CallToolResult):
 class DeleteNamedQueryResponse(CallToolResult):
     """Response model for delete named query operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     named_query_id: str = Field(..., description='ID of the deleted named query')
     operation: str = Field(default='delete-named-query', description='Operation performed')
 
@@ -143,8 +131,6 @@ class DeleteNamedQueryResponse(CallToolResult):
 class GetNamedQueryResponse(CallToolResult):
     """Response model for get named query operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     named_query_id: str = Field(..., description='ID of the named query')
     named_query: Dict[str, Any] = Field(
         ...,
@@ -156,8 +142,6 @@ class GetNamedQueryResponse(CallToolResult):
 class ListNamedQueriesResponse(CallToolResult):
     """Response model for list named queries operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     named_query_ids: List[str] = Field(..., description='List of named query IDs')
     count: int = Field(..., description='Number of named queries found')
     next_token: Optional[str] = Field(None, description='Token for pagination')
@@ -167,7 +151,5 @@ class ListNamedQueriesResponse(CallToolResult):
 class UpdateNamedQueryResponse(CallToolResult):
     """Response model for update named query operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     named_query_id: str = Field(..., description='ID of the updated named query')
     operation: str = Field(default='update-named-query', description='Operation performed')
