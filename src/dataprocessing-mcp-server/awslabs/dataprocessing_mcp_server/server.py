@@ -24,6 +24,9 @@ Environment Variables:
 """
 
 import argparse
+from awslabs.dataprocessing_mcp_server.handlers.athena.athena_query_handler import (
+    AthenaQueryHandler,
+)
 from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler import (
     EMREc2InstanceHandler,
 )
@@ -67,6 +70,13 @@ It enables you to create, manage, and monitor data processing workflows.
 - IAM roles and permissions are critical for data processing services to access data sources and targets.
 
 ## Common Workflows
+
+### Athena Queries
+1. Execute a query: `manage_aws_athena_queries(operation='start-query-execution', query='SELECT * FROM my_table', work_group='my-workgroup')`
+2. Get query results: `manage_aws_athena_queries(operation='get-query-results', query_execution_id='query-id')`
+3. Get query execution details: `manage_aws_athena_queries(operation='get-query-execution', query_execution_id='query-id')`
+4. Stop a running query: `manage_aws_athena_queries(operation='stop-query-execution', query_execution_id='query-id')`
+5. Get query runtime statistics: `manage_aws_athena_queries(operation='get-query-runtime-statistics', query_execution_id='query-id')`
 
 ### Glue ETL Jobs
 1. Create a Glue job: `manage_aws_glue_jobs(operation='create-job', job_name='my-job', job_definition={...})`
@@ -169,7 +179,6 @@ It enables you to create, manage, and monitor data processing workflows.
 10. Start a trigger: `manage_aws_glue_triggers(operation='start-trigger', trigger_name='daily-etl-trigger')`
 11. Stop a trigger: `manage_aws_glue_triggers(operation='stop-trigger', trigger_name='daily-etl-trigger')`
 12. Delete a trigger: `manage_aws_glue_triggers(operation='delete-trigger', trigger_name='daily-etl-trigger')`
-
 """
 
 SERVER_DEPENDENCIES = [
@@ -269,6 +278,12 @@ def main():
         allow_sensitive_data_access=allow_sensitive_data_access,
     )
     GlueWorkflowAndTriggerHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+
+    AthenaQueryHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
