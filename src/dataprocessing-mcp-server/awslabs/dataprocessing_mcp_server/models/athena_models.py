@@ -21,8 +21,6 @@ from typing import Any, Dict, List, Optional
 class BatchGetQueryExecutionResponse(CallToolResult):
     """Response model for batch get query execution operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     query_executions: List[Dict[str, Any]] = Field(..., description='List of query executions')
     unprocessed_query_execution_ids: List[Dict[str, Any]] = Field(
         ..., description='List of unprocessed query execution IDs'
@@ -33,8 +31,6 @@ class BatchGetQueryExecutionResponse(CallToolResult):
 class GetQueryExecutionResponse(CallToolResult):
     """Response model for get query execution operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     query_execution_id: str = Field(..., description='ID of the query execution')
     query_execution: Dict[str, Any] = Field(
         ...,
@@ -46,8 +42,6 @@ class GetQueryExecutionResponse(CallToolResult):
 class GetQueryResultsResponse(CallToolResult):
     """Response model for get query results operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     query_execution_id: str = Field(..., description='ID of the query execution')
     result_set: Dict[str, Any] = Field(
         ...,
@@ -66,8 +60,6 @@ class GetQueryResultsResponse(CallToolResult):
 class GetQueryRuntimeStatisticsResponse(CallToolResult):
     """Response model for get query runtime statistics operation."""
 
-    isError: bool = Field(..., description='Whether the operation resulted in an error')
-    content: List[TextContent] = Field(..., description='Content of the response')
     query_execution_id: str = Field(..., description='ID of the query execution')
     statistics: Dict[str, Any] = Field(
         ...,
