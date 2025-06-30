@@ -258,8 +258,8 @@ class GlueInteractiveSessionsHandler:
                 resource_tags = AwsHelper.prepare_resource_tags('GlueSession')
 
                 # Merge user-provided tags with MCP tags
-                if tags:
-                    merged_tags = tags.copy()
+                if tags and isinstance(tags, dict):
+                    merged_tags = dict(tags)
                     merged_tags.update(resource_tags)
                     create_params['Tags'] = merged_tags
                 else:
