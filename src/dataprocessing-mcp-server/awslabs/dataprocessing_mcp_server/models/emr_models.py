@@ -28,6 +28,8 @@ class EMRResponseBase(BaseModel):
 
 
 # Response models for EMR Instance Operations
+
+
 class AddInstanceFleetResponseModel(EMRResponseBase):
     """Model for add instance fleet operation response."""
 
@@ -218,4 +220,125 @@ class ListSupportedInstanceTypesResponse(CallToolResult):
             count=model.count,
             marker=model.marker,
             release_label=model.release_label,
+        )
+
+
+# Response models for EMR Steps Operations
+
+
+class AddStepsResponseModel(EMRResponseBase):
+    """Model for add steps operation response."""
+
+    step_ids: List[str] = Field(..., description='IDs of the added steps')
+    count: int = Field(..., description='Number of steps added')
+    operation: str = Field(default='add', description='Operation performed')
+
+
+class AddStepsResponse(CallToolResult):
+    """Response model for add steps operation."""
+
+    # Factory method to create response
+    @classmethod
+    def create(
+        cls, is_error: bool, content: List[TextContent], model: AddStepsResponseModel
+    ) -> 'AddStepsResponse':
+        """Create response from model."""
+        return cls(
+            isError=is_error,
+            content=content,
+            cluster_id=model.cluster_id,
+            step_ids=model.step_ids,
+            count=model.count,
+            operation=model.operation,
+        )
+
+
+class CancelStepsResponseModel(EMRResponseBase):
+    """Model for cancel steps operation response."""
+
+    step_cancellation_info: List[Dict[str, Any]] = Field(
+        ...,
+        description='Information about cancelled steps with status (SUBMITTED/FAILED) and reason',
+    )
+    count: int = Field(..., description='Number of steps for which cancellation was attempted')
+    operation: str = Field(default='cancel', description='Operation performed')
+
+
+class CancelStepsResponse(CallToolResult):
+    """Response model for cancel steps operation."""
+
+    # Factory method to create response
+    @classmethod
+    def create(
+        cls, is_error: bool, content: List[TextContent], model: CancelStepsResponseModel
+    ) -> 'CancelStepsResponse':
+        """Create response from model."""
+        return cls(
+            isError=is_error,
+            content=content,
+            cluster_id=model.cluster_id,
+            step_cancellation_info=model.step_cancellation_info,
+            count=model.count,
+            operation=model.operation,
+        )
+
+
+class DescribeStepResponseModel(EMRResponseBase):
+    """Model for describe step operation response."""
+
+    step: Dict[str, Any] = Field(
+        ...,
+        description='Step details including ID, name, config, status, and execution role',
+    )
+    operation: str = Field(default='describe', description='Operation performed')
+
+
+class DescribeStepResponse(CallToolResult):
+    """Response model for describe step operation."""
+
+    # Factory method to create response
+    @classmethod
+    def create(
+        cls, is_error: bool, content: List[TextContent], model: DescribeStepResponseModel
+    ) -> 'DescribeStepResponse':
+        """Create response from model."""
+        return cls(
+            isError=is_error,
+            content=content,
+            cluster_id=model.cluster_id,
+            step=model.step,
+            operation=model.operation,
+        )
+
+
+class ListStepsResponseModel(EMRResponseBase):
+    """Model for list steps operation response."""
+
+    steps: List[Dict[str, Any]] = Field(
+        ..., description='List of steps in reverse order (most recent first)'
+    )
+    count: int = Field(..., description='Number of steps found')
+    marker: Optional[str] = Field(
+        None, description='Pagination token for retrieving next set of results'
+    )
+    operation: str = Field(default='list', description='Operation performed')
+
+
+class ListStepsResponse(CallToolResult):
+    """Response model for list steps operation."""
+
+    # Factory method to create response
+    @classmethod
+    def create(
+        cls, is_error: bool, content: List[TextContent], model: ListStepsResponseModel
+    ) -> 'ListStepsResponse':
+        """Create response from model."""
+        return cls(
+            isError=is_error,
+            content=content,
+            cluster_id=model.cluster_id,
+            steps=model.steps,
+            count=model.count,
+            marker=model.marker,
+            operation=model.operation,
         )

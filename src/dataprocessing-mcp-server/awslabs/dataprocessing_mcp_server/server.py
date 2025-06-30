@@ -30,6 +30,9 @@ from awslabs.dataprocessing_mcp_server.handlers.athena.athena_query_handler impo
 from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler import (
     EMREc2InstanceHandler,
 )
+from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_steps_handler import (
+    EMREc2StepsHandler,
+)
 from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
@@ -116,6 +119,13 @@ It enables you to create, manage, and monitor data processing workflows.
 5. List supported instance types: `manage_aws_emr_ec2_instances(operation='list-supported-instance-types', release_label='emr-6.10.0')`
 6. Modify instance fleet: `manage_aws_emr_ec2_instances(operation='modify-instance-fleet', cluster_id='j-123ABC456DEF', instance_fleet_id='if-123ABC', instance_fleet_config={'TargetOnDemandCapacity': 4})`
 7. Modify instance groups: `manage_aws_emr_ec2_instances(operation='modify-instance-groups', instance_group_configs=[{'InstanceGroupId': 'ig-123ABC', 'InstanceCount': 3}])`
+
+### EMR EC2 Steps Management
+1. Add steps: `manage_aws_emr_ec2_steps(operation='add-steps', cluster_id='j-123ABC456DEF', steps=[{'Name': 'MyStep', 'ActionOnFailure': 'CONTINUE', 'HadoopJarStep': {'Jar': 'command-runner.jar', 'Args': ['echo', 'hello']}}])`
+2. Cancel steps: `manage_aws_emr_ec2_steps(operation='cancel-steps', cluster_id='j-123ABC456DEF', step_ids=['s-123ABC456DEF'])`
+3. Describe step: `manage_aws_emr_ec2_steps(operation='describe-step', cluster_id='j-123ABC456DEF', step_id='s-123ABC456DEF')`
+4. List steps: `manage_aws_emr_ec2_steps(operation='list-steps', cluster_id='j-123ABC456DEF')`
+5. List steps with filters: `manage_aws_emr_ec2_steps(operation='list-steps', cluster_id='j-123ABC456DEF', step_states=['RUNNING', 'COMPLETED'])`
 
 ### Athena Queries
 1. Execute a query: `manage_aws_athena_queries(operation='start-query-execution', query='SELECT * FROM my_table', work_group='my-workgroup')`
@@ -206,6 +216,12 @@ def main():
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
     )
+    EMREc2StepsHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+
     AthenaQueryHandler(
         mcp,
         allow_write=allow_write,
