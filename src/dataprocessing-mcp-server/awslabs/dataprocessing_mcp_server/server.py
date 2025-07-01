@@ -159,6 +159,18 @@ It enables you to create, manage, and monitor data processing workflows.
 9. Manage crawler schedules: `manage_aws_glue_crawler_management(operation='update-crawler-schedule', crawler_name='my-crawler', schedule='cron(0 0 * * ? *)')`
 10. Get crawler metrics: `manage_aws_glue_crawler_management(operation='get-crawler-metrics', crawler_name_list=['my-crawler'])`
 
+### EMR EC2 Cluster Management
+1. Create cluster: `manage_aws_emr_clusters(operation='create-cluster', name='MyCluster', release_label='emr-6.10.0', instances={'InstanceGroups': [{'InstanceRole': 'MASTER', 'InstanceType': 'm5.xlarge', 'InstanceCount': 1}]})`
+2. Describe cluster: `manage_aws_emr_clusters(operation='describe-cluster', cluster_id='j-123ABC456DEF')`
+3. List clusters: `manage_aws_emr_clusters(operation='list-clusters')`
+4. Modify cluster: `manage_aws_emr_clusters(operation='modify-cluster', cluster_id='j-123ABC456DEF', step_concurrency_level=2)`
+5. Modify cluster attributes: `manage_aws_emr_clusters(operation='modify-cluster-attributes', cluster_id='j-123ABC456DEF', auto_terminate=True)`
+6. Terminate clusters: `manage_aws_emr_clusters(operation='terminate-clusters', cluster_ids=['j-123ABC456DEF'])`
+7. Create security configuration: `manage_aws_emr_clusters(operation='create-security-configuration', security_configuration_name='MySecConfig', security_configuration='{"EncryptionConfiguration": {"EnableInTransitEncryption": true}}')`
+8. Delete security configuration: `manage_aws_emr_clusters(operation='delete-security-configuration', security_configuration_name='MySecConfig')`
+9. Describe security configuration: `manage_aws_emr_clusters(operation='describe-security-configuration', security_configuration_name='MySecConfig')`
+10. List security configurations: `manage_aws_emr_clusters(operation='list-security-configurations')`
+
 ### EMR EC2 Instance Management
 1. Add instance fleet: `manage_aws_emr_ec2_instances(operation='add-instance-fleet', cluster_id='j-123ABC456DEF', instance_fleet={'InstanceFleetType': 'TASK', 'TargetOnDemandCapacity': 2})`
 2. Add instance groups: `manage_aws_emr_ec2_instances(operation='add-instance-groups', cluster_id='j-123ABC456DEF', instance_groups=[{'InstanceRole': 'TASK', 'InstanceType': 'm5.xlarge', 'InstanceCount': 2}])`
