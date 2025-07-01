@@ -24,8 +24,14 @@ Environment Variables:
 """
 
 import argparse
+from awslabs.dataprocessing_mcp_server.handlers.athena.athena_data_catalog_handler import (
+    AthenaDataCatalogHandler,
+)
 from awslabs.dataprocessing_mcp_server.handlers.athena.athena_query_handler import (
     AthenaQueryHandler,
+)
+from awslabs.dataprocessing_mcp_server.handlers.athena.athena_workgroup_handler import (
+    AthenaWorkGroupHandler,
 )
 from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler import (
     EMREc2InstanceHandler,
@@ -74,6 +80,17 @@ It enables you to create, manage, and monitor data processing workflows.
 3. Get query execution details: `manage_aws_athena_queries(operation='get-query-execution', query_execution_id='query-id')`
 4. Stop a running query: `manage_aws_athena_queries(operation='stop-query-execution', query_execution_id='query-id')`
 5. Get query runtime statistics: `manage_aws_athena_queries(operation='get-query-runtime-statistics', query_execution_id='query-id')`
+
+### Athena Named Queries
+1. Create a named query: `manage_aws_athena_named_queries(operation='create-named-query', name='my-query', database='my-database', query_string='SELECT * FROM my_table', work_group='my-workgroup')`
+2. Get a named query: `manage_aws_athena_named_queries(operation='get-named-query', named_query_id='query-id')`
+3. Delete a named query: `manage_aws_athena_named_queries(operation='delete-named-query', named_query_id='query-id')`
+4. List named queries: `manage_aws_athena_named_queries(operation='list-named-queries', work_group='my-workgroup')`
+5. Update a named query: `manage_aws_athena_named_queries(operation='update-named-query', named_query_id='query-id', name='updated-name', query_string='SELECT * FROM my_table LIMIT 10')`
+
+### Athena Workgroup and Data Catalog
+1. Create a workgroup: `manage_aws_athena_workgroups(operation='create-work-group', work_group_name='my-workgroup', configuration={...})`
+2. Manage data catalogs: `manage_aws_athena_data_catalogs(operation='create-data-catalog', name='my-catalog', type='GLUE', parameters={...})`
 
 ### Glue ETL Jobs
 1. Create a Glue job: `manage_aws_glue_jobs(operation='create-job', job_name='my-job', job_definition={...})`
@@ -264,6 +281,17 @@ def main():
     )
 
     AthenaQueryHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+
+    AthenaDataCatalogHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    AthenaWorkGroupHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
