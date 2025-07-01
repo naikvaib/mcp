@@ -199,6 +199,23 @@ It enables you to create, manage, and monitor data processing workflows.
 10. Start a trigger: `manage_aws_glue_triggers(operation='start-trigger', trigger_name='daily-etl-trigger')`
 11. Stop a trigger: `manage_aws_glue_triggers(operation='stop-trigger', trigger_name='daily-etl-trigger')`
 12. Delete a trigger: `manage_aws_glue_triggers(operation='delete-trigger', trigger_name='daily-etl-trigger')`
+
+## Best Practices
+
+- Use descriptive names for jobs, workflows, and other resources to make them easier to identify and manage.
+- Follow the principle of least privilege when creating IAM roles and policies.
+- Use tags to organize and track resources across your data processing pipeline.
+- Monitor resource usage with CloudWatch metrics to identify performance issues.
+- Store sensitive configuration values in AWS Secrets Manager or Parameter Store.
+- Use Glue Data Catalog to maintain a consistent metadata repository across services.
+- Consider partitioning large datasets for better query performance in Athena.
+- Use appropriate instance types and sizes for your Glue and EMR workloads.
+- Implement error handling and retry logic in your ETL jobs and workflows.
+- Regularly review and optimize your data processing workflows for cost and performance.
+- Use Glue Crawlers to automatically discover and catalog data in your data lake.
+- Create custom classifiers when the default classifiers don't meet your needs.
+- Organize your Data Catalog with meaningful database and table names.
+- Use connections to securely store and manage credentials for external data sources.
 """
 
 SERVER_DEPENDENCIES = [

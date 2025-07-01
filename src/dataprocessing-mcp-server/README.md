@@ -96,6 +96,9 @@ For read operations, the following permissions are required:
 For write operations, we recommend the following IAM policies:
 
 * AWSGlueServiceRole: Enables Glue service operations including job execution, crawler runs, and data catalog modifications
+* AmazonEMRFullAccessPolicy: Provides comprehensive EMR cluster management capabilities
+* IAMPassRole: Required for passing service roles to Glue jobs and EMR clusters
+* S3 Access: Appropriate S3 permissions for data lake access and job artifact storage
 
 **Important Security Note**: Users should exercise caution when --allow-write and --allow-sensitive-data-access modes are enabled with these broad permissions, as this combination grants significant privileges to the MCP server. Only enable these flags when necessary and in trusted environments.
 

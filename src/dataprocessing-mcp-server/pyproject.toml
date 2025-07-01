@@ -2,9 +2,9 @@
 name = "awslabs.dataprocessing-mcp-server"
 
 # NOTE: "Patch"=9223372036854775807 bumps next release to zero.
-version = "0.0.0"
+version = "0.1.0"
 
-description = "An AWS Labs Model Context Protocol (MCP) server for dataprocessing"
+description = "AWS Data Processing MCP server provides AI code assistants with comprehensive data processing tools and real-time pipeline visibility across AWS Glue and Amazon EMR-EC2. This integration equips large language models (LLMs) with essential data engineering capabilities and contextual awareness, enabling AI code assistants to streamline data processing workflows through intelligent guidance — from initial data discovery and cataloging through complex ETL pipeline orchestration and big data analytics optimization."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -21,6 +21,8 @@ license-files = ["LICENSE", "NOTICE" ]
 authors = [
     {name = "Amazon Web Services"},
     {name = "AWSLabs MCP", email="203918161+awslabs-mcp@users.noreply.github.com"},
+    {name = "Amazon Web Services", email="githubusername@users.noreply.github.com"},
+    {name = "naikvaib", email="naikvaib@amazon.com"},
     {name = "linliyu", email="linliyu@amazon.com"},
 ]
 classifiers = [
@@ -107,7 +109,7 @@ exclude = ["**/__pycache__", "**/.venv", "**/node_modules", "**/dist", "**/build
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.0.0"
+version = "0.1.0"
 tag_format = "v$version"
 version_files = [
     "pyproject.toml:version",
