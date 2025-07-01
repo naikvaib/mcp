@@ -13,40 +13,39 @@
 # limitations under the License.
 
 """EMREc2ClusterHandler for Data Processing MCP Server."""
+
 import json
-import os
-import time
+from awslabs.dataprocessing_mcp_server.models.emr_models import (
+    CreateClusterResponse,
+    CreateSecurityConfigurationResponse,
+    DeleteSecurityConfigurationResponse,
+    DescribeClusterResponse,
+    DescribeSecurityConfigurationResponse,
+    ListClustersResponse,
+    ListSecurityConfigurationsResponse,
+    ModifyClusterAttributesResponse,
+    ModifyClusterResponse,
+    TerminateClustersResponse,
+)
 from awslabs.dataprocessing_mcp_server.utils.aws_helper import AwsHelper
+from awslabs.dataprocessing_mcp_server.utils.consts import (
+    MCP_MANAGED_TAG_KEY,
+    MCP_MANAGED_TAG_VALUE,
+)
 from awslabs.dataprocessing_mcp_server.utils.logging_helper import (
     LogLevel,
     log_with_request_id,
 )
-from awslabs.dataprocessing_mcp_server.models.emr_models import (
-    CreateClusterResponse,
-    DescribeClusterResponse,
-    ModifyClusterResponse,
-    ModifyClusterAttributesResponse,
-    TerminateClustersResponse,
-    ListClustersResponse,
-    CreateSecurityConfigurationResponse,
-    DeleteSecurityConfigurationResponse,
-    DescribeSecurityConfigurationResponse,
-    ListSecurityConfigurationsResponse,
-)
-from awslabs.dataprocessing_mcp_server.utils.consts import MCP_MANAGED_TAG_KEY, MCP_MANAGED_TAG_VALUE
 from mcp.server.fastmcp import Context
-from mcp.types import TextContent, Content
-from pydantic import Field, BaseModel
-from typing import Dict, List, Optional, Tuple, Union, cast, Any
-from botocore.exceptions import ClientError, WaiterError
+from mcp.types import Content, TextContent
+from pydantic import Field
+from typing import Any, Dict, List, Optional, Union
 
 
 class EMREc2ClusterHandler:
     """Handler for Amazon EMR EC2 Cluster operations."""
 
-    def __init__(
-        self, mcp, allow_write: bool = False, allow_sensitive_data_access: bool = False
-    ):
+    def __init__(self, mcp, allow_write: bool = False, allow_sensitive_data_access: bool = False):
         """Initialize the EMR EC2 Cluster handler.
 
         Args:
@@ -57,35 +56,54 @@ class EMREc2ClusterHandler:
         self.mcp = mcp
         self.allow_write = allow_write
         self.allow_sensitive_data_access = allow_sensitive_data_access
-        self.emr_client = AwsHelper.create_boto3_client("emr")
+        self.emr_client = AwsHelper.create_boto3_client('emr')
 
         # Register tools
-        self.mcp.tool(name="manage_aws_emr_clusters")(self.manage_aws_emr_clusters)
+        self.mcp.tool(name='manage_aws_emr_clusters')(self.manage_aws_emr_clusters)
 
     def _create_error_response(self, operation: str, error_message: str):
         """Create appropriate error response based on operation type."""
-        content: List[Content] = [TextContent(type="text", text=error_message)]
-        
-        if operation == "create-cluster":
-            return CreateClusterResponse(isError=True, content=content, cluster_id="", cluster_arn="", operation="create")
-        elif operation == "describe-cluster":
+        content: List[Content] = [TextContent(type='text', text=error_message)]
+
+        if operation == 'create-cluster':
+            return CreateClusterResponse(
+                isError=True, content=content, cluster_id='', cluster_arn='', operation='create'
+            )
+        elif operation == 'describe-cluster':
             return DescribeClusterResponse(isError=True, content=content, cluster={})
-        elif operation == "modify-cluster":
-            return ModifyClusterResponse(isError=True, content=content, cluster_id="")
-        elif operation == "modify-cluster-attributes":
-            return ModifyClusterAttributesResponse(isError=True, content=content, cluster_id="")
-        elif operation == "terminate-clusters":
+        elif operation == 'modify-cluster':
+            return ModifyClusterResponse(isError=True, content=content, cluster_id='')
+        elif operation == 'modify-cluster-attributes':
+            return ModifyClusterAttributesResponse(isError=True, content=content, cluster_id='')
+        elif operation == 'terminate-clusters':
             return TerminateClustersResponse(isError=True, content=content, cluster_ids=[])
-        elif operation == "list-clusters":
-            return ListClustersResponse(isError=True, content=content, clusters=[], count=0, marker="", operation="list")
-        elif operation == "create-security-configuration":
-            return CreateSecurityConfigurationResponse(isError=True, content=content, name="", creation_date_time="")
-        elif operation == "delete-security-configuration":
-            return DeleteSecurityConfigurationResponse(isError=True, content=content, name="")
-        elif operation == "describe-security-configuration":
-            return DescribeSecurityConfigurationResponse(isError=True, content=content, name="", security_configuration="", creation_date_time="")
-        elif operation == "list-security-configurations":
-            return ListSecurityConfigurationsResponse(isError=True, content=content, security_configurations=[], count=0, marker="", operation="list")
+        elif operation == 'list-clusters':
+            return ListClustersResponse(
+                isError=True, content=content, clusters=[], count=0, marker='', operation='list'
+            )
+        elif operation == 'create-security-configuration':
+            return CreateSecurityConfigurationResponse(
+                isError=True, content=content, name='', creation_date_time=''
+            )
+        elif operation == 'delete-security-configuration':
+            return DeleteSecurityConfigurationResponse(isError=True, content=content, name='')
+        elif operation == 'describe-security-configuration':
+            return DescribeSecurityConfigurationResponse(
+                isError=True,
+                content=content,
+                name='',
+                security_configuration='',
+                creation_date_time='',
+            )
+        elif operation == 'list-security-configurations':
+            return ListSecurityConfigurationsResponse(
+                isError=True,
+                content=content,
+                security_configurations=[],
+                count=0,
+                marker='',
+                operation='list',
+            )
         else:
             return DescribeClusterResponse(isError=True, content=content, cluster={})
 
@@ -94,31 +112,31 @@ class EMREc2ClusterHandler:
         ctx: Context,
         operation: str = Field(
             ...,
-            description="Operation to perform: create-cluster, describe-cluster, modify-cluster, modify-cluster-attributes, terminate-clusters, list-clusters, create-security-configuration, delete-security-configuration, describe-security-configuration, list-security-configurations. Choose read-only operations when write access is disabled.",
+            description='Operation to perform: create-cluster, describe-cluster, modify-cluster, modify-cluster-attributes, terminate-clusters, list-clusters, create-security-configuration, delete-security-configuration, describe-security-configuration, list-security-configurations. Choose read-only operations when write access is disabled.',
         ),
         cluster_id: Optional[str] = Field(
             None,
-            description="ID of the EMR cluster (required for describe-cluster, modify-cluster, modify-cluster-attributes).",
+            description='ID of the EMR cluster (required for describe-cluster, modify-cluster, modify-cluster-attributes).',
         ),
         cluster_ids: Optional[List[str]] = Field(
             None,
-            description="List of EMR cluster IDs (required for terminate-clusters).",
+            description='List of EMR cluster IDs (required for terminate-clusters).',
         ),
         name: Optional[str] = Field(
             None,
-            description="Name of the EMR cluster (required for create-cluster). Cannot contain <, >, $, |, or ` (backtick).",
+            description='Name of the EMR cluster (required for create-cluster). Cannot contain <, >, $, |, or ` (backtick).',
         ),
         log_uri: Optional[str] = Field(
             None,
-            description="The path to the Amazon S3 location where logs for the cluster are stored (optional for create-cluster).",
+            description='The path to the Amazon S3 location where logs for the cluster are stored (optional for create-cluster).',
         ),
         log_encryption_kms_key_id: Optional[str] = Field(
             None,
-            description="The KMS key used for encrypting log files. Available with EMR 5.30.0 and later, excluding EMR 6.0.0 (optional for create-cluster).",
+            description='The KMS key used for encrypting log files. Available with EMR 5.30.0 and later, excluding EMR 6.0.0 (optional for create-cluster).',
         ),
         release_label: Optional[str] = Field(
             None,
-            description="The Amazon EMR release label, which determines the version of open-source application packages installed on the cluster (required for create-cluster). Format: emr-x.x.x",
+            description='The Amazon EMR release label, which determines the version of open-source application packages installed on the cluster (required for create-cluster). Format: emr-x.x.x',
         ),
         applications: Optional[List[Dict[str, str]]] = Field(
             None,
@@ -126,115 +144,115 @@ class EMREc2ClusterHandler:
         ),
         instances: Optional[Dict[str, Any]] = Field(
             None,
-            description="A specification of the number and type of Amazon EC2 instances (required for create-cluster). Must include instance groups or instance fleets configuration.",
+            description='A specification of the number and type of Amazon EC2 instances (required for create-cluster). Must include instance groups or instance fleets configuration.',
         ),
         steps: Optional[List[Dict[str, Any]]] = Field(
             None,
-            description="A list of steps to run on the cluster (optional for create-cluster). Each step contains Name, ActionOnFailure, and HadoopJarStep properties.",
+            description='A list of steps to run on the cluster (optional for create-cluster). Each step contains Name, ActionOnFailure, and HadoopJarStep properties.',
         ),
         bootstrap_actions: Optional[List[Dict[str, Any]]] = Field(
             None,
-            description="A list of bootstrap actions to run on the cluster (optional for create-cluster). Each action contains Name, ScriptBootstrapAction properties.",
+            description='A list of bootstrap actions to run on the cluster (optional for create-cluster). Each action contains Name, ScriptBootstrapAction properties.',
         ),
         configurations: Optional[List[Dict[str, Any]]] = Field(
             None,
-            description="A list of configurations to apply to the cluster (optional for create-cluster). Applies only to EMR releases 4.x and later.",
+            description='A list of configurations to apply to the cluster (optional for create-cluster). Applies only to EMR releases 4.x and later.',
         ),
         visible_to_all_users: Optional[bool] = Field(
             None,
-            description="Whether the cluster is visible to all IAM users of the AWS account (optional for create-cluster, default: true).",
+            description='Whether the cluster is visible to all IAM users of the AWS account (optional for create-cluster, default: true).',
         ),
         service_role: Optional[str] = Field(
             None,
-            description="The IAM role that Amazon EMR assumes to access AWS resources on your behalf (optional for create-cluster).",
+            description='The IAM role that Amazon EMR assumes to access AWS resources on your behalf (optional for create-cluster).',
         ),
         job_flow_role: Optional[str] = Field(
             None,
-            description="The IAM role for EC2 instances running the job flow (required for create-cluster when using temporary credentials).",
+            description='The IAM role for EC2 instances running the job flow (required for create-cluster when using temporary credentials).',
         ),
         security_configuration: Optional[str] = Field(
             None,
-            description="The name of a security configuration to apply to the cluster (optional for create-cluster).",
+            description='The name of a security configuration to apply to the cluster (optional for create-cluster).',
         ),
         auto_scaling_role: Optional[str] = Field(
             None,
-            description="An IAM role for automatic scaling policies (optional for create-cluster). Default role is EMR_AutoScaling_DefaultRole.",
+            description='An IAM role for automatic scaling policies (optional for create-cluster). Default role is EMR_AutoScaling_DefaultRole.',
         ),
         scale_down_behavior: Optional[str] = Field(
             None,
-            description="The way that individual Amazon EC2 instances terminate when an automatic scale-in activity occurs (optional for create-cluster). Values: TERMINATE_AT_INSTANCE_HOUR, TERMINATE_AT_TASK_COMPLETION.",
+            description='The way that individual Amazon EC2 instances terminate when an automatic scale-in activity occurs (optional for create-cluster). Values: TERMINATE_AT_INSTANCE_HOUR, TERMINATE_AT_TASK_COMPLETION.',
         ),
         custom_ami_id: Optional[str] = Field(
             None,
-            description="A custom Amazon Linux AMI for the cluster (optional for create-cluster). Available only in EMR releases 5.7.0 and later.",
+            description='A custom Amazon Linux AMI for the cluster (optional for create-cluster). Available only in EMR releases 5.7.0 and later.',
         ),
         ebs_root_volume_size: Optional[int] = Field(
             None,
-            description="The size, in GiB, of the EBS root device volume of the Linux AMI (optional for create-cluster). Available in EMR releases 4.x and later.",
+            description='The size, in GiB, of the EBS root device volume of the Linux AMI (optional for create-cluster). Available in EMR releases 4.x and later.',
         ),
         ebs_root_volume_iops: Optional[int] = Field(
             None,
-            description="The IOPS of the EBS root device volume of the Linux AMI (optional for create-cluster). Available in EMR releases 6.15.0 and later.",
+            description='The IOPS of the EBS root device volume of the Linux AMI (optional for create-cluster). Available in EMR releases 6.15.0 and later.',
         ),
         ebs_root_volume_throughput: Optional[int] = Field(
             None,
-            description="The throughput, in MiB/s, of the EBS root device volume of the Linux AMI (optional for create-cluster). Available in EMR releases 6.15.0 and later.",
+            description='The throughput, in MiB/s, of the EBS root device volume of the Linux AMI (optional for create-cluster). Available in EMR releases 6.15.0 and later.',
         ),
         repo_upgrade_on_boot: Optional[str] = Field(
             None,
-            description="Applies only when CustomAmiID is used. Specifies the type of updates that are applied from the Amazon Linux AMI package repositories when an instance boots (optional for create-cluster).",
+            description='Applies only when CustomAmiID is used. Specifies the type of updates that are applied from the Amazon Linux AMI package repositories when an instance boots (optional for create-cluster).',
         ),
         kerberos_attributes: Optional[Dict[str, Any]] = Field(
             None,
-            description="Attributes for Kerberos configuration when Kerberos authentication is enabled (optional for create-cluster).",
+            description='Attributes for Kerberos configuration when Kerberos authentication is enabled (optional for create-cluster).',
         ),
         step_concurrency_level: Optional[int] = Field(
             None,
-            description="The number of steps that can be executed concurrently (required for modify-cluster). Range: 1-256.",
+            description='The number of steps that can be executed concurrently (required for modify-cluster). Range: 1-256.',
         ),
         auto_terminate: Optional[bool] = Field(
             None,
-            description="Whether the cluster should auto-terminate after completing steps (optional for modify-cluster-attributes).",
+            description='Whether the cluster should auto-terminate after completing steps (optional for modify-cluster-attributes).',
         ),
         termination_protected: Optional[bool] = Field(
             None,
-            description="Whether the cluster is protected from termination (optional for modify-cluster-attributes).",
+            description='Whether the cluster is protected from termination (optional for modify-cluster-attributes).',
         ),
         unhealthy_node_replacement: Optional[bool] = Field(
             None,
-            description="Whether Amazon EMR should gracefully replace Amazon EC2 core instances that have degraded within the cluster (optional for create-cluster).",
+            description='Whether Amazon EMR should gracefully replace Amazon EC2 core instances that have degraded within the cluster (optional for create-cluster).',
         ),
         os_release_label: Optional[str] = Field(
             None,
-            description="The Amazon Linux release for the cluster (optional for create-cluster).",
+            description='The Amazon Linux release for the cluster (optional for create-cluster).',
         ),
         placement_groups: Optional[List[Dict[str, Any]]] = Field(
             None,
-            description="Placement group configuration for the cluster (optional for create-cluster).",
+            description='Placement group configuration for the cluster (optional for create-cluster).',
         ),
         cluster_states: Optional[List[str]] = Field(
             None,
-            description="The cluster state filters to apply when listing clusters (optional for list-clusters).",
+            description='The cluster state filters to apply when listing clusters (optional for list-clusters).',
         ),
         created_after: Optional[str] = Field(
             None,
-            description="The creation date and time beginning value filter for listing clusters (optional for list-clusters).",
+            description='The creation date and time beginning value filter for listing clusters (optional for list-clusters).',
         ),
         created_before: Optional[str] = Field(
             None,
-            description="The creation date and time end value filter for listing clusters (optional for list-clusters).",
+            description='The creation date and time end value filter for listing clusters (optional for list-clusters).',
         ),
         marker: Optional[str] = Field(
             None,
-            description="The pagination token for list-clusters operation.",
+            description='The pagination token for list-clusters operation.',
         ),
         security_configuration_name: Optional[str] = Field(
             None,
-            description="Name of the security configuration (required for create-security-configuration, delete-security-configuration, describe-security-configuration).",
+            description='Name of the security configuration (required for create-security-configuration, delete-security-configuration, describe-security-configuration).',
         ),
         security_configuration_json: Optional[Dict[str, Any]] = Field(
             None,
-            description="JSON format security configuration (required for create-security-configuration).",
+            description='JSON format security configuration (required for create-security-configuration).',
         ),
     ) -> Union[
         CreateClusterResponse,
@@ -276,28 +294,28 @@ class EMREc2ClusterHandler:
         ```
         # Create a basic EMR cluster with Spark
         {
-          "operation": "create-cluster",
-          "name": "SparkCluster",
-          "release_label": "emr-7.9.0",
-          "applications": [{"Name": "Spark"}],
-          "instances": {
-            "InstanceGroups": [
-              {
-                "Name": "Master",
-                "InstanceRole": "MASTER",
-                "InstanceType": "m5.xlarge",
-                "InstanceCount": 1
-              },
-              {
-                "Name": "Core",
-                "InstanceRole": "CORE",
-                "InstanceType": "m5.xlarge",
-                "InstanceCount": 2
-              }
-            ],
-            "Ec2KeyName": "my-key-pair",
-            "KeepJobFlowAliveWhenNoSteps": true
-          }
+            'operation': 'create-cluster',
+            'name': 'SparkCluster',
+            'release_label': 'emr-7.9.0',
+            'applications': [{'Name': 'Spark'}],
+            'instances': {
+                'InstanceGroups': [
+                    {
+                        'Name': 'Master',
+                        'InstanceRole': 'MASTER',
+                        'InstanceType': 'm5.xlarge',
+                        'InstanceCount': 1,
+                    },
+                    {
+                        'Name': 'Core',
+                        'InstanceRole': 'CORE',
+                        'InstanceType': 'm5.xlarge',
+                        'InstanceCount': 2,
+                    },
+                ],
+                'Ec2KeyName': 'my-key-pair',
+                'KeepJobFlowAliveWhenNoSteps': true,
+            },
         }
         ```
 
@@ -314,6 +332,7 @@ class EMREc2ClusterHandler:
             cluster_ids: List of EMR cluster IDs
             name: Name of the EMR cluster
             log_uri: The path to the Amazon S3 location where logs for the cluster are stored
+            log_encryption_kms_key_id: The KMS key used for encrypting log files
             release_label: The Amazon EMR release label
             applications: The applications to be installed on the cluster
             instances: A specification of the number and type of Amazon EC2 instances
@@ -328,11 +347,16 @@ class EMREc2ClusterHandler:
             scale_down_behavior: The way that individual Amazon EC2 instances terminate when an automatic scale-in activity occurs
             custom_ami_id: A custom Amazon Linux AMI for the cluster
             ebs_root_volume_size: The size, in GiB, of the EBS root device volume of the Linux AMI
+            ebs_root_volume_iops: The IOPS of the EBS root device volume of the Linux AMI
+            ebs_root_volume_throughput: The throughput, in MiB/s, of the EBS root device volume of the Linux AMI
             repo_upgrade_on_boot: Specifies the type of updates that are applied from the Amazon Linux AMI package repositories when an instance boots
             kerberos_attributes: Attributes for Kerberos configuration when Kerberos authentication is enabled
             step_concurrency_level: The number of steps that can be executed concurrently
             auto_terminate: Whether the cluster should auto-terminate after completing steps
             termination_protected: Whether the cluster is protected from termination
+            unhealthy_node_replacement: Whether Amazon EMR should gracefully replace Amazon EC2 core instances that have degraded within the cluster
+            os_release_label: The Amazon Linux release for the cluster
+            placement_groups: Placement group configuration for the cluster
             cluster_states: The cluster state filters to apply when listing clusters
             created_after: The creation date and time beginning value filter for listing clusters
             created_before: The creation date and time end value filter for listing clusters
@@ -347,131 +371,129 @@ class EMREc2ClusterHandler:
             log_with_request_id(
                 ctx,
                 LogLevel.INFO,
-                f"EMR EC2 Cluster Handler - Tool: manage_aws_emr_ec2_clusters - Operation: {operation}",
+                f'EMR EC2 Cluster Handler - Tool: manage_aws_emr_ec2_clusters - Operation: {operation}',
             )
 
             if not self.allow_write and operation in [
-                "create-cluster",
-                "modify-cluster",
-                "modify-cluster-attributes",
-                "terminate-clusters",
-                "create-security-configuration",
-                "delete-security-configuration",
+                'create-cluster',
+                'modify-cluster',
+                'modify-cluster-attributes',
+                'terminate-clusters',
+                'create-security-configuration',
+                'delete-security-configuration',
             ]:
-                error_message = (
-                    f"Operation {operation} is not allowed without write access"
-                )
+                error_message = f'Operation {operation} is not allowed without write access'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
                 return self._create_error_response(operation, error_message)
 
-            if operation == "create-cluster":
+            if operation == 'create-cluster':
                 # Check required parameters manually before proceeding
                 missing_params = []
                 if name is None:
-                    missing_params.append("name")
+                    missing_params.append('name')
                 if release_label is None:
-                    missing_params.append("release_label")
+                    missing_params.append('release_label')
                 if instances is None:
-                    missing_params.append("instances")
-                
+                    missing_params.append('instances')
+
                 if missing_params:
-                    error_message = "name, release_label, and instances are required for create-cluster operation"
+                    error_message = 'name, release_label, and instances are required for create-cluster operation'
                     return self._create_error_response(operation, error_message)
 
                 # Prepare parameters
                 params = {
-                    "Name": name,
-                    "ReleaseLabel": release_label,
-                    "Instances": instances,
+                    'Name': name,
+                    'ReleaseLabel': release_label,
+                    'Instances': instances,
                 }
 
                 if log_uri is not None:
-                    params["LogUri"] = log_uri
+                    params['LogUri'] = log_uri
 
                 if log_encryption_kms_key_id is not None:
-                    params["LogEncryptionKmsKeyId"] = log_encryption_kms_key_id
+                    params['LogEncryptionKmsKeyId'] = log_encryption_kms_key_id
 
                 if applications is not None:
-                    params["Applications"] = applications
+                    params['Applications'] = applications
 
                 if steps is not None:
-                    params["Steps"] = steps
+                    params['Steps'] = steps
 
                 if bootstrap_actions is not None:
-                    params["BootstrapActions"] = bootstrap_actions
+                    params['BootstrapActions'] = bootstrap_actions
 
                 if configurations is not None:
-                    params["Configurations"] = configurations
+                    params['Configurations'] = configurations
 
                 if visible_to_all_users is not None:
-                    params["VisibleToAllUsers"] = visible_to_all_users
+                    params['VisibleToAllUsers'] = visible_to_all_users
 
                 if service_role is not None:
-                    params["ServiceRole"] = service_role
+                    params['ServiceRole'] = service_role
 
                 if job_flow_role is not None:
-                    params["JobFlowRole"] = job_flow_role
+                    params['JobFlowRole'] = job_flow_role
 
                 if security_configuration is not None:
-                    params["SecurityConfiguration"] = security_configuration
+                    params['SecurityConfiguration'] = security_configuration
 
                 if auto_scaling_role is not None:
-                    params["AutoScalingRole"] = auto_scaling_role
+                    params['AutoScalingRole'] = auto_scaling_role
 
                 if scale_down_behavior is not None:
-                    params["ScaleDownBehavior"] = scale_down_behavior
+                    params['ScaleDownBehavior'] = scale_down_behavior
 
                 if custom_ami_id is not None:
-                    params["CustomAmiId"] = custom_ami_id
+                    params['CustomAmiId'] = custom_ami_id
 
                 if ebs_root_volume_size is not None:
-                    params["EbsRootVolumeSize"] = ebs_root_volume_size
+                    params['EbsRootVolumeSize'] = ebs_root_volume_size
 
                 if ebs_root_volume_iops is not None:
-                    params["EbsRootVolumeIops"] = ebs_root_volume_iops
+                    params['EbsRootVolumeIops'] = ebs_root_volume_iops
 
                 if ebs_root_volume_throughput is not None:
-                    params["EbsRootVolumeThroughput"] = ebs_root_volume_throughput
+                    params['EbsRootVolumeThroughput'] = ebs_root_volume_throughput
 
                 if repo_upgrade_on_boot is not None:
-                    params["RepoUpgradeOnBoot"] = repo_upgrade_on_boot
+                    params['RepoUpgradeOnBoot'] = repo_upgrade_on_boot
 
                 if kerberos_attributes is not None:
-                    params["KerberosAttributes"] = kerberos_attributes
+                    params['KerberosAttributes'] = kerberos_attributes
 
                 if unhealthy_node_replacement is not None:
-                    params["UnhealthyNodeReplacement"] = unhealthy_node_replacement
+                    params['UnhealthyNodeReplacement'] = unhealthy_node_replacement
 
                 if os_release_label is not None:
-                    params["OSReleaseLabel"] = os_release_label
+                    params['OSReleaseLabel'] = os_release_label
 
                 if placement_groups is not None:
-                    params["PlacementGroups"] = placement_groups
+                    params['PlacementGroups'] = placement_groups
 
                 # Add MCP management tags
-                resource_tags = AwsHelper.prepare_resource_tags("EMRCluster")
+                resource_tags = AwsHelper.prepare_resource_tags('EMRCluster')
                 aws_tags = [{'Key': key, 'Value': value} for key, value in resource_tags.items()]
-                params["Tags"] = aws_tags
+                params['Tags'] = aws_tags
 
                 # Create cluster
                 response = self.emr_client.run_job_flow(**params)
 
                 content: List[Content] = [
                     TextContent(
-                        type="text",
-                        text=f"Successfully created EMR cluster {name} with MCP management tags",
+                        type='text',
+                        text=f'Successfully created EMR cluster {name} with MCP management tags',
                     )
                 ]
                 return CreateClusterResponse(
                     isError=False,
                     content=content,
-                    cluster_id=response.get("JobFlowId", ""),
+                    cluster_id=response.get('JobFlowId', ''),
                     cluster_arn=None,  # EMR doesn't return ARN in the create response
                 )
 
-            elif operation == "describe-cluster":
+            elif operation == 'describe-cluster':
                 if cluster_id is None:
-                    error_message = "cluster_id is required for describe-cluster operation"
+                    error_message = 'cluster_id is required for describe-cluster operation'
                     return self._create_error_response(operation, error_message)
 
                 # Describe cluster
@@ -479,22 +501,24 @@ class EMREc2ClusterHandler:
 
                 content: List[Content] = [
                     TextContent(
-                        type="text",
-                        text=f"Successfully described EMR cluster {cluster_id}",
+                        type='text',
+                        text=f'Successfully described EMR cluster {cluster_id}',
                     )
                 ]
                 return DescribeClusterResponse(
                     isError=False,
                     content=content,
-                    cluster=response.get("Cluster", {}),
+                    cluster=response.get('Cluster', {}),
                 )
 
-            elif operation == "modify-cluster":
+            elif operation == 'modify-cluster':
                 if cluster_id is None:
-                    error_message = "cluster_id is required for modify-cluster operation"
+                    error_message = 'cluster_id is required for modify-cluster operation'
                     return self._create_error_response(operation, error_message)
                 if step_concurrency_level is None:
-                    error_message = "step_concurrency_level is required for modify-cluster operation"
+                    error_message = (
+                        'step_concurrency_level is required for modify-cluster operation'
+                    )
                     return self._create_error_response(operation, error_message)
 
                 # Modify cluster
@@ -505,24 +529,26 @@ class EMREc2ClusterHandler:
 
                 content: List[Content] = [
                     TextContent(
-                        type="text",
-                        text=f"Successfully modified EMR cluster {cluster_id}",
+                        type='text',
+                        text=f'Successfully modified EMR cluster {cluster_id}',
                     )
                 ]
                 return ModifyClusterResponse(
                     isError=False,
                     content=content,
                     cluster_id=cluster_id,
-                    step_concurrency_level=response.get("StepConcurrencyLevel"),
+                    step_concurrency_level=response.get('StepConcurrencyLevel'),
                 )
 
-            elif operation == "modify-cluster-attributes":
+            elif operation == 'modify-cluster-attributes':
                 if cluster_id is None:
-                    error_message = "cluster_id is required for modify-cluster-attributes operation"
+                    error_message = (
+                        'cluster_id is required for modify-cluster-attributes operation'
+                    )
                     return self._create_error_response(operation, error_message)
 
                 if auto_terminate is None and termination_protected is None:
-                    error_message = "At least one of auto_terminate or termination_protected must be provided for modify-cluster-attributes operation"
+                    error_message = 'At least one of auto_terminate or termination_protected must be provided for modify-cluster-attributes operation'
                     return self._create_error_response(operation, error_message)
 
                 # Modify cluster attributes
@@ -540,8 +566,8 @@ class EMREc2ClusterHandler:
 
                 content: List[Content] = [
                     TextContent(
-                        type="text",
-                        text=f"Successfully modified attributes for EMR cluster {cluster_id}",
+                        type='text',
+                        text=f'Successfully modified attributes for EMR cluster {cluster_id}',
                     )
                 ]
                 return ModifyClusterAttributesResponse(
@@ -550,9 +576,9 @@ class EMREc2ClusterHandler:
                     cluster_id=cluster_id,
                 )
 
-            elif operation == "terminate-clusters":
+            elif operation == 'terminate-clusters':
                 if cluster_ids is None:
-                    error_message = "cluster_ids is required for terminate-clusters operation"
+                    error_message = 'cluster_ids is required for terminate-clusters operation'
                     return self._create_error_response(operation, error_message)
 
                 # Verify that all clusters are managed by MCP before terminating
@@ -569,7 +595,7 @@ class EMREc2ClusterHandler:
                         unmanaged_clusters.append(cluster_id)
 
                 if unmanaged_clusters:
-                    error_message = f"Cannot terminate clusters {unmanaged_clusters} - they are not managed by the MCP server (missing required tags)"
+                    error_message = f'Cannot terminate clusters {unmanaged_clusters} - they are not managed by the MCP server (missing required tags)'
                     log_with_request_id(ctx, LogLevel.ERROR, error_message)
                     return self._create_error_response(operation, error_message)
 
@@ -578,8 +604,8 @@ class EMREc2ClusterHandler:
 
                 content: List[Content] = [
                     TextContent(
-                        type="text",
-                        text=f"Successfully initiated termination for {len(cluster_ids)} MCP-managed EMR clusters",
+                        type='text',
+                        text=f'Successfully initiated termination for {len(cluster_ids)} MCP-managed EMR clusters',
                     )
                 ]
                 return TerminateClustersResponse(
@@ -588,42 +614,37 @@ class EMREc2ClusterHandler:
                     cluster_ids=cluster_ids,
                 )
 
-            elif operation == "list-clusters":
+            elif operation == 'list-clusters':
                 # Prepare parameters - only include non-None values
                 params = {}
                 if cluster_states is not None:
-                    params["ClusterStates"] = cluster_states
+                    params['ClusterStates'] = cluster_states
                 if created_after is not None:
-                    params["CreatedAfter"] = created_after
+                    params['CreatedAfter'] = created_after
                 if created_before is not None:
-                    params["CreatedBefore"] = created_before
+                    params['CreatedBefore'] = created_before
                 if marker is not None:
-                    params["Marker"] = marker
+                    params['Marker'] = marker
 
                 # List clusters
                 response = self.emr_client.list_clusters(**params)
 
-                clusters = response.get("Clusters", [])
+                clusters = response.get('Clusters', [])
                 content: List[Content] = [
-                    TextContent(
-                        type="text", text="Successfully listed EMR clusters"
-                    )
+                    TextContent(type='text', text='Successfully listed EMR clusters')
                 ]
                 return ListClustersResponse(
                     isError=False,
                     content=content,
                     clusters=clusters,
                     count=len(clusters),
-                    marker=response.get("Marker"),
-                    operation="list",
+                    marker=response.get('Marker'),
+                    operation='list',
                 )
 
-            elif operation == "create-security-configuration":
-                if (
-                    security_configuration_name is None
-                    or security_configuration_json is None
-                ):
-                    error_message = "security_configuration_name and security_configuration_json are required for create-security-configuration operation"
+            elif operation == 'create-security-configuration':
+                if security_configuration_name is None or security_configuration_json is None:
+                    error_message = 'security_configuration_name and security_configuration_json are required for create-security-configuration operation'
                     return self._create_error_response(operation, error_message)
 
                 security_configuration_json_str = json.dumps(security_configuration_json)
@@ -632,14 +653,14 @@ class EMREc2ClusterHandler:
                     SecurityConfiguration=security_configuration_json_str,
                 )
 
-                creation_date_time = response.get("CreationDateTime", "")
-                if hasattr(creation_date_time, "isoformat"):
+                creation_date_time = response.get('CreationDateTime', '')
+                if hasattr(creation_date_time, 'isoformat'):
                     creation_date_time = creation_date_time.isoformat()
 
                 content: List[Content] = [
                     TextContent(
-                        type="text",
-                        text=f"Successfully created EMR security configuration {security_configuration_name}",
+                        type='text',
+                        text=f'Successfully created EMR security configuration {security_configuration_name}',
                     )
                 ]
                 return CreateSecurityConfigurationResponse(
@@ -649,20 +670,18 @@ class EMREc2ClusterHandler:
                     creation_date_time=creation_date_time,
                 )
 
-            elif operation == "delete-security-configuration":
+            elif operation == 'delete-security-configuration':
                 if security_configuration_name is None:
-                    error_message = "security_configuration_name is required for delete-security-configuration operation"
+                    error_message = 'security_configuration_name is required for delete-security-configuration operation'
                     return self._create_error_response(operation, error_message)
 
                 # Delete security configuration
-                self.emr_client.delete_security_configuration(
-                    Name=security_configuration_name
-                )
+                self.emr_client.delete_security_configuration(Name=security_configuration_name)
 
                 content: List[Content] = [
                     TextContent(
-                        type="text",
-                        text=f"Successfully deleted EMR security configuration {security_configuration_name}",
+                        type='text',
+                        text=f'Successfully deleted EMR security configuration {security_configuration_name}',
                     )
                 ]
                 return DeleteSecurityConfigurationResponse(
@@ -671,9 +690,9 @@ class EMREc2ClusterHandler:
                     name=security_configuration_name,
                 )
 
-            elif operation == "describe-security-configuration":
+            elif operation == 'describe-security-configuration':
                 if security_configuration_name is None:
-                    error_message = "security_configuration_name is required for describe-security-configuration operation"
+                    error_message = 'security_configuration_name is required for describe-security-configuration operation'
                     return self._create_error_response(operation, error_message)
 
                 # Describe security configuration
@@ -681,38 +700,38 @@ class EMREc2ClusterHandler:
                     Name=security_configuration_name
                 )
 
-                creation_date_time = response.get("CreationDateTime", "")
-                if hasattr(creation_date_time, "isoformat"):
+                creation_date_time = response.get('CreationDateTime', '')
+                if hasattr(creation_date_time, 'isoformat'):
                     creation_date_time = creation_date_time.isoformat()
 
                 content: List[Content] = [
                     TextContent(
-                        type="text",
-                        text=f"Successfully described EMR security configuration {security_configuration_name}",
+                        type='text',
+                        text=f'Successfully described EMR security configuration {security_configuration_name}',
                     )
                 ]
                 return DescribeSecurityConfigurationResponse(
                     isError=False,
                     content=content,
                     name=security_configuration_name,
-                    security_configuration=response.get("SecurityConfiguration", ""),
+                    security_configuration=response.get('SecurityConfiguration', ''),
                     creation_date_time=creation_date_time,
                 )
 
-            elif operation == "list-security-configurations":
+            elif operation == 'list-security-configurations':
                 # Prepare parameters
                 params = {}
                 if marker is not None:
-                    params["Marker"] = marker
+                    params['Marker'] = marker
 
                 # List security configurations
                 response = self.emr_client.list_security_configurations(**params)
 
-                security_configurations = response.get("SecurityConfigurations", [])
+                security_configurations = response.get('SecurityConfigurations', [])
                 content: List[Content] = [
                     TextContent(
-                        type="text",
-                        text="Successfully listed EMR security configurations",
+                        type='text',
+                        text='Successfully listed EMR security configurations',
                     )
                 ]
                 return ListSecurityConfigurationsResponse(
@@ -720,20 +739,20 @@ class EMREc2ClusterHandler:
                     content=content,
                     security_configurations=security_configurations,
                     count=len(security_configurations),
-                    marker=response.get("Marker"),
-                    operation="list",
+                    marker=response.get('Marker'),
+                    operation='list',
                 )
 
             else:
-                error_message = f"Invalid operation: {operation}. Must be one of: create-cluster, describe-cluster, modify-cluster, modify-cluster-attributes, terminate-clusters, list-clusters, create-security-configuration, delete-security-configuration, describe-security-configuration, list-security-configurations"
+                error_message = f'Invalid operation: {operation}. Must be one of: create-cluster, describe-cluster, modify-cluster, modify-cluster-attributes, terminate-clusters, list-clusters, create-security-configuration, delete-security-configuration, describe-security-configuration, list-security-configurations'
                 log_with_request_id(ctx, LogLevel.ERROR, error_message)
-                return self._create_error_response("describe-cluster", error_message)
+                return self._create_error_response('describe-cluster', error_message)
 
         except ValueError as e:
             error_message = str(e)
             log_with_request_id(ctx, LogLevel.ERROR, error_message)
             return self._create_error_response(operation, error_message)
         except Exception as e:
-            error_message = f"Error in manage_aws_emr_clusters: {str(e)}"
+            error_message = f'Error in manage_aws_emr_clusters: {str(e)}'
             log_with_request_id(ctx, LogLevel.ERROR, error_message)
             return self._create_error_response(operation, error_message)
