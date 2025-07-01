@@ -64,6 +64,10 @@ class CrawlerHandler:
 
         # Register tools
         self.mcp.tool(name='manage_aws_glue_crawlers')(self.manage_aws_glue_crawlers)
+        self.mcp.tool(name='manage_aws_glue_classifiers')(self.manage_aws_glue_classifiers)
+        self.mcp.tool(name='manage_aws_glue_crawler_management')(
+            self.manage_aws_glue_crawler_management
+        )
 
     async def manage_aws_glue_crawlers(
         self,

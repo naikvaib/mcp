@@ -59,7 +59,16 @@ class TestCrawlerHandler:
             assert handler.allow_write is True
             assert handler.allow_sensitive_data_access is True
             mock_aws_helper.create_boto3_client.assert_called_once_with('glue')
-            mock_mcp.tool.assert_called_once_with(name='manage_aws_glue_crawlers')
+
+            assert mock_mcp.tool.call_count == 3
+
+            call_args_list = mock_mcp.tool.call_args_list
+
+            tool_names = [call_args[1]['name'] for call_args in call_args_list]
+
+            assert 'manage_aws_glue_crawlers' in tool_names
+            assert 'manage_aws_glue_classifiers' in tool_names
+            assert 'manage_aws_glue_crawler_management' in tool_names
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_crawlers_create_success(self, handler, mock_context):
