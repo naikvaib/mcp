@@ -16,17 +16,31 @@
 from awslabs.dataprocessing_mcp_server.models.athena_models import (
     BatchGetNamedQueryResponse,
     BatchGetQueryExecutionResponse,
+    CreateDataCatalogResponse,
     CreateNamedQueryResponse,
+    CreateWorkGroupResponse,
+    DeleteDataCatalogResponse,
     DeleteNamedQueryResponse,
+    DeleteWorkGroupResponse,
+    GetDatabaseResponse,
+    GetDataCatalogResponse,
     GetNamedQueryResponse,
     GetQueryExecutionResponse,
     GetQueryResultsResponse,
     GetQueryRuntimeStatisticsResponse,
+    GetTableMetadataResponse,
+    GetWorkGroupResponse,
+    ListDatabasesResponse,
+    ListDataCatalogsResponse,
     ListNamedQueriesResponse,
     ListQueryExecutionsResponse,
+    ListTableMetadataResponse,
+    ListWorkGroupsResponse,
     StartQueryExecutionResponse,
     StopQueryExecutionResponse,
+    UpdateDataCatalogResponse,
     UpdateNamedQueryResponse,
+    UpdateWorkGroupResponse,
 )
 from mcp.types import TextContent
 
@@ -354,3 +368,318 @@ def test_complex_data_structures():
     )
     assert statistics_response.statistics['DataScannedInBytes'] == 1024
     assert statistics_response.statistics['QueryStages'][0]['OutputRows'] == 10
+
+
+class TestDataCatalogResponses:
+    """Test class for Athena data catalog response models."""
+
+    def test_create_data_catalog_response(self):
+        """Test the CreateDataCatalogResponse model."""
+        response = CreateDataCatalogResponse(
+            isError=False,
+            content=sample_text_content,
+            name='test-catalog',
+        )
+        assert response.isError is False
+        assert response.name == 'test-catalog'
+        assert response.operation == 'create'
+
+    def test_delete_data_catalog_response(self):
+        """Test the DeleteDataCatalogResponse model."""
+        response = DeleteDataCatalogResponse(
+            isError=False,
+            content=sample_text_content,
+            name='test-catalog',
+        )
+        assert response.isError is False
+        assert response.name == 'test-catalog'
+        assert response.operation == 'delete'
+
+    def test_get_data_catalog_response(self):
+        """Test the GetDataCatalogResponse model."""
+        catalog_details = {
+            'Name': 'test-catalog',
+            'Type': 'LAMBDA',
+            'Description': 'Test catalog description',
+            'Parameters': {'function': 'lambda-function-name'},
+            'Status': 'ACTIVE',
+            'ConnectionType': 'DIRECT',
+        }
+        response = GetDataCatalogResponse(
+            isError=False,
+            content=sample_text_content,
+            data_catalog=catalog_details,
+        )
+        assert response.isError is False
+        assert response.data_catalog == catalog_details
+        assert response.data_catalog['Name'] == 'test-catalog'
+        assert response.operation == 'get'
+
+    def test_list_data_catalogs_response(self):
+        """Test the ListDataCatalogsResponse model."""
+        catalogs = [
+            {
+                'CatalogName': 'catalog1',
+                'Type': 'LAMBDA',
+                'Status': 'ACTIVE',
+                'ConnectionType': 'DIRECT',
+            },
+            {
+                'CatalogName': 'catalog2',
+                'Type': 'GLUE',
+                'Status': 'ACTIVE',
+                'ConnectionType': 'DIRECT',
+            },
+        ]
+        response = ListDataCatalogsResponse(
+            isError=False,
+            content=sample_text_content,
+            data_catalogs=catalogs,
+            count=2,
+            next_token='next-page',
+        )
+        assert response.isError is False
+        assert response.data_catalogs == catalogs
+        assert response.count == 2
+        assert response.next_token == 'next-page'
+        assert response.operation == 'list'
+
+    def test_update_data_catalog_response(self):
+        """Test the UpdateDataCatalogResponse model."""
+        response = UpdateDataCatalogResponse(
+            isError=False,
+            content=sample_text_content,
+            name='test-catalog',
+        )
+        assert response.isError is False
+        assert response.name == 'test-catalog'
+        assert response.operation == 'update'
+
+    def test_get_database_response(self):
+        """Test the GetDatabaseResponse model."""
+        database_details = {
+            'Name': 'test-database',
+            'Description': 'Test database description',
+            'Parameters': {'created_by': 'test-user'},
+        }
+        response = GetDatabaseResponse(
+            isError=False,
+            content=sample_text_content,
+            database=database_details,
+        )
+        assert response.isError is False
+        assert response.database == database_details
+        assert response.database['Name'] == 'test-database'
+        assert response.operation == 'get'
+
+    def test_get_table_metadata_response(self):
+        """Test the GetTableMetadataResponse model."""
+        table_metadata = {
+            'Name': 'test-table',
+            'CreateTime': '2023-01-01T00:00:00.000Z',
+            'LastAccessTime': '2023-01-02T00:00:00.000Z',
+            'TableType': 'EXTERNAL_TABLE',
+            'Columns': [
+                {'Name': 'id', 'Type': 'int'},
+                {'Name': 'name', 'Type': 'string'},
+            ],
+            'PartitionKeys': [{'Name': 'date', 'Type': 'string'}],
+            'Parameters': {'EXTERNAL': 'TRUE'},
+        }
+        response = GetTableMetadataResponse(
+            isError=False,
+            content=sample_text_content,
+            table_metadata=table_metadata,
+        )
+        assert response.isError is False
+        assert response.table_metadata == table_metadata
+        assert response.table_metadata['Name'] == 'test-table'
+        assert len(response.table_metadata['Columns']) == 2
+        assert response.operation == 'get'
+
+    def test_list_databases_response(self):
+        """Test the ListDatabasesResponse model."""
+        databases = [
+            {
+                'Name': 'database1',
+                'Description': 'First test database',
+                'Parameters': {'created_by': 'user1'},
+            },
+            {
+                'Name': 'database2',
+                'Description': 'Second test database',
+                'Parameters': {'created_by': 'user2'},
+            },
+        ]
+        response = ListDatabasesResponse(
+            isError=False,
+            content=sample_text_content,
+            database_list=databases,
+            count=2,
+            next_token='next-page',
+        )
+        assert response.isError is False
+        assert response.database_list == databases
+        assert response.count == 2
+        assert response.next_token == 'next-page'
+        assert response.operation == 'list'
+
+    def test_list_table_metadata_response(self):
+        """Test the ListTableMetadataResponse model."""
+        tables = [
+            {
+                'Name': 'table1',
+                'CreateTime': '2023-01-01T00:00:00.000Z',
+                'TableType': 'EXTERNAL_TABLE',
+                'Columns': [{'Name': 'id', 'Type': 'int'}],
+            },
+            {
+                'Name': 'table2',
+                'CreateTime': '2023-01-02T00:00:00.000Z',
+                'TableType': 'MANAGED_TABLE',
+                'Columns': [{'Name': 'name', 'Type': 'string'}],
+            },
+        ]
+        response = ListTableMetadataResponse(
+            isError=False,
+            content=sample_text_content,
+            table_metadata_list=tables,
+            count=2,
+            next_token='next-page',
+        )
+        assert response.isError is False
+        assert response.table_metadata_list == tables
+        assert response.count == 2
+        assert response.next_token == 'next-page'
+        assert response.operation == 'list'
+
+
+class TestWorkGroupResponses:
+    """Test class for Athena work group response models."""
+
+    def test_create_work_group_response(self):
+        """Test the CreateWorkGroupResponse model."""
+        response = CreateWorkGroupResponse(
+            isError=False,
+            content=sample_text_content,
+            work_group_name='test-workgroup',
+        )
+        assert response.isError is False
+        assert response.work_group_name == 'test-workgroup'
+        assert response.operation == 'create'
+
+    def test_delete_work_group_response(self):
+        """Test the DeleteWorkGroupResponse model."""
+        response = DeleteWorkGroupResponse(
+            isError=False,
+            content=sample_text_content,
+            work_group_name='test-workgroup',
+        )
+        assert response.isError is False
+        assert response.work_group_name == 'test-workgroup'
+        assert response.operation == 'delete'
+
+    def test_get_work_group_response(self):
+        """Test the GetWorkGroupResponse model."""
+        work_group_details = {
+            'Name': 'test-workgroup',
+            'State': 'ENABLED',
+            'Configuration': {
+                'ResultConfiguration': {'OutputLocation': 's3://bucket/path'},
+                'EnforceWorkGroupConfiguration': True,
+                'PublishCloudWatchMetricsEnabled': True,
+                'BytesScannedCutoffPerQuery': 10000000,
+                'RequesterPaysEnabled': False,
+            },
+            'Description': 'Test work group',
+            'CreationTime': '2023-01-01T00:00:00.000Z',
+        }
+        response = GetWorkGroupResponse(
+            isError=False,
+            content=sample_text_content,
+            work_group=work_group_details,
+        )
+        assert response.isError is False
+        assert response.work_group == work_group_details
+        assert response.work_group['Name'] == 'test-workgroup'
+        assert response.operation == 'get'
+
+    def test_list_work_groups_response(self):
+        """Test the ListWorkGroupsResponse model."""
+        work_groups = [
+            {
+                'Name': 'workgroup1',
+                'State': 'ENABLED',
+                'Description': 'First test work group',
+            },
+            {
+                'Name': 'workgroup2',
+                'State': 'DISABLED',
+                'Description': 'Second test work group',
+            },
+        ]
+        response = ListWorkGroupsResponse(
+            isError=False,
+            content=sample_text_content,
+            work_groups=work_groups,
+            count=2,
+            next_token='next-page',
+        )
+        assert response.isError is False
+        assert response.work_groups == work_groups
+        assert response.count == 2
+        assert response.next_token == 'next-page'
+        assert response.operation == 'list'
+
+    def test_update_work_group_response(self):
+        """Test the UpdateWorkGroupResponse model."""
+        response = UpdateWorkGroupResponse(
+            isError=False,
+            content=sample_text_content,
+            work_group_name='test-workgroup',
+        )
+        assert response.isError is False
+        assert response.work_group_name == 'test-workgroup'
+        assert response.operation == 'update'
+
+
+def test_data_catalog_error_responses():
+    """Test error cases for data catalog response types."""
+    error_content = [TextContent(type='text', text='Error occurred')]
+
+    # Test data catalog error response
+    catalog_error = CreateDataCatalogResponse(
+        isError=True, content=error_content, name='test-catalog'
+    )
+    assert catalog_error.isError is True
+    assert catalog_error.content == error_content
+    assert catalog_error.name == 'test-catalog'
+
+    # Test database error response
+    database_error = GetDatabaseResponse(
+        isError=True, content=error_content, database={'Name': 'test-database'}
+    )
+    assert database_error.isError is True
+    assert database_error.content == error_content
+    assert database_error.database['Name'] == 'test-database'
+
+
+def test_work_group_error_responses():
+    """Test error cases for work group response types."""
+    error_content = [TextContent(type='text', text='Error occurred')]
+
+    # Test work group error response
+    work_group_error = CreateWorkGroupResponse(
+        isError=True, content=error_content, work_group_name='test-workgroup'
+    )
+    assert work_group_error.isError is True
+    assert work_group_error.content == error_content
+    assert work_group_error.work_group_name == 'test-workgroup'
+
+    # Test get work group error response
+    get_work_group_error = GetWorkGroupResponse(
+        isError=True, content=error_content, work_group={'Name': 'test-workgroup'}
+    )
+    assert get_work_group_error.isError is True
+    assert get_work_group_error.content == error_content
+    assert get_work_group_error.work_group['Name'] == 'test-workgroup'
