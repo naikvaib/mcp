@@ -16,6 +16,16 @@ Integrating the DataProcessing MCP server into AI code assistants transforms dat
 * Workflows and Triggers: Orchestrates complex ETL activities through visual workflows and automated triggers, supporting scheduled, conditional, and event-based execution patterns.
 * Crawler Management: Enables intelligent data discovery through automated crawler configuration, scheduling, and metadata extraction from various data sources.
 
+### Amazon EMR EC2 Integration
+
+* Cluster Management: Provides comprehensive EMR cluster lifecycle management including creation, configuration, monitoring, modification, and termination of EC2-based clusters with automatic tagging for resource tracking.
+* Instance Management: Enables dynamic scaling and management of EMR cluster instances through instance groups and fleets, supporting on-demand and spot instances with automated capacity management.
+* Step Management: Orchestrates big data processing jobs through EMR steps with support for Spark, Hadoop, and custom applications, including step monitoring, cancellation, and result retrieval.
+
+### Amazon Athena Integration
+
+* Query Management: Enables serverless SQL query execution with support for query lifecycle management, result retrieval, and performance optimization through intelligent query planning and execution monitoring.
+
 
 
 ## Prerequisites
@@ -312,6 +322,14 @@ Specifies the AWS region where Glue,EMR clusters or Athena are managed, which wi
 | manage_aws_glue_crawlers | Manage AWS Glue crawlers to discover and catalog data sources | create-crawler, delete-crawler, get-crawler, get-crawlers, start-crawler, stop-crawler, batch-get-crawlers, list-crawlers, update-crawler | --allow-write flag for create/delete/start/stop/update operations, appropriate AWS permissions |
 | manage_aws_glue_classifiers | Manage AWS Glue classifiers to determine data formats and schemas | create-classifier, delete-classifier, get-classifier, get-classifiers, update-classifier | --allow-write flag for create/delete/update operations, appropriate AWS permissions |
 | manage_aws_glue_crawler_management | Manage AWS Glue crawler schedules and monitor performance metrics | get-crawler-metrics, start-crawler-schedule, stop-crawler-schedule, update-crawler-schedule | --allow-write flag for schedule operations, appropriate AWS permissions |
+
+### EMR EC2 Handler Tools
+
+| Tool Name | Description | Key Operations | Requirements |
+|-----------|-------------|----------------|--------------|
+| manage_aws_emr_clusters | Manage AWS EMR EC2 clusters with comprehensive control over cluster lifecycle | create-cluster, describe-cluster, modify-cluster, modify-cluster-attributes, terminate-clusters, list-clusters, create-security-configuration, delete-security-configuration, describe-security-configuration, list-security-configurations | --allow-write flag for create/modify/terminate/delete operations, appropriate AWS permissions |
+| manage_aws_emr_ec2_instances | Manage AWS EMR EC2 instances with both read and write operations for scaling cluster capacity | add-instance-fleet, add-instance-groups, list-instance-fleets, list-instances, list-supported-instance-types, modify-instance-fleet, modify-instance-groups | --allow-write flag for add/modify operations, active cluster required, appropriate AWS permissions |
+| manage_aws_emr_ec2_steps | Manage AWS EMR EC2 steps for processing data on EMR clusters with support for Spark, Hadoop, and custom applications | add-steps, cancel-steps, describe-step, list-steps | --allow-write flag for add/cancel operations, active cluster required, appropriate AWS permissions |
 
 ## Version
 
