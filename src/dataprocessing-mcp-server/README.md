@@ -42,15 +42,48 @@ For read operations, the following permissions are required:
         "glue:GetDatabase*",
         "glue:GetTable*",
         "glue:GetPartition*",
+        "glue:GetJob*",
         "glue:GetCrawler*",
+        "glue:GetWorkflow*",
+        "glue:GetTrigger*",
         "glue:GetConnection*",
-        "glue:GetDatabases",
-        "glue:GetTables",
+        "glue:GetDataQuality*",
+        "glue:GetSchema*",
+        "glue:ListDatabases",
+        "glue:ListTables",
+        "glue:ListJobs",
         "glue:ListCrawlers",
+        "glue:ListWorkflows",
         "glue:SearchTables",
+        "emr:DescribeCluster",
+        "emr:ListClusters",
+        "emr:DescribeStep",
+        "emr:ListSteps",
+        "emr:ListInstances",
+        "emr:GetManagedScalingPolicy",
+        "emr:DescribeStudio",
+        "emr:ListStudios",
+        "emr:DescribeNotebookExecution",
+        "emr:ListNotebookExecutions",
         "cloudwatch:GetMetricData",
         "logs:DescribeLogGroups",
         "logs:DescribeLogStreams",
+        "athena:BatchGetQueryExecution",
+        "athena:GetQueryExecution",
+        "athena:GetQueryResults",
+        "athena:GetQueryRuntimeStatistics",
+        "athena:ListQueryExecutions",
+        "athena:BatchGetNamedQuery",
+        "athena:GetNamedQuery",
+        "athena:ListNamedQueries",
+        "athena:GetDataCatalog",
+        "athena:ListDataCatalogs",
+        "athena:GetDatabase",
+        "athena:GetTableMetadata",
+        "athena:ListDatabases",
+        "athena:ListTableMetadata",
+        "athena:GetWorkGroup",
+        "athena:ListWorkGroups"
       ],
       "Resource": "*"
     }
@@ -223,13 +256,26 @@ Specifies the AWS region where Glue,EMR clusters or Athena are managed, which wi
 | manage_aws_glue_partitions | Manage AWS Glue Data Catalog partitions | create-partition, delete-partition, get-partition, list-partitions, update-partition | --allow-write flag for create/delete/update operations, database and table must exist, appropriate AWS permissions |
 | manage_aws_glue_catalog | Manage AWS Glue Data Catalog | create-catalog, delete-catalog, get-catalog, list-catalogs, import-catalog-to-glue | --allow-write flag for create/delete/import operations, appropriate AWS permissions |
 
-
 ### Athena Query Handler Tools
 
 | Tool Name | Description | Key Operations | Requirements |
 |-----------|-------------|----------------|--------------|
 | manage_aws_athena_query_executions | Execute and manage AWS Athena SQL queries | batch-get-query-execution, get-query-execution, get-query-results, get-query-runtime-statistics, list-query-executions, start-query-execution, stop-query-execution | --allow-write flag for start/stop operations, appropriate AWS permissions |
 | manage_aws_athena_named_queries | Manage saved SQL queries in AWS Athena | batch-get-named-query, create-named-query, delete-named-query, get-named-query, list-named-queries, update-named-query | --allow-write flag for create/delete/update operations, appropriate AWS permissions |
+
+### Athena Data Catalog Handler Tools
+
+| Tool Name | Description | Key Operations | Requirements |
+|-----------|-------------|----------------|--------------|
+| manage_aws_athena_data_catalogs | Manage AWS Athena data catalogs | create-data-catalog, delete-data-catalog, get-data-catalog, list-data-catalogs, update-data-catalog | --allow-write flag for create/delete/update operations, appropriate AWS permissions |
+| manage_aws_athena_databases_and_tables | Manage AWS Athena databases and tables | get-database, get-table-metadata, list-databases, list-table-metadata | Appropriate AWS permissions for Athena database operations |
+
+### Athena WorkGroup Handler Tools
+
+| Tool Name | Description | Key Operations | Requirements |
+|-----------|-------------|----------------|--------------|
+| manage_aws_athena_workgroups | Manage AWS Athena workgroups | create-work-group, delete-work-group, get-work-group, list-work-groups, update-work-group | --allow-write flag for create/delete/update operations, appropriate AWS permissions |
+
 
 ### Glue Commons Handler Tools
 
@@ -266,7 +312,6 @@ Specifies the AWS region where Glue,EMR clusters or Athena are managed, which wi
 | manage_aws_glue_crawlers | Manage AWS Glue crawlers to discover and catalog data sources | create-crawler, delete-crawler, get-crawler, get-crawlers, start-crawler, stop-crawler, batch-get-crawlers, list-crawlers, update-crawler | --allow-write flag for create/delete/start/stop/update operations, appropriate AWS permissions |
 | manage_aws_glue_classifiers | Manage AWS Glue classifiers to determine data formats and schemas | create-classifier, delete-classifier, get-classifier, get-classifiers, update-classifier | --allow-write flag for create/delete/update operations, appropriate AWS permissions |
 | manage_aws_glue_crawler_management | Manage AWS Glue crawler schedules and monitor performance metrics | get-crawler-metrics, start-crawler-schedule, stop-crawler-schedule, update-crawler-schedule | --allow-write flag for schedule operations, appropriate AWS permissions |
-
 
 ## Version
 

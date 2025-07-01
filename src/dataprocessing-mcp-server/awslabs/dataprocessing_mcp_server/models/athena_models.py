@@ -145,3 +145,132 @@ class UpdateNamedQueryResponse(CallToolResult):
 
     named_query_id: str = Field(..., description='ID of the updated named query')
     operation: str = Field(default='update-named-query', description='Operation performed')
+
+
+# Response models for Data Catalog Operations
+
+
+class CreateDataCatalogResponse(CallToolResult):
+    """Response model for create data catalog operation."""
+
+    name: str = Field(..., description='Name of the created data catalog')
+    operation: str = Field(default='create', description='Operation performed')
+
+
+class DeleteDataCatalogResponse(CallToolResult):
+    """Response model for delete data catalog operation."""
+
+    name: str = Field(..., description='Name of the deleted data catalog')
+    operation: str = Field(default='delete', description='Operation performed')
+
+
+class GetDataCatalogResponse(CallToolResult):
+    """Response model for get data catalog operation."""
+
+    data_catalog: Dict[str, Any] = Field(
+        ...,
+        description='Data catalog details including name, type, description, parameters, status, and connection type',
+    )
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class ListDataCatalogsResponse(CallToolResult):
+    """Response model for list data catalogs operation."""
+
+    data_catalogs: List[Dict[str, Any]] = Field(
+        ...,
+        description='List of data catalog summaries, each containing catalog name, type, status, connection type, and error information',
+    )
+    count: int = Field(..., description='Number of data catalogs found')
+    next_token: Optional[str] = Field(None, description='Token for pagination')
+    operation: str = Field(default='list', description='Operation performed')
+
+
+class UpdateDataCatalogResponse(CallToolResult):
+    """Response model for update data catalog operation."""
+
+    name: str = Field(..., description='Name of the updated data catalog')
+    operation: str = Field(default='update', description='Operation performed')
+
+
+class GetDatabaseResponse(CallToolResult):
+    """Response model for get database operation."""
+
+    database: Dict[str, Any] = Field(
+        ..., description='Database details including name, description, and parameters'
+    )
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class GetTableMetadataResponse(CallToolResult):
+    """Response model for get table metadata operation."""
+
+    table_metadata: Dict[str, Any] = Field(
+        ...,
+        description='Table metadata details including name, create time, last access time, table type, columns, partition keys, and parameters',
+    )
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class ListDatabasesResponse(CallToolResult):
+    """Response model for list databases operation."""
+
+    database_list: List[Dict[str, Any]] = Field(
+        ...,
+        description='List of databases, each containing name, description, and parameters',
+    )
+    count: int = Field(..., description='Number of databases found')
+    next_token: Optional[str] = Field(None, description='Token for pagination')
+    operation: str = Field(default='list', description='Operation performed')
+
+
+class ListTableMetadataResponse(CallToolResult):
+    """Response model for list table metadata operation."""
+
+    table_metadata_list: List[Dict[str, Any]] = Field(
+        ...,
+        description='List of table metadata, each containing name, create time, last access time, table type, columns, partition keys, and parameters',
+    )
+    count: int = Field(..., description='Number of tables found')
+    next_token: Optional[str] = Field(None, description='Token for pagination')
+    operation: str = Field(default='list', description='Operation performed')
+
+
+# Response models for WorkGroup Operations
+
+
+class CreateWorkGroupResponse(CallToolResult):
+    """Response model for create work group operation."""
+
+    work_group_name: str = Field(..., description='Name of the created work group')
+    operation: str = Field(default='create', description='Operation performed')
+
+
+class DeleteWorkGroupResponse(CallToolResult):
+    """Response model for delete work group operation."""
+
+    work_group_name: str = Field(..., description='Name of the deleted work group')
+    operation: str = Field(default='delete', description='Operation performed')
+
+
+class GetWorkGroupResponse(CallToolResult):
+    """Response model for get work group operation."""
+
+    work_group: Dict[str, Any] = Field(..., description='Work group details')
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class ListWorkGroupsResponse(CallToolResult):
+    """Response model for list work groups operation."""
+
+    work_groups: List[Dict[str, Any]] = Field(..., description='List of work groups')
+    count: int = Field(..., description='Number of work groups found')
+    next_token: Optional[str] = Field(None, description='Token for pagination')
+    operation: str = Field(default='list', description='Operation performed')
+
+
+class UpdateWorkGroupResponse(CallToolResult):
+    """Response model for update work group operation."""
+
+    work_group_name: str = Field(..., description='Name of the updated work group')
+    operation: str = Field(default='update', description='Operation performed')
