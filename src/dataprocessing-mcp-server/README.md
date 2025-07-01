@@ -10,8 +10,12 @@ Integrating the DataProcessing MCP server into AI code assistants transforms dat
 ### AWS Glue Integration
 
 * Data Catalog Management: Enables users to explore, create, and manage databases, tables, and partitions through natural language requests, automatically translating them into appropriate AWS Glue Data Catalog operations.
+* Commons: Enables users to create and manage usage profiles and security configurations, which provide users with the ability to manage the resource types and encryption of their ETL jobs and sessions.
+* ETL Job Orchestration: Provides the ability to create, monitor, and manage Glue ETL jobs with automatic script generation, job scheduling, and workflow coordination based on user-defined data transformation requirements.
 * Interactive Sessions: Provides interactive development environment for Spark and Ray workloads, enabling data exploration, debugging, and iterative development through managed Jupyter-like sessions.
 * Workflows and Triggers: Orchestrates complex ETL activities through visual workflows and automated triggers, supporting scheduled, conditional, and event-based execution patterns.
+* Crawler Management: Enables intelligent data discovery through automated crawler configuration, scheduling, and metadata extraction from various data sources.
+
 
 
 ## Prerequisites
@@ -273,6 +277,19 @@ Specifies the AWS region where Glue,EMR clusters or Athena are managed, which wi
 | manage_aws_athena_workgroups | Manage AWS Athena workgroups | create-work-group, delete-work-group, get-work-group, list-work-groups, update-work-group | --allow-write flag for create/delete/update operations, appropriate AWS permissions |
 
 
+### Glue Commons Handler Tools
+
+| Tool Name | Description | Key Operations | Requirements |
+|-----------|-------------|----------------|--------------|
+| manage_aws_glue_usage_profiles | Manage AWS Glue Usage Profiles for resource allocation and cost management | create-profile, delete-profile, get-profile, update-profile | --allow-write flag for create/delete/update operations, appropriate AWS permissions |
+| manage_aws_glue_security_configurations | Manage AWS Glue Security Configurations for data encryption | create-security-configuration, delete-security-configuration, get-security-configuration | --allow-write flag for create/delete operations, appropriate AWS permissions |
+
+### Glue ETL Handler Tools
+
+| Tool Name | Description | Key Operations | Requirements |
+|-----------|-------------|----------------|--------------|
+| manage_aws_glue_jobs | Manage AWS Glue ETL jobs and job runs | create-job, delete-job, get-job, get-jobs, update-job, start-job-run, stop-job-run, get-job-run, get-job-runs, batch-stop-job-run, get-job-bookmark, reset-job-bookmark | --allow-write flag for create/delete/update/start/stop operations, appropriate AWS permissions |
+
 ### Glue Interactive Sessions Handler Tools
 
 | Tool Name | Description | Key Operations | Requirements |
@@ -287,6 +304,14 @@ Specifies the AWS region where Glue,EMR clusters or Athena are managed, which wi
 | manage_aws_glue_workflows | Orchestrate complex ETL activities through visual workflows | create-workflow, delete-workflow, get-workflow, list-workflows, start-workflow-run | --allow-write flag for create/delete/start operations, appropriate AWS permissions |
 | manage_aws_glue_triggers | Automate workflow and job execution with scheduled or event-based triggers | create-trigger, delete-trigger, get-trigger, get-triggers, start-trigger, stop-trigger | --allow-write flag for create/delete/start/stop operations, appropriate AWS permissions |
 
+
+### Glue Crawler Handler Tools
+
+| Tool Name | Description | Key Operations | Requirements |
+|-----------|-------------|----------------|--------------|
+| manage_aws_glue_crawlers | Manage AWS Glue crawlers to discover and catalog data sources | create-crawler, delete-crawler, get-crawler, get-crawlers, start-crawler, stop-crawler, batch-get-crawlers, list-crawlers, update-crawler | --allow-write flag for create/delete/start/stop/update operations, appropriate AWS permissions |
+| manage_aws_glue_classifiers | Manage AWS Glue classifiers to determine data formats and schemas | create-classifier, delete-classifier, get-classifier, get-classifiers, update-classifier | --allow-write flag for create/delete/update operations, appropriate AWS permissions |
+| manage_aws_glue_crawler_management | Manage AWS Glue crawler schedules and monitor performance metrics | get-crawler-metrics, start-crawler-schedule, stop-crawler-schedule, update-crawler-schedule | --allow-write flag for schedule operations, appropriate AWS permissions |
 
 ## Version
 

@@ -33,11 +33,17 @@ from awslabs.dataprocessing_mcp_server.handlers.athena.athena_query_handler impo
 from awslabs.dataprocessing_mcp_server.handlers.athena.athena_workgroup_handler import (
     AthenaWorkGroupHandler,
 )
+from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_cluster_handler import (
+    EMREc2ClusterHandler,
+)
 from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler import (
     EMREc2InstanceHandler,
 )
 from awslabs.dataprocessing_mcp_server.handlers.emr.emr_ec2_steps_handler import (
     EMREc2StepsHandler,
+)
+from awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler import (
+    CrawlerHandler,
 )
 from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
@@ -140,6 +146,18 @@ It enables you to create, manage, and monitor data processing workflows.
 1. Create a security configuration: `manage_aws_glue_security(operation='create-security-configuration', config_name='my-config, encryption_configuration={...})`
 2. Delete a security configuration: `manage_aws_glue_security(operation='delete-security-configuration', config_name='my-config)`
 3. Get a security configuration: `manage_aws_glue_security(operation='get-security-configuration', config_name='my-config)`
+
+### Glue Crawlers and Classifiers
+1. Create a crawler: `manage_aws_glue_crawlers(operation='create-crawler', crawler_name='my-crawler', crawler_definition={...})`
+2. Start a crawler: `manage_aws_glue_crawlers(operation='start-crawler', crawler_name='my-crawler')`
+3. Get crawler details: `manage_aws_glue_crawlers(operation='get-crawler', crawler_name='my-crawler')`
+4. Create a classifier: `manage_aws_glue_classifiers(operation='create-classifier', classifier_definition={...})`
+5. Get classifier details: `manage_aws_glue_classifiers(operation='get-classifier', classifier_name='my-classifier')`
+6. Update a classifier: `manage_aws_glue_classifiers(operation='update-classifier', classifier_definition={...})`
+7. Delete a classifier: `manage_aws_glue_classifiers(operation='delete-classifier', classifier_name='my-classifier')`
+8. List all classifiers: `manage_aws_glue_classifiers(operation='get-classifiers')`
+9. Manage crawler schedules: `manage_aws_glue_crawler_management(operation='update-crawler-schedule', crawler_name='my-crawler', schedule='cron(0 0 * * ? *)')`
+10. Get crawler metrics: `manage_aws_glue_crawler_management(operation='get-crawler-metrics', crawler_name_list=['my-crawler'])`
 
 ### EMR EC2 Instance Management
 1. Add instance fleet: `manage_aws_emr_ec2_instances(operation='add-instance-fleet', cluster_id='j-123ABC456DEF', instance_fleet={'InstanceFleetType': 'TASK', 'TargetOnDemandCapacity': 2})`
@@ -255,6 +273,16 @@ def main():
         allow_sensitive_data_access=allow_sensitive_data_access,
     )
     GlueCommonsHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    CrawlerHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    EMREc2ClusterHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
