@@ -15,10 +15,10 @@
 """Tests for the DataCatalogManager class."""
 
 import pytest
-from awslabs.dataprocessing_mcp_server.core.glue_data_catalog.data_catalog_handler import (
+from awslabs.aws_dataprocessing_mcp_server.core.glue_data_catalog.data_catalog_handler import (
     DataCatalogManager,
 )
-from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
+from awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models import (
     CreateCatalogResponse,
     CreateConnectionResponse,
     CreatePartitionResponse,
@@ -58,7 +58,7 @@ class TestDataCatalogManager:
     def manager(self, mock_glue_client):
         """Create a DataCatalogManager instance with a mocked Glue client."""
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
             return_value=mock_glue_client,
         ):
             manager = DataCatalogManager(allow_write=True)
@@ -82,7 +82,7 @@ class TestDataCatalogManager:
 
         # Mock the AWS helper prepare_resource_tags method
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
             return_value={'mcp:managed': 'true'},
         ):
             # Call the method
@@ -140,7 +140,7 @@ class TestDataCatalogManager:
 
         # Mock the AWS helper prepare_resource_tags method
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
             return_value={'mcp:managed': 'true'},
         ):
             # Mock the Glue client to raise an exception
@@ -180,15 +180,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -225,15 +225,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=False,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -406,7 +406,7 @@ class TestDataCatalogManager:
 
         # Mock the AWS helper prepare_resource_tags method
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
             return_value={'mcp:managed': 'true'},
         ):
             # Call the method
@@ -620,7 +620,7 @@ class TestDataCatalogManager:
 
         # Mock the AWS helper prepare_resource_tags method
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
             return_value={'mcp:managed': 'true'},
         ):
             # Call the method
@@ -716,15 +716,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -788,15 +788,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=False,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -838,15 +838,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -907,15 +907,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -976,15 +976,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -1016,15 +1016,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=False,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -1085,15 +1085,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -1143,15 +1143,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=False,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -1247,15 +1247,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -1309,15 +1309,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=False,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -1401,15 +1401,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -1576,7 +1576,7 @@ class TestDataCatalogManager:
 
         # Mock the AWS helper prepare_resource_tags method
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
             return_value={'mcp:managed': 'true'},
         ):
             # Mock the Glue client to raise an exception
@@ -1759,7 +1759,7 @@ class TestDataCatalogManager:
 
         # Mock the AWS helper prepare_resource_tags method
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
             return_value={'mcp:managed': 'true'},
         ):
             # Mock the Glue client to raise an exception
@@ -1824,7 +1824,7 @@ class TestDataCatalogManager:
 
         # Mock the AWS helper prepare_resource_tags method
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
             return_value={'mcp:managed': 'true'},
         ):
             # Call the method
@@ -1873,15 +1873,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -1932,15 +1932,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):
@@ -1994,15 +1994,15 @@ class TestDataCatalogManager:
         # Mock the AWS helper is_resource_mcp_managed method
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.is_resource_mcp_managed',
                 return_value=True,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region',
                 return_value='us-east-1',
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id',
                 return_value='123456789012',
             ),
         ):

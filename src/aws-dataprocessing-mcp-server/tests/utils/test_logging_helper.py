@@ -15,7 +15,10 @@
 """Tests for the logging_helper module."""
 
 import pytest
-from awslabs.dataprocessing_mcp_server.utils.logging_helper import LogLevel, log_with_request_id
+from awslabs.aws_dataprocessing_mcp_server.utils.logging_helper import (
+    LogLevel,
+    log_with_request_id,
+)
 from unittest.mock import MagicMock, patch
 
 
@@ -37,7 +40,7 @@ class TestLoggingHelper:
         assert LogLevel.ERROR.value == 'error'
         assert LogLevel.CRITICAL.value == 'critical'
 
-    @patch('awslabs.dataprocessing_mcp_server.utils.logging_helper.logger')
+    @patch('awslabs.aws_dataprocessing_mcp_server.utils.logging_helper.logger')
     def test_log_with_request_id_debug(self, mock_logger):
         """Test that log_with_request_id logs at the DEBUG level with the request ID."""
         mock_ctx = MagicMock()
@@ -45,7 +48,7 @@ class TestLoggingHelper:
         log_with_request_id(mock_ctx, LogLevel.DEBUG, 'Debug message')
         mock_logger.debug.assert_called_once_with('[request_id=test-request-id] Debug message')
 
-    @patch('awslabs.dataprocessing_mcp_server.utils.logging_helper.logger')
+    @patch('awslabs.aws_dataprocessing_mcp_server.utils.logging_helper.logger')
     def test_log_with_request_id_info(self, mock_logger):
         """Test that log_with_request_id logs at the INFO level with the request ID."""
         mock_ctx = MagicMock()
@@ -53,7 +56,7 @@ class TestLoggingHelper:
         log_with_request_id(mock_ctx, LogLevel.INFO, 'Info message')
         mock_logger.info.assert_called_once_with('[request_id=test-request-id] Info message')
 
-    @patch('awslabs.dataprocessing_mcp_server.utils.logging_helper.logger')
+    @patch('awslabs.aws_dataprocessing_mcp_server.utils.logging_helper.logger')
     def test_log_with_request_id_warning(self, mock_logger):
         """Test that log_with_request_id logs at the WARNING level with the request ID."""
         mock_ctx = MagicMock()
@@ -61,7 +64,7 @@ class TestLoggingHelper:
         log_with_request_id(mock_ctx, LogLevel.WARNING, 'Warning message')
         mock_logger.warning.assert_called_once_with('[request_id=test-request-id] Warning message')
 
-    @patch('awslabs.dataprocessing_mcp_server.utils.logging_helper.logger')
+    @patch('awslabs.aws_dataprocessing_mcp_server.utils.logging_helper.logger')
     def test_log_with_request_id_error(self, mock_logger):
         """Test that log_with_request_id logs at the ERROR level with the request ID."""
         mock_ctx = MagicMock()
@@ -69,7 +72,7 @@ class TestLoggingHelper:
         log_with_request_id(mock_ctx, LogLevel.ERROR, 'Error message')
         mock_logger.error.assert_called_once_with('[request_id=test-request-id] Error message')
 
-    @patch('awslabs.dataprocessing_mcp_server.utils.logging_helper.logger')
+    @patch('awslabs.aws_dataprocessing_mcp_server.utils.logging_helper.logger')
     def test_log_with_request_id_critical(self, mock_logger):
         """Test that log_with_request_id logs at the CRITICAL level with the request ID."""
         mock_ctx = MagicMock()
@@ -79,7 +82,7 @@ class TestLoggingHelper:
             '[request_id=test-request-id] Critical message'
         )
 
-    @patch('awslabs.dataprocessing_mcp_server.utils.logging_helper.logger')
+    @patch('awslabs.aws_dataprocessing_mcp_server.utils.logging_helper.logger')
     def test_log_with_request_id_with_kwargs(self, mock_logger):
         """Test that log_with_request_id passes kwargs to the logger."""
         mock_ctx = MagicMock()

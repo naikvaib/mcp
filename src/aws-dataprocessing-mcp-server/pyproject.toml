@@ -42,7 +42,7 @@ repository = "https://github.com/awslabs/mcp.git"
 changelog = "https://github.com/awslabs/mcp/blob/main/src/aws-dataprocessing-mcp-server/CHANGELOG.md"
 
 [project.scripts]
-"awslabs.aws-dataprocessing-mcp-server" = "awslabs.dataprocessing_mcp_server.server:main"
+"awslabs.aws-dataprocessing-mcp-server" = "awslabs.aws_dataprocessing_mcp_server.server:main"
 
 [dependency-groups]
 dev = [
@@ -111,7 +111,7 @@ version = "0.0.0"
 tag_format = "v$version"
 version_files = [
     "pyproject.toml:version",
-    "awslabs/dataprocessing_mcp_server/__init__.py:__version__"
+    "awslabs/aws_dataprocessing_mcp_server/__init__.py:__version__"
 ]
 update_changelog_on_bump = true
 

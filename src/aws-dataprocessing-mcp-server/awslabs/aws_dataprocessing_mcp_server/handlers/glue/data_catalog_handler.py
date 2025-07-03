@@ -14,16 +14,16 @@
 
 """DataCatalogHandler for Data Processing MCP Server."""
 
-from awslabs.dataprocessing_mcp_server.core.glue_data_catalog.data_catalog_database_manager import (
+from awslabs.aws_dataprocessing_mcp_server.core.glue_data_catalog.data_catalog_database_manager import (
     DataCatalogDatabaseManager,
 )
-from awslabs.dataprocessing_mcp_server.core.glue_data_catalog.data_catalog_handler import (
+from awslabs.aws_dataprocessing_mcp_server.core.glue_data_catalog.data_catalog_handler import (
     DataCatalogManager,
 )
-from awslabs.dataprocessing_mcp_server.core.glue_data_catalog.data_catalog_table_manager import (
+from awslabs.aws_dataprocessing_mcp_server.core.glue_data_catalog.data_catalog_table_manager import (
     DataCatalogTableManager,
 )
-from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
+from awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models import (
     CreateCatalogResponse,
     CreateConnectionResponse,
     CreateDatabaseResponse,
@@ -51,7 +51,7 @@ from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
     UpdatePartitionResponse,
     UpdateTableResponse,
 )
-from awslabs.dataprocessing_mcp_server.utils.logging_helper import (
+from awslabs.aws_dataprocessing_mcp_server.utils.logging_helper import (
     LogLevel,
     log_with_request_id,
 )

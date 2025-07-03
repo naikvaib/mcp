@@ -18,7 +18,7 @@ This module provides functionality for managing databases in the AWS Glue Data C
 including creating, updating, retrieving, listing, and deleting databases.
 """
 
-from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
+from awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models import (
     CreateDatabaseResponse,
     DatabaseSummary,
     DeleteDatabaseResponse,
@@ -26,8 +26,8 @@ from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
     ListDatabasesResponse,
     UpdateDatabaseResponse,
 )
-from awslabs.dataprocessing_mcp_server.utils.aws_helper import AwsHelper
-from awslabs.dataprocessing_mcp_server.utils.logging_helper import (
+from awslabs.aws_dataprocessing_mcp_server.utils.aws_helper import AwsHelper
+from awslabs.aws_dataprocessing_mcp_server.utils.logging_helper import (
     LogLevel,
     log_with_request_id,
 )

@@ -15,8 +15,8 @@
 """Tests for the AwsHelper class."""
 
 import os
-from awslabs.dataprocessing_mcp_server.utils.aws_helper import AwsHelper
-from awslabs.dataprocessing_mcp_server.utils.consts import (
+from awslabs.aws_dataprocessing_mcp_server.utils.aws_helper import AwsHelper
+from awslabs.aws_dataprocessing_mcp_server.utils.consts import (
     MCP_CREATION_TIME_TAG_KEY,
     MCP_MANAGED_TAG_KEY,
     MCP_MANAGED_TAG_VALUE,
@@ -218,7 +218,9 @@ class TestAwsHelper:
         """Test that prepare_resource_tags returns the correct tags."""
         # Mock datetime.utcnow to return a fixed time
         mock_now = datetime(2023, 1, 1, 0, 0, 0)
-        with patch('awslabs.dataprocessing_mcp_server.utils.aws_helper.datetime') as mock_datetime:
+        with patch(
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.datetime'
+        ) as mock_datetime:
             mock_datetime.utcnow.return_value = mock_now
 
             # Test with no additional tags

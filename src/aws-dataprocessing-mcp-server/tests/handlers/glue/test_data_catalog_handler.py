@@ -15,7 +15,7 @@
 """Tests for the Glue Data Catalog Handler."""
 
 import pytest
-from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -59,15 +59,15 @@ class TestGlueDataCatalogHandler:
         """Create a GlueDataCatalogHandler instance with mocked dependencies."""
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogDatabaseManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogDatabaseManager',
                 return_value=mock_database_manager,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogTableManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogTableManager',
                 return_value=mock_table_manager,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogManager',
                 return_value=mock_catalog_manager,
             ),
         ):
@@ -84,15 +84,15 @@ class TestGlueDataCatalogHandler:
         """Create a GlueDataCatalogHandler instance with write access enabled."""
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogDatabaseManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogDatabaseManager',
                 return_value=mock_database_manager,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogTableManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogTableManager',
                 return_value=mock_table_manager,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogManager',
                 return_value=mock_catalog_manager,
             ),
         ):
@@ -106,7 +106,7 @@ class TestGlueDataCatalogHandler:
         """Test that the handler is initialized correctly."""
         # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
             return_value=MagicMock(),
         ):
             handler = GlueDataCatalogHandler(mock_mcp)
@@ -136,7 +136,7 @@ class TestGlueDataCatalogHandler:
         """Test that the handler is initialized correctly with write access."""
         # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
             return_value=MagicMock(),
         ):
             handler = GlueDataCatalogHandler(mock_mcp, allow_write=True)
@@ -150,7 +150,7 @@ class TestGlueDataCatalogHandler:
         """Test that the handler is initialized correctly with sensitive data access."""
         # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
         with patch(
-            'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
             return_value=MagicMock(),
         ):
             handler = GlueDataCatalogHandler(mock_mcp, allow_sensitive_data_access=True)
@@ -177,7 +177,7 @@ class TestGlueDataCatalogHandler:
 
         # Patch the CreateDatabaseResponse class
         with patch(
-            'awslabs.dataprocessing_mcp_server.models.data_catalog_models.CreateDatabaseResponse',
+            'awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models.CreateDatabaseResponse',
             return_value=mock_response,
         ):
             # Call the method with a write operation
@@ -208,7 +208,7 @@ class TestGlueDataCatalogHandler:
 
         # Patch the DeleteDatabaseResponse class
         with patch(
-            'awslabs.dataprocessing_mcp_server.models.data_catalog_models.DeleteDatabaseResponse',
+            'awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models.DeleteDatabaseResponse',
             return_value=mock_response,
         ):
             # Call the method with a write operation
@@ -239,7 +239,7 @@ class TestGlueDataCatalogHandler:
 
         # Patch the UpdateDatabaseResponse class
         with patch(
-            'awslabs.dataprocessing_mcp_server.models.data_catalog_models.UpdateDatabaseResponse',
+            'awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models.UpdateDatabaseResponse',
             return_value=mock_response,
         ):
             # Call the method with a write operation
@@ -482,7 +482,7 @@ class TestGlueDataCatalogHandler:
 
             # Patch the GetDatabaseResponse class
             with patch(
-                'awslabs.dataprocessing_mcp_server.models.data_catalog_models.GetDatabaseResponse',
+                'awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models.GetDatabaseResponse',
                 return_value=mock_response,
             ):
                 # Call the method
@@ -2694,15 +2694,15 @@ class TestGlueDataCatalogHandler:
         # Create a handler with sensitive data access
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogDatabaseManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogDatabaseManager',
                 return_value=mock_database_manager,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogTableManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogTableManager',
                 return_value=MagicMock(),
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogManager',
                 return_value=MagicMock(),
             ),
         ):
@@ -2736,15 +2736,15 @@ class TestGlueDataCatalogHandler:
         # Create a handler with both write and sensitive data access
         with (
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogDatabaseManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogDatabaseManager',
                 return_value=mock_database_manager,
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogTableManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogTableManager',
                 return_value=MagicMock(),
             ),
             patch(
-                'awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogManager',
+                'awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler.DataCatalogManager',
                 return_value=MagicMock(),
             ),
         ):

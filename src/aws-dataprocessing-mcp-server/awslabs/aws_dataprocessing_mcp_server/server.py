@@ -24,7 +24,7 @@ Environment Variables:
 """
 
 import argparse
-from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
 from loguru import logger

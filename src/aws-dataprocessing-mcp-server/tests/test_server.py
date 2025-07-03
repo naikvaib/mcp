@@ -17,7 +17,7 @@
 import argparse
 import pytest
 import sys
-from awslabs.dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
 from mcp.server.fastmcp import Context
@@ -45,7 +45,7 @@ sys.modules['mcp.types'].TextContent = MagicMock()
 async def test_server_initialization():
     """Test that the server is initialized correctly with the right configuration."""
     # Test the server initialization by creating a server instance
-    from awslabs.dataprocessing_mcp_server.server import SERVER_INSTRUCTIONS, create_server
+    from awslabs.aws_dataprocessing_mcp_server.server import SERVER_INSTRUCTIONS, create_server
 
     # Mock the FastMCP class
     mock_fastmcp = MagicMock()
@@ -54,7 +54,7 @@ async def test_server_initialization():
     mock_fastmcp.dependencies = ['pydantic', 'loguru', 'boto3', 'requests', 'pyyaml', 'cachetools']
 
     # Patch the FastMCP class to return our mock
-    with patch('awslabs.dataprocessing_mcp_server.server.FastMCP', return_value=mock_fastmcp):
+    with patch('awslabs.aws_dataprocessing_mcp_server.server.FastMCP', return_value=mock_fastmcp):
         # Create a server instance
         server = create_server()
 
@@ -83,7 +83,7 @@ async def test_server_initialization():
 @pytest.mark.asyncio
 async def test_command_line_args():
     """Test that the command-line arguments are parsed correctly."""
-    from awslabs.dataprocessing_mcp_server.server import main
+    from awslabs.aws_dataprocessing_mcp_server.server import main
 
     # Mock the ArgumentParser.parse_args method to return known args
     with patch.object(argparse.ArgumentParser, 'parse_args') as mock_parse_args:
@@ -95,11 +95,11 @@ async def test_command_line_args():
         # Mock create_server to return a mock server
         mock_server = MagicMock()
         with patch(
-            'awslabs.dataprocessing_mcp_server.server.create_server', return_value=mock_server
+            'awslabs.aws_dataprocessing_mcp_server.server.create_server', return_value=mock_server
         ):
             # Mock the AWS helper's create_boto3_client method
             with patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
                 return_value=MagicMock(),
             ):
                 # Call the main function
@@ -120,16 +120,16 @@ async def test_command_line_args():
         # Mock create_server to return a mock server
         mock_server = MagicMock()
         with patch(
-            'awslabs.dataprocessing_mcp_server.server.create_server', return_value=mock_server
+            'awslabs.aws_dataprocessing_mcp_server.server.create_server', return_value=mock_server
         ):
             # Mock the AWS helper's create_boto3_client method
             with patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
                 return_value=MagicMock(),
             ):
                 # Mock the handler initialization to verify allow_write is passed
                 with patch(
-                    'awslabs.dataprocessing_mcp_server.server.GlueDataCatalogHandler'
+                    'awslabs.aws_dataprocessing_mcp_server.server.GlueDataCatalogHandler'
                 ) as mock_glue_data_catalog_handler:
                     # Call the main function
                     main()
@@ -154,16 +154,16 @@ async def test_command_line_args():
         # Mock create_server to return a mock server
         mock_server = MagicMock()
         with patch(
-            'awslabs.dataprocessing_mcp_server.server.create_server', return_value=mock_server
+            'awslabs.aws_dataprocessing_mcp_server.server.create_server', return_value=mock_server
         ):
             # Mock the AWS helper's create_boto3_client method
             with patch(
-                'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+                'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
                 return_value=MagicMock(),
             ):
                 # Mock the handler initialization to verify allow_sensitive_data_access is passed
                 with patch(
-                    'awslabs.dataprocessing_mcp_server.server.GlueDataCatalogHandler'
+                    'awslabs.aws_dataprocessing_mcp_server.server.GlueDataCatalogHandler'
                 ) as mock_glue_data_catalog_handler:
                     # Call the main function
                     main()
@@ -188,7 +188,7 @@ async def test_glue_data_catalog_handler_initialization():
 
     # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
     with patch(
-        'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+        'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
         return_value=MagicMock(),
     ):
         # Initialize the Glue Data Catalog handler with the mock MCP server
@@ -219,7 +219,7 @@ async def test_handler_write_access_control():
 
     # Mock the AWS helper's create_boto3_client method to avoid boto3 client creation
     with patch(
-        'awslabs.dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
+        'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client',
         return_value=MagicMock(),
     ):
         # Initialize handlers with write access disabled

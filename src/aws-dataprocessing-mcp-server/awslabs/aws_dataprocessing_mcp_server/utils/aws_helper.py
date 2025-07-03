@@ -23,7 +23,7 @@ from .consts import (
     MCP_MANAGED_TAG_VALUE,
     MCP_RESOURCE_TYPE_TAG_KEY,
 )
-from awslabs.dataprocessing_mcp_server import __version__
+from awslabs.aws_dataprocessing_mcp_server import __version__
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from datetime import datetime

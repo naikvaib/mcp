@@ -19,7 +19,7 @@ in the AWS Glue Data Catalog, including creating, updating, retrieving, listing,
 deleting these resources.
 """
 
-from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
+from awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models import (
     ConnectionSummary,
     CreateCatalogResponse,
     CreateConnectionResponse,
@@ -36,8 +36,8 @@ from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
     UpdateConnectionResponse,
     UpdatePartitionResponse,
 )
-from awslabs.dataprocessing_mcp_server.utils.aws_helper import AwsHelper
-from awslabs.dataprocessing_mcp_server.utils.logging_helper import (
+from awslabs.aws_dataprocessing_mcp_server.utils.aws_helper import AwsHelper
+from awslabs.aws_dataprocessing_mcp_server.utils.logging_helper import (
     LogLevel,
     log_with_request_id,
 )

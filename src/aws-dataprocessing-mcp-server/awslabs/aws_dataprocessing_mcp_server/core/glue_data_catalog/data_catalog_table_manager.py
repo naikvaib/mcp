@@ -18,7 +18,7 @@ This module provides functionality for managing tables in the AWS Glue Data Cata
 including creating, updating, retrieving, listing, searching, and deleting tables.
 """
 
-from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
+from awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models import (
     CreateTableResponse,
     DeleteTableResponse,
     GetTableResponse,
@@ -27,8 +27,8 @@ from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
     TableSummary,
     UpdateTableResponse,
 )
-from awslabs.dataprocessing_mcp_server.utils.aws_helper import AwsHelper
-from awslabs.dataprocessing_mcp_server.utils.logging_helper import (
+from awslabs.aws_dataprocessing_mcp_server.utils.aws_helper import AwsHelper
+from awslabs.aws_dataprocessing_mcp_server.utils.logging_helper import (
     LogLevel,
     log_with_request_id,
 )

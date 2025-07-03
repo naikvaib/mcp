@@ -24,30 +24,30 @@ class TestInit:
     def test_version(self):
         """Test that __version__ is defined and follows semantic versioning."""
         # Import the module
-        import awslabs.dataprocessing_mcp_server
+        import awslabs.aws_dataprocessing_mcp_server
 
         # Check that __version__ is defined
-        assert hasattr(awslabs.dataprocessing_mcp_server, '__version__')
+        assert hasattr(awslabs.aws_dataprocessing_mcp_server, '__version__')
 
         # Check that __version__ is a string
-        assert isinstance(awslabs.dataprocessing_mcp_server.__version__, str)
+        assert isinstance(awslabs.aws_dataprocessing_mcp_server.__version__, str)
 
         # Check that __version__ follows semantic versioning (major.minor.patch)
         version_pattern = r'^\d+\.\d+\.\d+$'
-        assert re.match(version_pattern, awslabs.dataprocessing_mcp_server.__version__), (
-            f"Version '{awslabs.dataprocessing_mcp_server.__version__}' does not follow semantic versioning"
+        assert re.match(version_pattern, awslabs.aws_dataprocessing_mcp_server.__version__), (
+            f"Version '{awslabs.aws_dataprocessing_mcp_server.__version__}' does not follow semantic versioning"
         )
 
     def test_module_reload(self):
         """Test that the module can be reloaded."""
         # Import the module
-        import awslabs.dataprocessing_mcp_server
+        import awslabs.aws_dataprocessing_mcp_server
 
         # Store the original version
-        original_version = awslabs.dataprocessing_mcp_server.__version__
+        original_version = awslabs.aws_dataprocessing_mcp_server.__version__
 
         # Reload the module
-        importlib.reload(awslabs.dataprocessing_mcp_server)
+        importlib.reload(awslabs.aws_dataprocessing_mcp_server)
 
         # Check that the version is still the same
-        assert awslabs.dataprocessing_mcp_server.__version__ == original_version
+        assert awslabs.aws_dataprocessing_mcp_server.__version__ == original_version

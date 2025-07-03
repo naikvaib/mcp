@@ -15,7 +15,7 @@
 """Tests for the Data Catalog models."""
 
 import pytest
-from awslabs.dataprocessing_mcp_server.models.data_catalog_models import (
+from awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models import (
     # Extended response models
     CatalogSummary,
     ConnectionSummary,
