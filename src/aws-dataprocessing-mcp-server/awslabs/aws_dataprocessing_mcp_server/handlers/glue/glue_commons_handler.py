@@ -748,7 +748,7 @@ class GlueCommonsHandler:
         PutResourcePolicyResponse,
         DeleteResourcePolicyResponse,
     ]:
-        """Manage AWS Glue Resource Policies for access control.
+        r"""Manage AWS Glue Resource Policies for access control.
 
         This tool allows you to retrieve, create, update, and delete AWS Glue Resource Policies, which
         control access to Glue resources through IAM policy documents.
@@ -766,7 +766,7 @@ class GlueCommonsHandler:
         ```json
         {
           "operation": "put-resource-policy",
-          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:root\"},\"Action\":\"glue:*\",\"Resource\":\"*\"}]}",
+          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789…
           "policy_exists_condition": "NOT_EXIST",
           "enable_hybrid": true
         }

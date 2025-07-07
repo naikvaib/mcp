@@ -1,5 +1,7 @@
 import pytest
-from awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler import GlueCommonsHandler
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler import (
+    GlueCommonsHandler,
+)
 from botocore.exceptions import ClientError
 from datetime import datetime
 from unittest.mock import Mock, patch
