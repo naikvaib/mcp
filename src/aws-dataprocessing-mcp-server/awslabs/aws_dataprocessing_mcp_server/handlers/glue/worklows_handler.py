@@ -34,7 +34,7 @@ from awslabs.aws_dataprocessing_mcp_server.utils.logging_helper import (
 )
 from botocore.exceptions import ClientError
 from mcp.server.fastmcp import Context
-from mcp.types import TextContent, Content
+from mcp.types import TextContent
 from pydantic import Field
 from typing import Any, Dict, Optional, Union
 
