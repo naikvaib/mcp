@@ -675,7 +675,7 @@ class GlueCommonsHandler:
                     )
 
                 # Prepare parameters
-                params = {'DataCatalogEncryptionSettings': encryption_settings}
+                params: Dict[str, Any] = {'DataCatalogEncryptionSettings': encryption_settings}
                 if catalog_id:
                     params['CatalogId'] = catalog_id
 
@@ -840,7 +840,7 @@ class GlueCommonsHandler:
                     raise ValueError('policy is required for put-resource-policy operation')
 
                 # Prepare parameters
-                params = {'PolicyInJson': policy}
+                params: Dict[str, Any] = {'PolicyInJson': policy}
                 if policy_hash:
                     params['PolicyHashCondition'] = policy_hash
                 if policy_exists_condition:
