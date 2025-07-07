@@ -152,7 +152,7 @@ class TestGlueCommonsHandler:
     async def test_manage_aws_glue_usage_profiles_delete_success(self, handler, mock_context):
         """Test successful deletion of a Glue usage profile."""
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.get_aws_region.return_value = 'us-east-1'
             mock_aws_helper.get_aws_account_id.return_value = '123456789012'
@@ -190,7 +190,7 @@ class TestGlueCommonsHandler:
     ):
         """Test deletion of a usage profile not managed by MCP."""
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.get_aws_region.return_value = 'us-east-1'
             mock_aws_helper.get_aws_account_id.return_value = '123456789012'
@@ -225,7 +225,7 @@ class TestGlueCommonsHandler:
     async def test_manage_aws_glue_usage_profiles_update_success(self, handler, mock_context):
         """Test successful update of a usage profile."""
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.get_aws_region.return_value = 'us-east-1'
             mock_aws_helper.get_aws_account_id.return_value = '123456789012'
@@ -587,7 +587,7 @@ class TestGlueCommonsHandler:
     ):
         """Test update of a usage profile not managed by MCP."""
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.get_aws_region.return_value = 'us-east-1'
             mock_aws_helper.get_aws_account_id.return_value = '123456789012'
