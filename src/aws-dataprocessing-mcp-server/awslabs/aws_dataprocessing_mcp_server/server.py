@@ -33,10 +33,6 @@ from awslabs.aws_dataprocessing_mcp_server.handlers.athena.athena_query_handler 
 from awslabs.aws_dataprocessing_mcp_server.handlers.athena.athena_workgroup_handler import (
     AthenaWorkGroupHandler,
 )
-
-from awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler import (
-    CrawlerHandler,
-)
 from awslabs.aws_dataprocessing_mcp_server.handlers.emr.emr_ec2_cluster_handler import (
     EMREc2ClusterHandler,
 )
@@ -45,6 +41,9 @@ from awslabs.aws_dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler
 )
 from awslabs.aws_dataprocessing_mcp_server.handlers.emr.emr_ec2_steps_handler import (
     EMREc2StepsHandler,
+)
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler import (
+    CrawlerHandler,
 )
 from awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
