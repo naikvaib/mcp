@@ -1,5 +1,5 @@
 import pytest
-from awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler import CrawlerHandler
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler import CrawlerHandler
 from botocore.exceptions import ClientError
 from unittest.mock import Mock, patch
 
@@ -24,7 +24,7 @@ def mock_context():
 def handler(mock_mcp):
     """Create a CrawlerHandler instance with write access for testing."""
     with patch(
-        'awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
+        'awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
     ) as mock_aws_helper:
         mock_aws_helper.create_boto3_client.return_value = Mock()
         handler = CrawlerHandler(mock_mcp, allow_write=True)
@@ -35,7 +35,7 @@ def handler(mock_mcp):
 def no_write_handler(mock_mcp):
     """Create a CrawlerHandler instance without write access for testing."""
     with patch(
-        'awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
+        'awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
     ) as mock_aws_helper:
         mock_aws_helper.create_boto3_client.return_value = Mock()
         handler = CrawlerHandler(mock_mcp, allow_write=False)
@@ -49,7 +49,7 @@ class TestCrawlerHandler:
     async def test_init(self, mock_mcp):
         """Test initialization of CrawlerHandler."""
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.create_boto3_client.return_value = Mock()
 
@@ -78,7 +78,7 @@ class TestCrawlerHandler:
 
         # Mock AwsHelper methods
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.prepare_resource_tags.return_value = {
                 'ManagedBy': 'DataprocessingMcpServer'
@@ -157,7 +157,7 @@ class TestCrawlerHandler:
 
         # Mock AwsHelper methods
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.get_aws_region.return_value = 'us-east-1'
             mock_aws_helper.get_aws_account_id.return_value = '123456789012'
@@ -182,7 +182,7 @@ class TestCrawlerHandler:
 
         # Mock AwsHelper methods
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.get_aws_region.return_value = 'us-east-1'
             mock_aws_helper.get_aws_account_id.return_value = '123456789012'
@@ -559,7 +559,7 @@ class TestCrawlerHandler:
 
         # Mock AwsHelper methods
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.get_aws_region.return_value = 'us-east-1'
             mock_aws_helper.get_aws_account_id.return_value = '123456789012'
@@ -1030,7 +1030,7 @@ class TestCrawlerHandler:
 
         # Mock AwsHelper methods
         with patch(
-            'awslabs.dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
+            'awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler.AwsHelper'
         ) as mock_aws_helper:
             mock_aws_helper.get_aws_region.return_value = 'us-east-1'
             mock_aws_helper.get_aws_account_id.return_value = '123456789012'

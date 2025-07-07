@@ -174,7 +174,7 @@ async def test_command_line_args():
                     'awslabs.aws_dataprocessing_mcp_server.server.GlueDataCatalogHandler'
                 ) as mock_glue_data_catalog_handler:
                     with patch(
-                        'awslabs.dataprocessing_mcp_server.server.CrawlerHandler'
+                        'awslabs.aws_dataprocessing_mcp_server.server.CrawlerHandler'
                     ) as mock_crawler_handler:
                         # Call the main function
                         main()
@@ -216,7 +216,7 @@ async def test_command_line_args():
                     'awslabs.aws_dataprocessing_mcp_server.server.GlueDataCatalogHandler'
                 ) as mock_glue_data_catalog_handler:
                     with patch(
-                        'awslabs.dataprocessing_mcp_server.server.CrawlerHandler'
+                        'awslabs.aws_dataprocessing_mcp_server.server.CrawlerHandler'
                     ) as mock_crawler_handler:
                         # Call the main function
                         main()
