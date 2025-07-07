@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 
 @pytest.fixture
 def mock_mcp():
+    """Create a mock MCP server instance for testing."""
     mcp = Mock()
     mcp.tool = Mock(return_value=lambda x: x)
     return mcp
@@ -14,11 +15,13 @@ def mock_mcp():
 
 @pytest.fixture
 def mock_context():
+    """Create a mock context for testing."""
     return Mock()
 
 
 @pytest.fixture
 def handler(mock_mcp):
+    """Create a GlueCommonsHandler instance with write access for testing."""
     with patch(
         'awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
     ) as mock_aws_helper:
@@ -29,6 +32,7 @@ def handler(mock_mcp):
 
 @pytest.fixture
 def no_write_handler(mock_mcp):
+    """Create a GlueCommonsHandler instance without write access for testing."""
     with patch(
         'awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler.AwsHelper'
     ) as mock_aws_helper:
@@ -38,8 +42,11 @@ def no_write_handler(mock_mcp):
 
 
 class TestGlueCommonsHandler:
+    """Test class for GlueCommonsHandler functionality."""
+
     @pytest.mark.asyncio
     async def test_manage_aws_glue_usage_profiles_create_success(self, handler, mock_context):
+        """Test successful creation of a Glue usage profile."""
         handler.glue_client.create_usage_profile.return_value = {}
 
         result = await handler.manage_aws_glue_usage_profiles(
@@ -59,6 +66,7 @@ class TestGlueCommonsHandler:
     async def test_manage_aws_glue_usage_profiles_create_no_write_access(
         self, no_write_handler, mock_context
     ):
+        """Test that creating a usage profile fails when write access is disabled."""
         result = await no_write_handler.manage_aws_glue_usage_profiles(
             mock_context,
             operation='create-profile',
@@ -70,6 +78,7 @@ class TestGlueCommonsHandler:
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_security_create_success(self, handler, mock_context):
+        """Test successful creation of a Glue security configuration."""
         handler.glue_client.create_security_configuration.return_value = {
             'CreatedTimestamp': datetime.now()
         }
@@ -87,6 +96,7 @@ class TestGlueCommonsHandler:
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_security_get_not_found(self, handler, mock_context):
+        """Test handling of EntityNotFoundException when getting a security configuration."""
         error_response = {'Error': {'Code': 'EntityNotFoundException', 'Message': 'Not found'}}
         handler.glue_client.get_security_configuration.side_effect = ClientError(
             error_response, 'GetSecurityConfiguration'
@@ -100,6 +110,7 @@ class TestGlueCommonsHandler:
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_encryption_get_success(self, handler, mock_context):
+        """Test successful retrieval of Glue data catalog encryption settings."""
         handler.glue_client.get_data_catalog_encryption_settings.return_value = {
             'DataCatalogEncryptionSettings': {'test': 'settings'}
         }
@@ -113,6 +124,7 @@ class TestGlueCommonsHandler:
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_resource_policies_put_success(self, handler, mock_context):
+        """Test successful creation of a Glue resource policy."""
         handler.glue_client.put_resource_policy.return_value = {'PolicyHash': 'test-hash'}
 
         result = await handler.manage_aws_glue_resource_policies(
@@ -125,6 +137,7 @@ class TestGlueCommonsHandler:
 
     @pytest.mark.asyncio
     async def test_invalid_operations(self, handler, mock_context):
+        """Test handling of invalid operations for various Glue management functions."""
         # Test invalid operation for usage profiles
         result = await handler.manage_aws_glue_usage_profiles(
             mock_context, operation='invalid-operation', profile_name='test'
@@ -139,6 +152,7 @@ class TestGlueCommonsHandler:
 
     @pytest.mark.asyncio
     async def test_error_handling(self, handler, mock_context):
+        """Test error handling when Glue API calls raise exceptions."""
         handler.glue_client.get_usage_profile.side_effect = Exception('Test error')
 
         result = await handler.manage_aws_glue_usage_profiles(

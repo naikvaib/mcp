@@ -4,6 +4,7 @@ from botocore.exceptions import ClientError
 from mcp.server.fastmcp import Context
 from unittest.mock import Mock, patch
 
+
 @pytest.fixture
 def mock_glue_client():
     """Create a mock glue client instance for testing."""

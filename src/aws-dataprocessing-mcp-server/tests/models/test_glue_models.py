@@ -243,7 +243,6 @@ def test_error_responses():
 
 def test_optional_fields():
     """Test responses with optional fields."""
-
     list_response = ListWorkflowsResponse(
         isError=False, content=sample_text_content, workflows=sample_list, next_token=None
     )

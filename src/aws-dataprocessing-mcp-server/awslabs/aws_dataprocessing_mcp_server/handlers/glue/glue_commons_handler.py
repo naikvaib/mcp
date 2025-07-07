@@ -61,10 +61,8 @@ class GlueCommonsHandler:
         self.mcp.tool(name='manage_aws_glue_security_configurations')(
             self.manage_aws_glue_security
         )
-        self.mcp.tool(name="manage_aws_glue_encryption")(
-            self.manage_aws_glue_encryption
-        )
-        self.mcp.tool(name="manage_aws_glue_resource_policies")(
+        self.mcp.tool(name='manage_aws_glue_encryption')(self.manage_aws_glue_encryption)
+        self.mcp.tool(name='manage_aws_glue_resource_policies')(
             self.manage_aws_glue_resource_policies
         )
 
