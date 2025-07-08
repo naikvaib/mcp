@@ -18,7 +18,7 @@ import pytest
 from awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 
 class TestGlueDataCatalogHandler:
@@ -315,7 +315,9 @@ class TestGlueDataCatalogHandler:
 
         # Verify that the method was called with the correct parameters
         # Use ANY for catalog_id to handle the FieldInfo object
-        mock_database_manager.list_databases.assert_called_once_with(ctx=mock_ctx, catalog_id=ANY)
+        mock_database_manager.list_databases.assert_called_once_with(
+            ctx=mock_ctx, catalog_id=ANY, max_results=ANY, next_token=ANY
+        )
 
         # Verify that the result is the expected response
         assert result == mock_response
@@ -807,13 +809,35 @@ class TestGlueDataCatalogHandler:
     async def test_manage_aws_glue_data_catalog_list_catalogs(self, handler, mock_ctx):
         """Test that list_catalogs operation returns a not implemented error."""
         # Call the method with list-catalogs operation
+        mock_response = MagicMock()
+        mock_response.isError = False
+        mock_response.content = []
+        mock_response.catalogs = []
+        mock_response.count = 0
+        mock_response.catalog_id = '123456789012'
+        mock_response.operation = 'list-catalogs'
+        handler.data_catalog_manager.list_catalogs.return_value = mock_response
         result = await handler.manage_aws_glue_data_catalog(mock_ctx, operation='list-catalogs')
 
-        # Verify that the result is an error response indicating not implemented
-        assert result.isError is True
-        assert 'not implemented yet' in result.content[0].text
-        assert result.catalog_id == ''
-        assert result.operation == 'get-catalog'
+        assert result.isError is False
+        assert result.operation == 'list-catalogs'
+
+    @pytest.mark.asyncio
+    async def test_manage_aws_glue_data_catalog_list_catalogs_error(self, handler, mock_ctx):
+        """Test that list_catalogs operation returns a not implemented error."""
+        with patch.object(
+            handler.data_catalog_manager,
+            'list_catalogs',
+            side_effect=Exception('Invalid next_token provided'),
+        ):
+            with pytest.raises(Exception) as e:
+                result = await handler.manage_aws_glue_data_catalog(
+                    mock_ctx, operation='list-catalogs'
+                )
+
+                assert result.isError is False
+                assert result.operation == 'list-catalogs'
+                assert 'Invalid next_token provided' in str(e)
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_import_catalog(
@@ -821,16 +845,21 @@ class TestGlueDataCatalogHandler:
     ):
         """Test that import_catalog_to_glue operation returns a not implemented error."""
         # Call the method with import-catalog-to-glue operation
+        mock_response = MagicMock()
+        mock_response.isError = False
+        mock_response.content = []
+        mock_response.catalog_id = '123456789012'
+        mock_response.operation = 'import-catalog-to-glue'
+        handler_with_write_access.data_catalog_manager.import_catalog_to_glue.return_value = (
+            mock_response
+        )
         result = await handler_with_write_access.manage_aws_glue_data_catalog(
             mock_ctx,
             operation='import-catalog-to-glue',
             catalog_id='test-catalog',
-            import_source='hive://localhost:9083',
         )
 
-        # Verify that the result is an error response indicating not implemented
-        assert result.isError is True
-        assert 'not implemented yet' in result.content[0].text
+        assert result.isError is False
         assert result.operation == 'import-catalog-to-glue'
 
     @pytest.mark.asyncio
@@ -1643,31 +1672,6 @@ class TestGlueDataCatalogHandler:
             assert 'catalog_input is required' in str(excinfo.value)
 
     @pytest.mark.asyncio
-    async def test_manage_aws_glue_data_catalog_import_missing_import_source(
-        self, handler_with_write_access, mock_ctx
-    ):
-        """Test that missing import_source parameter for import-catalog-to-glue operation raises a ValueError."""
-        # Mock the handler to raise the expected ValueError
-        # We need to patch the method itself since the code checks for import_source before calling any manager method
-        with patch.object(
-            handler_with_write_access,
-            'manage_aws_glue_data_catalog',
-            side_effect=ValueError(
-                'catalog_id and import_source are required for import-catalog-to-glue operation'
-            ),
-        ):
-            # Call the method without import_source
-            with pytest.raises(ValueError) as excinfo:
-                await handler_with_write_access.manage_aws_glue_data_catalog(
-                    mock_ctx,
-                    operation='import-catalog-to-glue',
-                    catalog_id='test-catalog',
-                )
-
-            # Verify that the correct error message is raised
-            assert 'catalog_id and import_source are required' in str(excinfo.value)
-
-    @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_tables_create_with_table_input(
         self, handler_with_write_access, mock_ctx, mock_table_manager
     ):
@@ -2128,6 +2132,7 @@ class TestGlueDataCatalogHandler:
             max_results=10,
             expression="year='2023'",
             catalog_id='123456789012',
+            next_token=ANY,
         )
 
         # Verify that the result is the expected response
@@ -2332,26 +2337,6 @@ class TestGlueDataCatalogHandler:
 
         # Verify that the result is the expected response
         assert result == expected_response
-
-    @pytest.mark.asyncio
-    async def test_manage_aws_glue_data_catalog_import_catalog_to_glue(
-        self, handler_with_write_access, mock_ctx
-    ):
-        """Test that import-catalog-to-glue operation returns a not implemented error."""
-        # Call the method with import-catalog-to-glue operation and all required parameters
-        result = await handler_with_write_access.manage_aws_glue_data_catalog(
-            mock_ctx,
-            operation='import-catalog-to-glue',
-            catalog_id='test-catalog',
-            import_source='hive://localhost:9083',
-        )
-
-        # Verify that the result is an error response indicating not implemented
-        assert result.isError is True
-        assert 'not implemented yet' in result.content[0].text
-        assert result.operation == 'import-catalog-to-glue'
-        assert result.import_source == ''
-        assert result.import_status == ''
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_missing_catalog_id_for_get(
@@ -3227,7 +3212,6 @@ class TestGlueDataCatalogHandler:
             operation='create-catalog',
             catalog_id='test-catalog',
             catalog_input={'Description': 'Test catalog'},
-            import_source=None,
         )
 
         # Verify that the method was called with the correct parameters
@@ -3896,19 +3880,7 @@ class TestGlueDataCatalogHandler:
             )
 
         # Verify that the correct error message is raised
-        assert 'catalog_id and import_source are required' in str(excinfo.value)
-
-        # Call the method without import_source
-        with pytest.raises(ValueError) as excinfo:
-            await handler_with_write_access.manage_aws_glue_data_catalog(
-                mock_ctx,
-                operation='import-catalog-to-glue',
-                catalog_id='test-catalog',
-                import_source=None,
-            )
-
-        # Verify that the correct error message is raised
-        assert 'catalog_id and import_source are required' in str(excinfo.value)
+        assert 'catalog_id is required' in str(excinfo.value)
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_partitions_list_with_all_parameters(
