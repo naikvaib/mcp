@@ -909,29 +909,7 @@ async def test_missing_statement_id_for_cancel_statement(mock_create_client):
     assert 'statement_id is required' in str(excinfo.value)
 
 
-@pytest.mark.asyncio
-@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
-async def test_missing_statement_id_for_get_statement(mock_create_client):
-    # Create a mock Glue client
-    mock_glue_client = MagicMock()
-    mock_create_client.return_value = mock_glue_client
 
-    # Create a mock MCP server
-    mock_mcp = MagicMock()
-
-    # Initialize the Glue Interactive Sessions handler with the mock MCP server
-    handler = GlueInteractiveSessionsHandler(mock_mcp)
-    handler.glue_client = mock_glue_client
-
-    # Create a mock context
-    mock_ctx = MagicMock(spec=Context)
-
-    # Test missing statement_id for get-statement
-    with pytest.raises(ValueError) as excinfo:
-        await handler.manage_aws_glue_statements(
-            mock_ctx, operation='get-statement', session_id='test-session', statement_id=None
-        )
-    assert 'statement_id is required' in str(excinfo.value)
 
 
 @pytest.mark.asyncio
@@ -1594,6 +1572,24 @@ async def test_create_session_individual_params(mock_prepare_tags, mock_create_c
 
 @pytest.mark.asyncio
 @patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_missing_session_id_for_list_statements(mock_create_client):
+    """Test missing session_id for list-statements."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueInteractiveSessionsHandler(mock_mcp)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    with pytest.raises(Exception) as excinfo:
+        await handler.manage_aws_glue_statements(
+            mock_ctx, operation='list-statements', session_id=None
+        )
+    assert 'validation errors' in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
 @patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_region')
 @patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.get_aws_account_id')
 async def test_delete_session_entity_not_found(
@@ -1773,3 +1769,186 @@ async def test_cancel_statement_without_request_origin(mock_create_client):
     )
 
     assert not result.isError
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_session_parameter_validation_errors(mock_create_client):
+    """Test session parameter validation errors."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueInteractiveSessionsHandler(mock_mcp, allow_write=True)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    # Test missing session_id for various operations
+    operations = ['delete-session', 'get-session', 'stop-session']
+    for operation in operations:
+        with pytest.raises(ValueError) as excinfo:
+            await handler.manage_aws_glue_sessions(
+                mock_ctx, operation=operation, session_id=None
+            )
+        assert 'session_id is required' in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_statement_parameter_validation_errors(mock_create_client):
+    """Test statement parameter validation errors."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueInteractiveSessionsHandler(mock_mcp, allow_write=True)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    # Test missing statement_id for operations that require it
+    operations = ['cancel-statement', 'get-statement']
+    for operation in operations:
+        with pytest.raises(ValueError) as excinfo:
+            await handler.manage_aws_glue_statements(
+                mock_ctx, operation=operation, session_id='test-session', statement_id=None
+            )
+        assert 'statement_id is required' in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_sessions_general_exception(mock_create_client):
+    """Test general exception handling in sessions."""
+    mock_glue_client = MagicMock()
+    mock_glue_client.get_session.side_effect = Exception('Test exception')
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueInteractiveSessionsHandler(mock_mcp)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    result = await handler.manage_aws_glue_sessions(
+        mock_ctx, operation='get-session', session_id='test-session'
+    )
+
+    assert result.isError is True
+    assert 'Error in manage_aws_glue_sessions: Test exception' in result.content[0].text
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_list_sessions_without_optional_params(mock_create_client):
+    """Test list sessions without optional parameters."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueInteractiveSessionsHandler(mock_mcp)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    mock_glue_client.list_sessions.return_value = {
+        'Sessions': [{'Id': 'session1'}],
+        'Ids': ['session1'],
+    }
+
+    result = await handler.manage_aws_glue_sessions(mock_ctx, operation='list-sessions')
+
+    assert result.isError is False
+    # Just verify the call was made without checking specific parameters
+    mock_glue_client.list_sessions.assert_called_once()
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_list_statements_without_optional_params(mock_create_client):
+    """Test list statements without optional parameters."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueInteractiveSessionsHandler(mock_mcp)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    mock_glue_client.list_statements.return_value = {
+        'Statements': [{'Id': 1}],
+    }
+
+    result = await handler.manage_aws_glue_statements(
+        mock_ctx, operation='list-statements', session_id='test-session'
+    )
+
+    assert result.isError is False
+    # Just verify the call was made with session_id
+    mock_glue_client.list_statements.assert_called_once()
+    args, kwargs = mock_glue_client.list_statements.call_args
+    assert kwargs['SessionId'] == 'test-session'
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags')
+async def test_create_session_minimal_params(mock_prepare_tags, mock_create_client):
+    """Test create session with minimal required parameters."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_prepare_tags.return_value = {'ManagedBy': 'MCP'}
+    mock_mcp = MagicMock()
+    handler = GlueInteractiveSessionsHandler(mock_mcp, allow_write=True)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    mock_glue_client.create_session.return_value = {
+        'Session': {'Id': 'test-session', 'Status': 'PROVISIONING'}
+    }
+
+    result = await handler.manage_aws_glue_sessions(
+        mock_ctx,
+        operation='create-session',
+        session_id='test-session',
+        role='arn:aws:iam::123456789012:role/GlueRole',
+        command={'Name': 'glueetl'},
+    )
+
+    assert result.isError is False
+    # Just verify the call was made with required parameters
+    mock_glue_client.create_session.assert_called_once()
+    args, kwargs = mock_glue_client.create_session.call_args
+    assert kwargs['Id'] == 'test-session'
+    assert kwargs['Role'] == 'arn:aws:iam::123456789012:role/GlueRole'
+    assert kwargs['Command'] == {'Name': 'glueetl'}
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_session_no_write_access_fallback(mock_create_client):
+    """Test sessions no write access fallback response."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueInteractiveSessionsHandler(mock_mcp, allow_write=False)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    result = await handler.manage_aws_glue_sessions(
+        mock_ctx, operation='unknown-operation', session_id='test-session'
+    )
+
+    assert result.isError is True
+    assert 'Invalid operation: unknown-operation' in result.content[0].text
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_statement_no_write_access_fallback(mock_create_client):
+    """Test statements no write access fallback response."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueInteractiveSessionsHandler(mock_mcp, allow_write=False)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    result = await handler.manage_aws_glue_statements(
+        mock_ctx, operation='run-statement', session_id='test-session'
+    )
+
+    assert result.isError is True
+    assert 'Operation run-statement is not allowed without write access' in result.content[0].text

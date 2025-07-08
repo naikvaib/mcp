@@ -2485,3 +2485,221 @@ async def test_stop_trigger_entity_not_found(
 
     assert result.isError
     assert 'Trigger test-trigger not found' in result.content[0].text
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags')
+async def test_create_workflow_empty_definition(mock_prepare_tags, mock_create_client):
+    """Test creating workflow with empty definition."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_prepare_tags.return_value = {'ManagedBy': 'MCP'}
+    mock_mcp = MagicMock()
+    handler = GlueWorkflowAndTriggerHandler(mock_mcp, allow_write=True)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    mock_glue_client.create_workflow.return_value = {'Name': 'test-workflow'}
+
+    result = await handler.manage_aws_glue_workflows(
+        mock_ctx,
+        operation='create-workflow',
+        workflow_name='test-workflow',
+        workflow_definition={},
+    )
+
+    assert result.isError is False
+    args, kwargs = mock_glue_client.create_workflow.call_args
+    assert 'Description' not in kwargs
+    assert 'DefaultRunProperties' not in kwargs
+    assert 'MaxConcurrentRuns' not in kwargs
+    assert kwargs['Tags'] == {'ManagedBy': 'MCP'}
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags')
+async def test_create_trigger_minimal_params(mock_prepare_tags, mock_create_client):
+    """Test create trigger with minimal parameters."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_prepare_tags.return_value = {'ManagedBy': 'MCP'}
+    mock_mcp = MagicMock()
+    handler = GlueWorkflowAndTriggerHandler(mock_mcp, allow_write=True)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    mock_glue_client.create_trigger.return_value = {'Name': 'test-trigger'}
+
+    result = await handler.manage_aws_glue_triggers(
+        mock_ctx,
+        operation='create-trigger',
+        trigger_name='test-trigger',
+        trigger_definition={
+            'Type': 'SCHEDULED',
+            'Actions': [{'JobName': 'test-job'}],
+        },
+    )
+
+    assert result.isError is False
+    args, kwargs = mock_glue_client.create_trigger.call_args
+    assert kwargs['Type'] == 'SCHEDULED'
+    assert kwargs['Actions'] == [{'JobName': 'test-job'}]
+    assert 'WorkflowName' not in kwargs
+    assert 'Schedule' not in kwargs
+    assert 'Predicate' not in kwargs
+    assert 'Description' not in kwargs
+    assert 'StartOnCreation' not in kwargs
+    assert 'EventBatchingCondition' not in kwargs
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_workflow_parameter_validation_errors(mock_create_client):
+    """Test workflow parameter validation errors."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueWorkflowAndTriggerHandler(mock_mcp, allow_write=True)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    # Test missing workflow_name for get-workflow
+    with pytest.raises(ValueError) as excinfo:
+        await handler.manage_aws_glue_workflows(
+            mock_ctx, operation='get-workflow', workflow_name=None
+        )
+    assert 'workflow_name is required' in str(excinfo.value)
+
+    # Test missing workflow_name for delete-workflow
+    with pytest.raises(ValueError) as excinfo:
+        await handler.manage_aws_glue_workflows(
+            mock_ctx, operation='delete-workflow', workflow_name=None
+        )
+    assert 'workflow_name is required' in str(excinfo.value)
+
+    # Test missing workflow_name for start-workflow-run
+    with pytest.raises(ValueError) as excinfo:
+        await handler.manage_aws_glue_workflows(
+            mock_ctx, operation='start-workflow-run', workflow_name=None
+        )
+    assert 'workflow_name is required' in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_trigger_parameter_validation_errors(mock_create_client):
+    """Test trigger parameter validation errors."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueWorkflowAndTriggerHandler(mock_mcp, allow_write=True)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    # Test missing trigger_name for get-trigger
+    with pytest.raises(ValueError) as excinfo:
+        await handler.manage_aws_glue_triggers(
+            mock_ctx, operation='get-trigger', trigger_name=None
+        )
+    assert 'trigger_name is required' in str(excinfo.value)
+
+    # Test missing trigger_name for delete-trigger
+    with pytest.raises(ValueError) as excinfo:
+        await handler.manage_aws_glue_triggers(
+            mock_ctx, operation='delete-trigger', trigger_name=None
+        )
+    assert 'trigger_name is required' in str(excinfo.value)
+
+    # Test missing trigger_name for start-trigger
+    with pytest.raises(ValueError) as excinfo:
+        await handler.manage_aws_glue_triggers(
+            mock_ctx, operation='start-trigger', trigger_name=None
+        )
+    assert 'trigger_name is required' in str(excinfo.value)
+
+    # Test missing trigger_name for stop-trigger
+    with pytest.raises(ValueError) as excinfo:
+        await handler.manage_aws_glue_triggers(
+            mock_ctx, operation='stop-trigger', trigger_name=None
+        )
+    assert 'trigger_name is required' in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_workflow_general_exception(mock_create_client):
+    """Test general exception handling in workflows."""
+    mock_glue_client = MagicMock()
+    mock_glue_client.get_workflow.side_effect = Exception('Test exception')
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueWorkflowAndTriggerHandler(mock_mcp)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    result = await handler.manage_aws_glue_workflows(
+        mock_ctx, operation='get-workflow', workflow_name='test-workflow'
+    )
+
+    assert result.isError is True
+    assert 'Error in manage_aws_glue_workflows: Test exception' in result.content[0].text
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_trigger_general_exception(mock_create_client):
+    """Test general exception handling in triggers."""
+    mock_glue_client = MagicMock()
+    mock_glue_client.get_trigger.side_effect = Exception('Test exception')
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueWorkflowAndTriggerHandler(mock_mcp)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    result = await handler.manage_aws_glue_triggers(
+        mock_ctx, operation='get-trigger', trigger_name='test-trigger'
+    )
+
+    assert result.isError is True
+    assert 'Error in manage_aws_glue_triggers: Test exception' in result.content[0].text
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_workflow_no_write_access_fallback(mock_create_client):
+    """Test workflow no write access fallback response."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueWorkflowAndTriggerHandler(mock_mcp, allow_write=False)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    result = await handler.manage_aws_glue_workflows(
+        mock_ctx, operation='unknown-operation', workflow_name='test-workflow'
+    )
+
+    assert result.isError is True
+    assert 'Invalid operation: unknown-operation' in result.content[0].text
+
+
+@pytest.mark.asyncio
+@patch('awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.create_boto3_client')
+async def test_trigger_no_write_access_fallback(mock_create_client):
+    """Test trigger no write access fallback response."""
+    mock_glue_client = MagicMock()
+    mock_create_client.return_value = mock_glue_client
+    mock_mcp = MagicMock()
+    handler = GlueWorkflowAndTriggerHandler(mock_mcp, allow_write=False)
+    handler.glue_client = mock_glue_client
+    mock_ctx = MagicMock(spec=Context)
+
+    result = await handler.manage_aws_glue_triggers(
+        mock_ctx, operation='create-trigger', trigger_name='test-trigger'
+    )
+
+    assert result.isError is True
+    assert 'Operation create-trigger is not allowed without write access' in result.content[0].text
