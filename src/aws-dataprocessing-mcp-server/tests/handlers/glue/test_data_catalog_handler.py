@@ -840,6 +840,21 @@ class TestGlueDataCatalogHandler:
                 assert 'Invalid next_token provided' in str(e)
 
     @pytest.mark.asyncio
+    async def test_manage_aws_glue_data_catalog_import_catalog_with_read_only_access(
+        self, handler, mock_ctx
+    ):
+        """Test that import_catalog_to_glue operation returns a not implemented error."""
+        # Call the method with import-catalog-to-glue operation
+        result = await handler.manage_aws_glue_data_catalog(
+            mock_ctx,
+            operation='import-catalog-to-glue',
+            catalog_id='test-catalog',
+        )
+
+        assert result.isError is True
+        assert result.operation == 'import-catalog-to-glue'
+
+    @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_import_catalog(
         self, handler_with_write_access, mock_ctx
     ):
@@ -1167,148 +1182,6 @@ class TestGlueDataCatalogHandler:
         assert 'not allowed without write access' in result.content[0].text
         assert result.catalog_id == ''
         assert result.operation == 'delete-catalog'
-
-    # Additional tests for short operation names
-
-    @pytest.mark.asyncio
-    async def test_manage_aws_glue_data_catalog_databases_with_short_operation_names(
-        self, handler_with_write_access, mock_ctx, mock_database_manager
-    ):
-        """Test that short operation names (create, delete, etc.) work correctly."""
-        # Setup the mock to return a response
-        expected_response = MagicMock()
-        expected_response.isError = False
-        expected_response.content = []
-        expected_response.database_name = 'test-db'
-        expected_response.operation = 'create'
-        mock_database_manager.create_database.return_value = expected_response
-
-        # Call the method with a short operation name
-        result = await handler_with_write_access.manage_aws_glue_data_catalog_databases(
-            mock_ctx,
-            operation='create',  # Short form of 'create-database'
-            database_name='test-db',
-            description='Test database',
-        )
-
-        # Verify that the method was called with the correct parameters
-        mock_database_manager.create_database.assert_called_once()
-        assert mock_database_manager.create_database.call_args[1]['database_name'] == 'test-db'
-        assert mock_database_manager.create_database.call_args[1]['description'] == 'Test database'
-
-        # Verify that the result is the expected response
-        assert result == expected_response
-
-    @pytest.mark.asyncio
-    async def test_manage_aws_glue_data_catalog_databases_get_with_short_operation_name(
-        self, handler, mock_ctx, mock_database_manager
-    ):
-        """Test that get operation with short name works correctly."""
-        # Setup the mock to return a response
-        expected_response = MagicMock()
-        expected_response.isError = False
-        expected_response.content = []
-        expected_response.database_name = 'test-db'
-        expected_response.operation = 'get'
-        mock_database_manager.get_database.return_value = expected_response
-
-        # Call the method with a short operation name
-        result = await handler.manage_aws_glue_data_catalog_databases(
-            mock_ctx,
-            operation='get',  # Short form of 'get-database'
-            database_name='test-db',
-        )
-
-        # Verify that the method was called with the correct parameters
-        mock_database_manager.get_database.assert_called_once()
-        assert mock_database_manager.get_database.call_args[1]['database_name'] == 'test-db'
-
-        # Verify that the result is the expected response
-        assert result == expected_response
-
-    @pytest.mark.asyncio
-    async def test_manage_aws_glue_data_catalog_databases_list_with_short_operation_name(
-        self, handler, mock_ctx, mock_database_manager
-    ):
-        """Test that list operation with short name works correctly."""
-        # Setup the mock to return a response
-        expected_response = MagicMock()
-        expected_response.isError = False
-        expected_response.content = []
-        expected_response.databases = []
-        expected_response.count = 0
-        expected_response.operation = 'list'
-        mock_database_manager.list_databases.return_value = expected_response
-
-        # Call the method with a short operation name
-        result = await handler.manage_aws_glue_data_catalog_databases(
-            mock_ctx,
-            operation='list',  # Short form of 'list-databases'
-        )
-
-        # Verify that the method was called
-        mock_database_manager.list_databases.assert_called_once()
-
-        # Verify that the result is the expected response
-        assert result == expected_response
-
-    @pytest.mark.asyncio
-    async def test_manage_aws_glue_data_catalog_databases_delete_with_short_operation_name(
-        self, handler_with_write_access, mock_ctx, mock_database_manager
-    ):
-        """Test that delete operation with short name works correctly."""
-        # Setup the mock to return a response
-        expected_response = MagicMock()
-        expected_response.isError = False
-        expected_response.content = []
-        expected_response.database_name = 'test-db'
-        expected_response.operation = 'delete'
-        mock_database_manager.delete_database.return_value = expected_response
-
-        # Call the method with a short operation name
-        result = await handler_with_write_access.manage_aws_glue_data_catalog_databases(
-            mock_ctx,
-            operation='delete',  # Short form of 'delete-database'
-            database_name='test-db',
-        )
-
-        # Verify that the method was called with the correct parameters
-        mock_database_manager.delete_database.assert_called_once()
-        assert mock_database_manager.delete_database.call_args[1]['database_name'] == 'test-db'
-
-        # Verify that the result is the expected response
-        assert result == expected_response
-
-    @pytest.mark.asyncio
-    async def test_manage_aws_glue_data_catalog_databases_update_with_short_operation_name(
-        self, handler_with_write_access, mock_ctx, mock_database_manager
-    ):
-        """Test that update operation with short name works correctly."""
-        # Setup the mock to return a response
-        expected_response = MagicMock()
-        expected_response.isError = False
-        expected_response.content = []
-        expected_response.database_name = 'test-db'
-        expected_response.operation = 'update'
-        mock_database_manager.update_database.return_value = expected_response
-
-        # Call the method with a short operation name
-        result = await handler_with_write_access.manage_aws_glue_data_catalog_databases(
-            mock_ctx,
-            operation='update',  # Short form of 'update-database'
-            database_name='test-db',
-            description='Updated database',
-        )
-
-        # Verify that the method was called with the correct parameters
-        mock_database_manager.update_database.assert_called_once()
-        assert mock_database_manager.update_database.call_args[1]['database_name'] == 'test-db'
-        assert (
-            mock_database_manager.update_database.call_args[1]['description'] == 'Updated database'
-        )
-
-        # Verify that the result is the expected response
-        assert result == expected_response
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_databases_with_all_parameters(

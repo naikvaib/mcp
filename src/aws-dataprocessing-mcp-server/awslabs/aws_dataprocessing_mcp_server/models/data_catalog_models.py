@@ -99,7 +99,8 @@ class CatalogSummary(BaseModel):
     name: Optional[str] = Field(None, description='Name of the catalog')
     description: Optional[str] = Field(None, description='Description of the catalog')
     parameters: Dict[str, str] = Field(default_factory=dict, description='Catalog parameters')
-    creation_time: Optional[str] = Field(None, description='Creation timestamp in ISO format')
+    create_time: Optional[str] = Field(None, description='Creation timestamp in ISO format')
+    update_time: Optional[str] = Field(None, description='Last update timestamp in ISO format')
 
 
 # Database Response Models

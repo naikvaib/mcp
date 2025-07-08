@@ -1369,7 +1369,7 @@ class DataCatalogManager:
                 ],
                 count=len(catalogs),
                 next_token=next_token_response,
-                operation='get-catalogs',
+                operation='list-catalogs',
                 content=[TextContent(type='text', text=success_msg)],
             )
 
@@ -1385,6 +1385,6 @@ class DataCatalogManager:
                 catalogs=[],
                 count=0,
                 next_token=None,
-                operation='get-catalogs',
+                operation='list-catalogs',
                 content=[TextContent(type='text', text=error_message)],
             )
