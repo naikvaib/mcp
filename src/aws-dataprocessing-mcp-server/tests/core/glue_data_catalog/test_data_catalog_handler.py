@@ -28,6 +28,7 @@ from awslabs.aws_dataprocessing_mcp_server.models.data_catalog_models import (
     GetCatalogResponse,
     GetConnectionResponse,
     GetPartitionResponse,
+    ImportCatalogResponse,
     ListConnectionsResponse,
     ListPartitionsResponse,
     UpdateConnectionResponse,
@@ -1115,6 +1116,70 @@ class TestDataCatalogManager:
             assert result.operation == 'delete-catalog'
             assert len(result.content) == 1
             assert 'Failed to delete catalog' in result.content[0].text
+            assert 'ValidationException' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_import_catalog_to_glue_success(self, manager, mock_ctx, mock_glue_client):
+        """Test that import_catalog_to_glue returns a successful response when the Glue API call succeeds."""
+        # Setup
+        catalog_id = 'test-catalog'
+
+        # Mock the AWS helper prepare_resource_tags method
+        with patch(
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            return_value={'mcp:managed': 'true', 'mcp:ResourceType': 'GlueCatalogImport'},
+        ):
+            # Call the method
+            result = await manager.import_catalog_to_glue(
+                mock_ctx,
+                catalog_id=catalog_id,
+            )
+
+            # Verify that the Glue client was called with the correct parameters
+            mock_glue_client.import_catalog_to_glue.assert_called_once_with(
+                CatalogId=catalog_id,
+            )
+
+            # Verify the response
+            assert isinstance(result, ImportCatalogResponse)
+            assert result.isError is False
+            assert result.catalog_id == catalog_id
+            assert result.operation == 'import-catalog-to-glue'
+            assert len(result.content) == 1
+            assert 'Successfully initiated catalog import' in result.content[0].text
+
+    @pytest.mark.asyncio
+    async def test_import_catalog_to_glue_error(self, manager, mock_ctx, mock_glue_client):
+        """Test that import_catalog_to_glue returns an error response when the Glue API call fails."""
+        # Setup
+        catalog_id = 'test-catalog'
+
+        # Mock the AWS helper prepare_resource_tags method
+        with patch(
+            'awslabs.aws_dataprocessing_mcp_server.utils.aws_helper.AwsHelper.prepare_resource_tags',
+            return_value={'mcp:managed': 'true', 'mcp:ResourceType': 'GlueCatalogImport'},
+        ):
+            # Mock the Glue client to raise an exception
+            error_response = {
+                'Error': {'Code': 'ValidationException', 'Message': 'Invalid catalog ID'}
+            }
+            mock_glue_client.import_catalog_to_glue.side_effect = ClientError(
+                error_response, 'ImportCatalogToGlue'
+            )
+
+            # Call the method
+            result = await manager.import_catalog_to_glue(
+                mock_ctx,
+                catalog_id=catalog_id,
+            )
+
+            # Verify the response
+            assert isinstance(result, ImportCatalogResponse)
+            assert result.isError is True
+            assert result.catalog_id == catalog_id
+            assert result.operation == 'import-catalog-to-glue'
+            assert len(result.content) == 1
+            assert 'Failed to import' in result.content[0].text
             assert 'ValidationException' in result.content[0].text
 
     @pytest.mark.asyncio

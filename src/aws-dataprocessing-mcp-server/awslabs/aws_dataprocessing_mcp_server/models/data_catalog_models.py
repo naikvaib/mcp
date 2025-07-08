@@ -136,6 +136,7 @@ class ListDatabasesResponse(CallToolResult):
     count: int = Field(..., description='Number of databases found')
     catalog_id: Optional[str] = Field(None, description='Catalog ID used for listing')
     operation: str = Field(default='list', description='Operation performed')
+    next_token: Optional[str] = Field(None, description='Token for the next page of results')
 
 
 class UpdateDatabaseResponse(CallToolResult):
@@ -373,8 +374,6 @@ class ImportCatalogResponse(CallToolResult):
     """Response model for import catalog operation."""
 
     catalog_id: str = Field(..., description='ID of the catalog being imported to')
-    import_status: str = Field(..., description='Status of the import operation')
-    import_source: str = Field(..., description='Source of the import operation')
     operation: str = Field(default='import', description='Operation performed')
 
 
