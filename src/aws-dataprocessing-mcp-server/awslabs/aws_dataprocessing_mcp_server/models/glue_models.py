@@ -18,6 +18,62 @@ from pydantic import Field
 from typing import Any, Dict, List, Optional
 
 
+# Response models for Jobs
+class CreateJobResponse(CallToolResult):
+    """Response model for create job operation."""
+
+    job_name: str = Field(..., description='Name of the created job')
+    job_id: Optional[str] = Field(None, description='ID of the created job')
+    operation: str = Field(default='create', description='Operation performed')
+
+
+class DeleteJobResponse(CallToolResult):
+    """Response model for delete job operation."""
+
+    job_name: str = Field(..., description='Name of the deleted job')
+    operation: str = Field(default='delete', description='Operation performed')
+
+
+class GetJobResponse(CallToolResult):
+    """Response model for get job operation."""
+
+    job_name: str = Field(..., description='Name of the job')
+    job_details: Dict[str, Any] = Field(..., description='Complete job definition')
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class GetJobsResponse(CallToolResult):
+    """Response model for get jobs operation."""
+
+    jobs: List[Dict[str, Any]] = Field(..., description='List of jobs')
+    count: int = Field(..., description='Number of jobs found')
+    next_token: Optional[str] = Field(None, description='Token for pagination')
+    operation: str = Field(default='list', description='Operation performed')
+
+
+class StartJobRunResponse(CallToolResult):
+    """Response model for start job run operation."""
+
+    job_name: str = Field(..., description='Name of the job')
+    job_run_id: str = Field(..., description='ID of the job run')
+    operation: str = Field(default='start_run', description='Operation performed')
+
+
+class StopJobRunResponse(CallToolResult):
+    """Response model for stop job run operation."""
+
+    job_name: str = Field(..., description='Name of the job')
+    job_run_id: str = Field(..., description='ID of the job run')
+    operation: str = Field(default='stop_run', description='Operation performed')
+
+
+class UpdateJobResponse(CallToolResult):
+    """Response model for update job operation."""
+
+    job_name: str = Field(..., description='Name of the updated job')
+    operation: str = Field(default='update', description='Operation performed')
+
+      
 # Response models for Workflows
 class CreateWorkflowResponse(CallToolResult):
     """Response model for create workflow operation."""
@@ -115,6 +171,56 @@ class StopTriggerResponse(CallToolResult):
     operation: str = Field(default='stop-trigger', description='Stops a specified trigger.')
 
 
+# Response models for Job Runs
+class GetJobRunResponse(CallToolResult):
+    """Response model for get job run operation."""
+
+    job_name: str = Field(..., description='Name of the job')
+    job_run_id: str = Field(..., description='ID of the job run')
+    job_run_details: Dict[str, Any] = Field(..., description='Complete job run definition')
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class GetJobRunsResponse(CallToolResult):
+    """Response model for get job runs operation."""
+
+    job_name: str = Field(..., description='Name of the job')
+    job_runs: List[Dict[str, Any]] = Field(..., description='List of job runs')
+    count: int = Field(..., description='Number of job runs found')
+    next_token: Optional[str] = Field(None, description='Token for pagination')
+    operation: str = Field(default='list', description='Operation performed')
+
+
+class BatchStopJobRunResponse(CallToolResult):
+    """Response model for batch stop job run operation."""
+
+    job_name: str = Field(..., description='Name of the job')
+    successful_submissions: List[Dict[str, Any]] = Field(
+        ..., description='List of successfully stopped job run IDs'
+    )
+    failed_submissions: List[Dict[str, Any]] = Field(
+        ..., description='List of failed stop attempts'
+    )
+    operation: str = Field(default='batch_stop', description='Operation performed')
+
+
+# Response models for Bookmarks
+class GetJobBookmarkResponse(CallToolResult):
+    """Response model for get job bookmark operation."""
+
+    job_name: str = Field(..., description='Name of the job')
+    bookmark_details: Dict[str, Any] = Field(..., description='Complete bookmark definition')
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class ResetJobBookmarkResponse(CallToolResult):
+    """Response model for reset job bookmark operation."""
+
+    job_name: str = Field(..., description='Name of the job')
+    run_id: Optional[str] = Field(None, description='ID of the job run')
+    operation: str = Field(default='reset', description='Operation performed')
+
+
 # Response models for Sessions
 class CreateSessionResponse(CallToolResult):
     """Response model for create session operation."""
@@ -194,6 +300,110 @@ class ListStatementsResponse(CallToolResult):
     )
 
 
+# Response models for Usage Profiles
+class CreateUsageProfileResponse(CallToolResult):
+    """Response model for create usage profile operation."""
+
+    profile_name: str = Field(..., description='Name of the created usage profile')
+    operation: str = Field(default='create', description='Operation performed')
+
+
+class DeleteUsageProfileResponse(CallToolResult):
+    """Response model for delete usage profile operation."""
+
+    profile_name: str = Field(..., description='Name of the deleted usage profile')
+    operation: str = Field(default='delete', description='Operation performed')
+
+
+class GetUsageProfileResponse(CallToolResult):
+    """Response model for get usage profile operation."""
+
+    profile_name: str = Field(..., description='Name of the usage profile')
+    profile_details: Dict[str, Any] = Field(..., description='Complete usage profile definition')
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class UpdateUsageProfileResponse(CallToolResult):
+    """Response model for update usage profile operation."""
+
+    profile_name: str = Field(..., description='Name of the updated usage profile')
+    operation: str = Field(default='update', description='Operation performed')
+
+
+# Response models for Security
+class CreateSecurityConfigurationResponse(CallToolResult):
+    """Response model for create security configuration operation."""
+
+    config_name: str = Field(..., description='Name of the created security configuration')
+    creation_time: str = Field(..., description='Creation timestamp in ISO format')
+    encryption_configuration: Dict[str, Any] = Field(
+        {}, description='Encryption configuration settings'
+    )
+    operation: str = Field(default='create', description='Operation performed')
+
+
+class DeleteSecurityConfigurationResponse(CallToolResult):
+    """Response model for delete security configuration operation."""
+
+    config_name: str = Field(..., description='Name of the deleted security configuration')
+    operation: str = Field(default='delete', description='Operation performed')
+
+
+class GetSecurityConfigurationResponse(CallToolResult):
+    """Response model for get security configuration operation."""
+
+    config_name: str = Field(..., description='Name of the security configuration')
+    config_details: Dict[str, Any] = Field(
+        ..., description='Complete security configuration definition'
+    )
+    encryption_configuration: Dict[str, Any] = Field(
+        {}, description='Encryption configuration settings'
+    )
+    creation_time: str = Field(..., description='Creation timestamp in ISO format')
+    operation: str = Field(default='get', description='Operation performed')
+
+
+# Response models for Encryption
+class GetDataCatalogEncryptionSettingsResponse(CallToolResult):
+    """Response model for get data catalog encryption settings operation."""
+
+    encryption_settings: Dict[str, Any] = Field(
+        ..., description='Data catalog encryption settings'
+    )
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class PutDataCatalogEncryptionSettingsResponse(CallToolResult):
+    """Response model for put data catalog encryption settings operation."""
+
+    operation: str = Field(default='put', description='Operation performed')
+
+
+# Response models for Resource Policies
+class GetResourcePolicyResponse(CallToolResult):
+    """Response model for get resource policy operation."""
+
+    policy_hash: Optional[str] = Field(None, description='Hash of the resource policy')
+    policy_in_json: Optional[str] = Field(None, description='Resource policy in JSON format')
+    create_time: Optional[str] = Field(None, description='Creation timestamp in ISO format')
+    update_time: Optional[str] = Field(None, description='Last update timestamp in ISO format')
+    operation: str = Field(default='get', description='Operation performed')
+
+
+class PutResourcePolicyResponse(CallToolResult):
+    """Response model for put resource policy operation."""
+
+    policy_hash: Optional[str] = Field(None, description='Hash of the resource policy')
+    operation: str = Field(default='put', description='Operation performed')
+
+
+class DeleteResourcePolicyResponse(CallToolResult):
+    """Response model for delete resource policy operation."""
+
+    operation: str = Field(default='delete', description='Operation performed')
+
+
+# Response models for Crawlers
 class CreateCrawlerResponse(CallToolResult):
     """Response model for create crawler operation."""
 

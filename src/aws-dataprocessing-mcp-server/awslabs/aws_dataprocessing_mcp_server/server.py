@@ -53,6 +53,11 @@ from awslabs.aws_dataprocessing_mcp_server.handlers.glue.interactive_sessions_ha
 )
 from awslabs.aws_dataprocessing_mcp_server.handlers.glue.worklows_handler import (
     GlueWorkflowAndTriggerHandler,
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_commons_handler import (
+    GlueCommonsHandler,
+)
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.glue_etl_handler import (
+    GlueEtlJobsHandler,
 )
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
@@ -73,6 +78,20 @@ It enables you to create, manage, and monitor data processing workflows.
 - IAM roles and permissions are critical for data processing services to access data sources and targets.
 
 ## Common Workflows
+
+### Glue ETL Jobs
+1. Create a Glue job: `manage_aws_glue_jobs(operation='create-job', job_name='my-job', job_definition={...})`
+2. Delete a Glue job: `manage_aws_glue_jobs(operation='delete-job', job_name='my-job')`
+3. Get Glue job details: `manage_aws_glue_jobs(operation='get-job', job_name='my-job')`
+4. List Glue jobs: `manage_aws_glue_jobs(operation='get-jobs')`
+5. Update a Glue job: `manage_aws_glue_jobs(operation='update-job', job_name='my-job', job_definition={...})`
+6. Run a Glue job: `manage_aws_glue_jobs(operation='start-job-run', job_name='my-job')`
+7. Stop a Glue job run: `manage_aws_glue_jobs(operation='stop-job-run', job_name='my-job', job_run_id='my-job-run-id')`
+8. Get Glue job run details: `manage_aws_glue_jobs(operation='get-job-run', job_name='my-job', job_run_id='my-job-run-id')`
+9. Get all Glue job runs for a job: `manage_aws_glue_jobs(operation='get-job-runs', job_name='my-job')`
+10. Stop multiple Glue job runs: `manage_aws_glue_jobs(operation='batch-stop-job-run', job_name='my-job', job_run_ids=[...])`
+11. Get Glue job bookmark details: `manage_aws_glue_jobs(operation='get-job-bookmark', job_name='my-job')`
+12. Reset a Glue job bookmark: `manage_aws_glue_jobs(operation='reset-job-bookmark', job_name='my-job')`
 
 ### Setting Up a Data Catalog
 1. Create a database: `manage_aws_glue_databases(operation='create-database', database_name='my-database', description='My database')`
@@ -146,7 +165,6 @@ It enables you to create, manage, and monitor data processing workflows.
 2. Manage data catalogs: `manage_aws_athena_data_catalogs(operation='create-data-catalog', name='my-catalog', type='GLUE', parameters={...})`
 
 ### Glue Interactive Sessions
-
 1. Create a session: `manage_aws_glue_sessions(operation='create-session', session_id='my-spark-session', role='arn:aws:iam::123456789012:role/GlueInteractiveSessionRole', command={'Name': 'glueetl', 'PythonVersion': '3'}, glue_version='4.0')`
 2. Get session details: `manage_aws_glue_sessions(operation='get-session', session_id='my-spark-session')`
 3. List all sessions: `manage_aws_glue_sessions(operation='list-sessions')`
@@ -170,6 +188,26 @@ It enables you to create, manage, and monitor data processing workflows.
 10. Start a trigger: `manage_aws_glue_triggers(operation='start-trigger', trigger_name='daily-etl-trigger')`
 11. Stop a trigger: `manage_aws_glue_triggers(operation='stop-trigger', trigger_name='daily-etl-trigger')`
 12. Delete a trigger: `manage_aws_glue_triggers(operation='delete-trigger', trigger_name='daily-etl-trigger')`
+
+### Glue Usage Profiles
+1. Create a profile: `manage_aws_glue_usage_profiles(operation='create-profile', profile_name='my-usage-profile', description='my description of the usage profile', configuration={...}, tags={...})`
+2. Delete a profile: `manage_aws_glue_usage_profiles(operation='delete-profile', profile_name='my-usage-profile')`
+3. Get profile details: `manage_aws_glue_usage_profiles(operation='get-profile', profile_name='my-usage-profile')`
+4. Update a profile: `manage_aws_glue_usage_profiles(operation='update-profile', profile_name='my-usage-profile', description='my description of the usage profile', configuration={...})`
+
+### Glue Security Configurations
+1. Create a security configuration: `manage_aws_glue_security(operation='create-security-configuration', config_name='my-config, encryption_configuration={...})`
+2. Delete a security configuration: `manage_aws_glue_security(operation='delete-security-configuration', config_name='my-config)`
+3. Get a security configuration: `manage_aws_glue_security(operation='get-security-configuration', config_name='my-config)`
+
+### Glue Catalog Encryption Settings
+1. Update catalog encryption settings: `manage_aws_glue_encryption(operation='put-catalog-encryption-settings', catalog_id='my-catalog-id', encryption_at_rest={...}, connection_password_encryption={...})`
+2. Get catalog encryption settings: `manage_aws_glue_encryption(operation='get-catalog-encryption-settings', catalog_id='my-catalog-id')`
+
+### Glue Catalog Resource Policies
+1. Update a catalog resource policy: `manage_aws_glue_resource_policies(operation='put-resource-policy', resource_arn='my-resource', policy='my-policy-string')`
+2. Delete a catalog resource policy: `manage_aws_glue_resource_policies(operation='delete-resource-policy', resource_arn='my-resource')`
+3. Get a catalog resource policy: `manage_aws_glue_resource_policies(operation='get-resource-policy', resource_arn='my-resource')`
 
 ### Glue Crawlers and Classifiers
 1. Create a crawler: `manage_aws_glue_crawlers(operation='create-crawler', crawler_name='my-crawler', crawler_definition={...})`
@@ -257,6 +295,16 @@ def main():
         allow_sensitive_data_access=allow_sensitive_data_access,
     )
     GlueWorkflowAndTriggerHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    GlueEtlJobsHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    GlueCommonsHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
