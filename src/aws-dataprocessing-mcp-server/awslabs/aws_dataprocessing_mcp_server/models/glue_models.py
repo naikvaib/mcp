@@ -73,7 +73,7 @@ class UpdateJobResponse(CallToolResult):
     job_name: str = Field(..., description='Name of the updated job')
     operation: str = Field(default='update', description='Operation performed')
 
-      
+
 # Response models for Workflows
 class CreateWorkflowResponse(CallToolResult):
     """Response model for create workflow operation."""

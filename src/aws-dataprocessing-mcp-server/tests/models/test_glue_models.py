@@ -1,7 +1,4 @@
 from awslabs.aws_dataprocessing_mcp_server.models.glue_models import (
-    CreateSessionResponse,
-    CreateTriggerResponse,
-    CreateWorkflowResponse,
     CreateClassifierResponse,
     CreateCrawlerResponse,
     CreateJobResponse,
@@ -28,12 +25,6 @@ sample_dict = {'key': 'value'}
 sample_list = [{'id': 1}, {'id': 2}]
 
 
-class TestWorkflowResponses:
-    """Test workflow response models."""
-
-    def test_create_workflow_response(self):
-        """Test create workflow response."""
-        
 class TestJobResponses:
     """Test class for Glue job response models."""
 
