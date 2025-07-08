@@ -290,6 +290,17 @@ class TestGlueDataCatalogHandler:
         assert result == mock_response
 
     @pytest.mark.asyncio
+    async def test_manage_aws_glue_data_catalog_databases_get_missing_database_name(
+        self, handler, mock_ctx, mock_database_manager
+    ):
+        """Test that get database operation is allowed with read access."""
+        with pytest.raises(ValueError) as e:
+            await handler.manage_aws_glue_data_catalog_databases(
+                mock_ctx, operation='get-database', database_name=None
+            )
+        assert 'database_name is required' in str(e.value)
+
+    @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_databases_list_read_access(
         self, handler, mock_ctx, mock_database_manager
     ):
@@ -387,6 +398,40 @@ class TestGlueDataCatalogHandler:
 
         # Verify that the result is the expected response
         assert result == expected_response
+
+    @pytest.mark.asyncio
+    async def test_manage_aws_glue_data_catalog_databases_delete_missing_database_name(
+        self, handler_with_write_access, mock_ctx
+    ):
+        """Test that delete database operation with missing database name."""
+        with pytest.raises(ValueError) as e:
+            await handler_with_write_access.manage_aws_glue_data_catalog_databases(
+                mock_ctx, operation='delete-database', database_name=None
+            )
+        assert 'database_name is required' in str(e.value)
+
+    @pytest.mark.asyncio
+    async def test_manage_aws_glue_data_catalog_databases_update_missing_database_name(
+        self, handler_with_write_access, mock_ctx
+    ):
+        """Test that get database operation with write access."""
+        with pytest.raises(ValueError) as e:
+            await handler_with_write_access.manage_aws_glue_data_catalog_databases(
+                mock_ctx, operation='update-database', database_name=None
+            )
+        assert 'database_name is required' in str(e.value)
+
+    @pytest.mark.asyncio
+    async def test_manage_aws_glue_data_catalog_databases_update_with_read_access(
+        self, handler, mock_ctx
+    ):
+        """Test that updadte database operation with read access."""
+        result = await handler.manage_aws_glue_data_catalog_databases(
+            mock_ctx, operation='update-database', database_name=None
+        )
+        assert result.isError is True
+        assert len(result.content) == 1
+        assert 'is not allowed without write access' in result.content[0].text
 
     @pytest.mark.asyncio
     async def test_manage_aws_glue_data_catalog_databases_update_with_write_access(
