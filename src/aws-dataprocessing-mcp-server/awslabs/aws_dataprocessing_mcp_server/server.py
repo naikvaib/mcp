@@ -42,6 +42,9 @@ from awslabs.aws_dataprocessing_mcp_server.handlers.emr.emr_ec2_instance_handler
 from awslabs.aws_dataprocessing_mcp_server.handlers.emr.emr_ec2_steps_handler import (
     EMREc2StepsHandler,
 )
+from awslabs.aws_dataprocessing_mcp_server.handlers.glue.crawler_handler import (
+    CrawlerHandler,
+)
 from awslabs.aws_dataprocessing_mcp_server.handlers.glue.data_catalog_handler import (
     GlueDataCatalogHandler,
 )
@@ -168,6 +171,18 @@ It enables you to create, manage, and monitor data processing workflows.
 11. Stop a trigger: `manage_aws_glue_triggers(operation='stop-trigger', trigger_name='daily-etl-trigger')`
 12. Delete a trigger: `manage_aws_glue_triggers(operation='delete-trigger', trigger_name='daily-etl-trigger')`
 
+### Glue Crawlers and Classifiers
+1. Create a crawler: `manage_aws_glue_crawlers(operation='create-crawler', crawler_name='my-crawler', crawler_definition={...})`
+2. Start a crawler: `manage_aws_glue_crawlers(operation='start-crawler', crawler_name='my-crawler')`
+3. Get crawler details: `manage_aws_glue_crawlers(operation='get-crawler', crawler_name='my-crawler')`
+4. Create a classifier: `manage_aws_glue_classifiers(operation='create-classifier', classifier_definition={...})`
+5. Get classifier details: `manage_aws_glue_classifiers(operation='get-classifier', classifier_name='my-classifier')`
+6. Update a classifier: `manage_aws_glue_classifiers(operation='update-classifier', classifier_definition={...})`
+7. Delete a classifier: `manage_aws_glue_classifiers(operation='delete-classifier', classifier_name='my-classifier')`
+8. List all classifiers: `manage_aws_glue_classifiers(operation='get-classifiers')`
+9. Manage crawler schedules: `manage_aws_glue_crawler_management(operation='update-crawler-schedule', crawler_name='my-crawler', schedule='cron(0 0 * * ? *)')`
+10. Get crawler metrics: `manage_aws_glue_crawler_management(operation='get-crawler-metrics', crawler_name_list=['my-crawler'])`
+
 """
 
 SERVER_DEPENDENCIES = [
@@ -257,6 +272,11 @@ def main():
         allow_sensitive_data_access=allow_sensitive_data_access,
     )
     AthenaWorkGroupHandler(
+        mcp,
+        allow_write=allow_write,
+        allow_sensitive_data_access=allow_sensitive_data_access,
+    )
+    CrawlerHandler(
         mcp,
         allow_write=allow_write,
         allow_sensitive_data_access=allow_sensitive_data_access,
