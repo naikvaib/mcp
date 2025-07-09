@@ -575,7 +575,7 @@ class GlueDataCatalogHandler:
             None, description='A continuation token, if this is a continuation call.'
         ),
         hide_password: Optional[bool] = Field(
-            None,
+            True,
             description='Flag to retrieve the connection metadata without returning the password(for get-connection and list-connections operation).',
         ),
     ) -> Union[
