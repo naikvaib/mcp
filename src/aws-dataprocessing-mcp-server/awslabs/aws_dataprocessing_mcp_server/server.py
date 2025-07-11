@@ -225,6 +225,13 @@ It enables you to create, manage, and monitor data processing workflows.
 9. Manage crawler schedules: `manage_aws_glue_crawler_management(operation='update-crawler-schedule', crawler_name='my-crawler', schedule='cron(0 12 * * ? *)')`
 10. Get crawler metrics: `manage_aws_glue_crawler_management(operation='get-crawler-metrics', crawler_name_list=['my-crawler'])`
 
+### Lake Formation Governance
+1. List permissions: `manage_aws_lakeformation_permissions(operation='list-permissions', principal='arn:aws:iam::123456789012:user/testuser')`
+2. Get data lake settings: `manage_aws_lakeformation_datalakesettings(operation='get-data-lake-settings')`
+3. List resources: `manage_aws_lakeformation_resources(operation='list-resources')`
+4. Describe resource: `manage_aws_lakeformation_resources(operation='describe-resource', resource_arn='arn:aws:s3:::my-lake-bucket')`
+5. Batch get effective permissions for path: `manage_aws_lakeformation_permissions(operation='batch-get-effective-permissions-for-path', resource_path='s3://my-lake-bucket/my-data/')`
+
 """
 
 SERVER_DEPENDENCIES = [
