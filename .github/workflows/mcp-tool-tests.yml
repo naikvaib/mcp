@@ -16,35 +16,32 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
           
-      - name: Install dependencies
+      - name: Install MCP SDK and dependencies
         run: |
           python -m pip install --upgrade pip
-          # Install MCP server dependencies
-          pip install pydantic>=2.10.6 loguru>=0.7.0 boto3>=1.34.0 requests>=2.31.0 pyyaml>=6.0.0 cachetools>=5.3.0
           
-          # Look for MCP SDK in the repo
-          echo "Searching for MCP SDK in the repository..."
-          find . -path "*/mcp" -type d | grep -v "__pycache__" || echo "No MCP module found in repository"
+          # Install the actual MCP Python SDK
+          pip install "mcp[cli]>=1.6.0"
           
-          # Install MCP SDK from PyPI if available
-          pip install mcp-server || echo "MCP server not available on PyPI"
-          
-          # Add src to PYTHONPATH to find internal modules
-          echo "PYTHONPATH=$(pwd):${PYTHONPATH}" >> $GITHUB_ENV
-          
-          # List installed packages for debugging
-          pip list
+          # Install MCP server dependencies from pyproject.toml
+          pip install loguru>=0.7.0 pydantic>=2.10.6 boto3>=1.34.0 requests>=2.31.0 pyyaml>=6.0.0 cachetools>=5.3.0
           
           # Install test requirements
           cd src/aws-dataprocessing-mcp-server/IntegrationTest
           pip install -r requirements.txt
+          
+          # Add the server package to Python path
+          echo "PYTHONPATH=$(pwd)/../..:$PYTHONPATH" >> $GITHUB_ENV
+          
+          # List installed packages for debugging
+          pip list | grep -E "(mcp|pydantic|loguru|boto3)"
 
       - name: Configure AWS credentials
         run: |
@@ -54,143 +51,58 @@ jobs:
           echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
           echo "[default]" > ~/.aws/config
           echo "region=${{ secrets.AWS_REGION }}" >> ~/.aws/config
-          # Create the kathryncoding profile that's hardcoded in run_tests.py
+          
+          # Create the kathryncoding profile that's used in run_tests.py
           echo "[kathryncoding]" >> ~/.aws/credentials
           echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
           echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
           echo "[profile kathryncoding]" >> ~/.aws/config
           echo "region=${{ secrets.AWS_REGION }}" >> ~/.aws/config
-          # Verify the config was created correctly
-          AWS_CONFIG_FILE=~/.aws/config aws configure list
+          
+          # Verify AWS configuration
+          aws configure list --profile kathryncoding
 
-      - name: Modify server path in run_tests.py
+      - name: Verify MCP server structure
         run: |
-          cd src/aws-dataprocessing-mcp-server/IntegrationTest
-          # Update the hardcoded server path in run_tests.py to match our environment
-          sed -i 's|/home/lfqing/workplace/mcp/src/dataprocessing-mcp-server/awslabs/dataprocessing_mcp_server|../awslabs/aws_dataprocessing_mcp_server|g' run_tests.py
-          # Print the current directory and location of server.py for debugging
-          echo "Current directory: $(pwd)"
-          echo "Looking for server.py at: $(realpath ../awslabs/aws_dataprocessing_mcp_server/server.py 2>/dev/null || echo 'File not found')"
-
-      - name: List directory structure for debugging
-        run: |
-          echo "Current directory: $(pwd)"
           echo "Checking MCP server directory structure:"
-          find src/aws-dataprocessing-mcp-server -type d | sort
-          echo -e "\nSearching for server.py files:"
-          find src/aws-dataprocessing-mcp-server -type f -name "server.py" | grep -v "__pycache__" || echo "No server.py found"
+          find src/aws-dataprocessing-mcp-server -name "*.py" | head -10
           
-      - name: Verify actual MCP server directory setup
-        run: |
-          echo "Current directory: $(pwd)"
-          
-          # Create the directory structure if it doesn't exist (it should exist from the repo checkout)
-          mkdir -p src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server
-          
-          # Check if server.py exists
-          if [ ! -f src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/server.py ]; then
-            echo "WARNING: Real server.py not found, creating an empty one for testing"
-            # Create a minimal placeholder only if the real one doesn't exist
-            touch src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/server.py
+          # Verify the server.py exists
+          if [ -f "src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/server.py" ]; then
+            echo "✓ Server file found"
+          else
+            echo "✗ Server file not found"
+            exit 1
           fi
           
-          # Get absolute path to the actual server
-          actual_server_path="$(realpath src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server)"
-          echo "Actual server.py absolute path: ${actual_server_path}/server.py"
-          
-          # Show directory contents
-          echo "Server directory contents:"
-          ls -la src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/
+          # Test MCP imports
+          python -c "import mcp; print(f'✓ MCP version: {mcp.__version__ if hasattr(mcp, "__version__") else "unknown"}')"
+          python -c "from mcp.server.fastmcp import FastMCP; print('✓ FastMCP imported successfully')"
+          python -c "from mcp.types import CallToolResult; print('✓ CallToolResult imported successfully')"
 
-      - name: Modify MCP server path in run_tests.py
+      - name: Update server path in test configuration
         run: |
           cd src/aws-dataprocessing-mcp-server/IntegrationTest
-          # Print current code for debugging
-          echo "Current server manager instantiation in run_tests.py:"
-          grep -A5 "server_manager = MCPServerManager" run_tests.py
           
-          # Get absolute path to the actual server
-          actual_server_path="$(cd ../../.. && realpath src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server)"
-          echo "Using actual server path: ${actual_server_path}"
+          # Get absolute path to the server directory
+          server_path="$(cd .. && pwd)/awslabs/aws_dataprocessing_mcp_server"
+          echo "Using server path: ${server_path}"
           
-          # Use sed to replace the server_path directly in the code
-          sed -i "s|server_path = os.environ.get(\"MCP_SERVER_PATH\", \"../awslabs/aws_dataprocessing_mcp_server\")|server_path = \"${actual_server_path}\"|g" run_tests.py
+          # Update the server path in run_tests.py
+          sed -i "s|server_path = os.environ.get(\"MCP_SERVER_PATH\", \"../awslabs/aws_dataprocessing_mcp_server\")|server_path = \"${server_path}\"|g" run_tests.py
           
           # Verify the change
-          echo "After modification:"
-          grep -A5 "server_path = " run_tests.py
+          echo "Updated server path configuration:"
+          grep -A2 -B2 "server_path =" run_tests.py
 
-      - name: Install MCP Python SDK
-        run: |
-          echo "Looking for the real MCP Python SDK..."
-          
-          # Try to install from GitHub repository
-          pip install git+https://github.com/modelcontextprotocol/mcp-python-sdk.git || echo "Failed to install MCP SDK from GitHub"
-          
-          # Try to install from PyPI as another option
-          pip install mcp-python-sdk || echo "MCP SDK not available on PyPI"
-          
-          # Check if MCP module is already installed
-          python -c "import sys; print('Python module search paths:'); [print(f'  {p}') for p in sys.path]" || true
-          
-          # Create a directory for the local copy of MCP SDK
-          mkdir -p /tmp/mcp-sdk-repo
-          cd /tmp/mcp-sdk-repo
-          
-          # Try to clone the MCP repository
-          git clone https://github.com/modelcontextprotocol/mcp-python-sdk.git . || echo "Failed to clone MCP SDK repository"
-          
-          if [ -d "mcp" ]; then
-            echo "Found MCP directory in the cloned repository"
-            # Add it to the Python path
-            echo "PYTHONPATH=/tmp/mcp-sdk-repo:$PYTHONPATH" >> $GITHUB_ENV
-          else
-            echo "MCP directory not found in the cloned repository"
-            
-            # As a final fallback, search for the MCP module in the project
-            echo "Searching for MCP module in the project..."
-            cd $GITHUB_WORKSPACE
-            find . -path "*/mcp" -type d | grep -v "__pycache__" || echo "No MCP module found in repository"
-          fi
-
-      - name: Check server.py imports
-        run: |
-          echo "Checking imports in server.py..."
-          grep -r "import" --include="*.py" src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/ | grep mcp || echo "No mcp imports found"
-          grep -r "from mcp" --include="*.py" src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/ || echo "No from mcp imports found"
-          
-          # Check if MCP is available to import
-          echo "Checking if MCP module is importable..."
-          python -c "try:
-              from mcp.server.fastmcp import FastMCP
-              print('Successfully imported FastMCP')
-              from mcp.types import CallToolResult
-              print('Successfully imported CallToolResult')
-          except ImportError as e:
-              print(f'Error importing MCP modules: {e}')
-              exit(1)
-          "
-          
-          if [ $? -ne 0 ]; then
-            echo "WARNING: MCP module is not available, tests may fail"
-          else
-            echo "MCP module is available and can be imported"
-          fi
-
-      - name: Run MCP Tool tests
+      - name: Run MCP integration tests
         run: |
           cd src/aws-dataprocessing-mcp-server/IntegrationTest
-          # Show final Python path and environment
-          echo "Running tests with updated server path..."
-          echo "PYTHONPATH=$PYTHONPATH"
-          python -c "import sys; print('Python module search paths:'); [print(f'  {p}') for p in sys.path]" || true
           
-          # Try to directly import the mock modules to verify they're accessible
-          python -c "from mcp.types import CallToolResult; print('Successfully imported CallToolResult')" || echo "Failed to import CallToolResult"
-          python -c "from mcp.server.fastmcp import FastMCP; print('Successfully imported FastMCP')" || echo "Failed to import FastMCP"
+          echo "Starting MCP integration tests..."
+          echo "Python path: $PYTHONPATH"
           
           # Run the tests
-          echo "Running the actual tests now..."
           python -u run_tests.py
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -198,3 +110,11 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           TEST_CASES_PATH: tests/glue/test_cases.json
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-test-reports
+          path: src/aws-dataprocessing-mcp-server/IntegrationTest/test_reports/
+          retention-days: 30
