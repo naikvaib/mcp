@@ -44,20 +44,17 @@ jobs:
           pip list | grep -E "(mcp|pydantic|loguru|boto3)"
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          
-      - name: Setup AWS profiles
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          # Create the kathryncoding profile using the same credentials
+          # Setup kathryncoding profile
           aws configure set profile.kathryncoding.region ${{ secrets.AWS_REGION }}
           aws configure set profile.kathryncoding.aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws configure set profile.kathryncoding.aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           
-          # Verify AWS configuration
+          # Test credentials
           aws sts get-caller-identity --profile kathryncoding
 
       - name: Verify MCP server structure
