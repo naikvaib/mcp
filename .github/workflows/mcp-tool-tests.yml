@@ -28,102 +28,6 @@ jobs:
           python -m pip install --upgrade pip
           cd src/aws-dataprocessing-mcp-server/IntegrationTest
           pip install -r requirements.txt
-          
-      - name: Create Python package structure
-        run: |
-          # Create a src directory for Python package structure
-          mkdir -p src/data_processing_mcp_server_tests/models
-          mkdir -p src/data_processing_mcp_server_tests/core
-          
-          # Create __init__.py files to make them proper packages
-          touch src/__init__.py
-          touch src/data_processing_mcp_server_tests/__init__.py
-          touch src/data_processing_mcp_server_tests/models/__init__.py
-          touch src/data_processing_mcp_server_tests/core/__init__.py
-          
-          # Create necessary stubs for the test to find
-          echo 'class MCPTestCase:
-    def __init__(self, test_name, tool_name, input_params):
-        self.test_name = test_name
-        self.tool_name = tool_name
-        self.input_params = input_params
-        self._mcp_client = None' > src/data_processing_mcp_server_tests/models/test_case.py
-
-          echo 'class TestExecutor:
-    def __init__(self, client):
-        self.client = client
-        self.validators = []
-        self.test_cases = []
-        self.setup_functions = {}
-        self.cleanup_functions = {}
-
-    def add_validator(self, validator):
-        self.validators.append(validator)
-
-    def add_test_case(self, test_case, setup_function=None, cleanup_function=None):
-        self.test_cases.append(test_case)
-        if setup_function:
-            self.setup_functions[test_case.test_name] = setup_function
-        if cleanup_function:
-            self.cleanup_functions[test_case.test_name] = cleanup_function
-            
-    def run_tests_only(self):
-        return []
-        
-    def run_all_cleanups(self):
-        return []' > src/data_processing_mcp_server_tests/core/test_executor.py
-
-          echo 'class ValidationResult:
-    def __init__(self, success, message):
-        self.success = success
-        self.message = message
-
-def get_operation_validators(operation):
-    """Return validators for specific operations"""
-    return []' > src/data_processing_mcp_server_tests/core/validators.py
-
-          echo 'class MCPClient:
-    def __init__(self, server_manager):
-        self.server_manager = server_manager
-    
-    def initialize(self):
-        pass
-    
-    def call_tool(self, tool_name, params):
-        return {"result": "mock-result"}' > src/data_processing_mcp_server_tests/core/mcp_client.py
-
-          echo 'class MCPServerManager:
-    def __init__(self, server_path, aws_profile=None, aws_region=None, server_args=None):
-        self.server_path = server_path
-        self.aws_profile = aws_profile
-        self.aws_region = aws_region
-        self.server_args = server_args
-    
-    def start(self):
-        pass
-    
-    def stop(self):
-        pass' > src/data_processing_mcp_server_tests/core/mcp_server.py
-
-          echo 'class AWSSetup:
-    def __init__(self, profile_name=None, region=None):
-        self.profile_name = profile_name
-        self.region = region
-    
-    def check_job_exists(self, job_name):
-        return False, None
-    
-    def setup_test_role(self, role_name, policies):
-        return role_name, f"arn:aws:iam::123456789012:role/{role_name}"
-    
-    def check_bucket_exists(self, bucket_name):
-        return False
-    
-    def upload_script_to_s3(self, local_path, bucket, key):
-        return f"s3://{bucket}/{key}"
-    
-    def delete_glue_job(self, job_name):
-        pass' > src/data_processing_mcp_server_tests/core/aws_setup.py
 
       - name: Run MCP Tool tests
         run: |
@@ -135,5 +39,5 @@ def get_operation_validators(operation):
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-west-1
           AWS_SDK_LOAD_CONFIG: 1
-          MCP_SERVER_PATH: ../../../src/aws-dataprocessing-mcp-server
+          MCP_SERVER_PATH: ../awslabs/aws_dataprocessing_mcp_server
           TEST_CASES_PATH: tests/glue/test_cases.json
