@@ -42,17 +42,14 @@ jobs:
           touch src/data_processing_mcp_server_tests/core/__init__.py
           
           # Create necessary stubs for the test to find
-          cat > src/data_processing_mcp_server_tests/models/test_case.py << 'EOL'
-class MCPTestCase:
+          echo 'class MCPTestCase:
     def __init__(self, test_name, tool_name, input_params):
         self.test_name = test_name
         self.tool_name = tool_name
         self.input_params = input_params
-        self._mcp_client = None
-EOL
+        self._mcp_client = None' > src/data_processing_mcp_server_tests/models/test_case.py
 
-          cat > src/data_processing_mcp_server_tests/core/test_executor.py << 'EOL'
-class TestExecutor:
+          echo 'class TestExecutor:
     def __init__(self, client):
         self.client = client
         self.validators = []
@@ -74,39 +71,18 @@ class TestExecutor:
         return []
         
     def run_all_cleanups(self):
-        return []
-EOL
+        return []' > src/data_processing_mcp_server_tests/core/test_executor.py
 
-      - name: Run MCP Tool tests
-        run: |
-          cd src/aws-dataprocessing-mcp-server/IntegrationTest
-          # Add the current directory to Python path so it can find modules
-          PYTHONPATH=$PYTHONPATH:$(pwd) python run_tests.py
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-west-1
-          AWS_SDK_LOAD_CONFIG: 1
-          MCP_SERVER_PATH: ../../../src/aws-dataprocessing-mcp-server
-          TEST_CASES_PATH: tests/glue/test_cases.json
-
-      - name: Create additional required modules
-        run: |
-          # Create validators.py
-          cat > src/data_processing_mcp_server_tests/core/validators.py << 'EOL'
-class ValidationResult:
+          echo 'class ValidationResult:
     def __init__(self, success, message):
         self.success = success
         self.message = message
 
 def get_operation_validators(operation):
     """Return validators for specific operations"""
-    return []
-EOL
+    return []' > src/data_processing_mcp_server_tests/core/validators.py
 
-          # Create mcp_client.py
-          cat > src/data_processing_mcp_server_tests/core/mcp_client.py << 'EOL'
-class MCPClient:
+          echo 'class MCPClient:
     def __init__(self, server_manager):
         self.server_manager = server_manager
     
@@ -114,12 +90,9 @@ class MCPClient:
         pass
     
     def call_tool(self, tool_name, params):
-        return {"result": "mock-result"}
-EOL
+        return {"result": "mock-result"}' > src/data_processing_mcp_server_tests/core/mcp_client.py
 
-          # Create mcp_server.py
-          cat > src/data_processing_mcp_server_tests/core/mcp_server.py << 'EOL'
-class MCPServerManager:
+          echo 'class MCPServerManager:
     def __init__(self, server_path, aws_profile=None, aws_region=None, server_args=None):
         self.server_path = server_path
         self.aws_profile = aws_profile
@@ -130,12 +103,9 @@ class MCPServerManager:
         pass
     
     def stop(self):
-        pass
-EOL
+        pass' > src/data_processing_mcp_server_tests/core/mcp_server.py
 
-          # Create aws_setup.py
-          cat > src/data_processing_mcp_server_tests/core/aws_setup.py << 'EOL'
-class AWSSetup:
+          echo 'class AWSSetup:
     def __init__(self, profile_name=None, region=None):
         self.profile_name = profile_name
         self.region = region
@@ -153,5 +123,17 @@ class AWSSetup:
         return f"s3://{bucket}/{key}"
     
     def delete_glue_job(self, job_name):
-        pass
-EOL
+        pass' > src/data_processing_mcp_server_tests/core/aws_setup.py
+
+      - name: Run MCP Tool tests
+        run: |
+          cd src/aws-dataprocessing-mcp-server/IntegrationTest
+          # Add the current directory to Python path so it can find modules
+          PYTHONPATH=$PYTHONPATH:$(pwd) python run_tests.py
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-west-1
+          AWS_SDK_LOAD_CONFIG: 1
+          MCP_SERVER_PATH: ../../../src/aws-dataprocessing-mcp-server
+          TEST_CASES_PATH: tests/glue/test_cases.json
