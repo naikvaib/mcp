@@ -46,6 +46,12 @@ jobs:
           # Verify the config was created correctly
           AWS_CONFIG_FILE=~/.aws/config aws configure list
 
+      - name: Modify server path in run_tests.py
+        run: |
+          cd src/aws-dataprocessing-mcp-server/IntegrationTest
+          # Update the hardcoded server path in run_tests.py to match our environment
+          sed -i 's|/home/lfqing/workplace/mcp/src/dataprocessing-mcp-server/awslabs/dataprocessing_mcp_server|../awslabs/aws_dataprocessing_mcp_server|g' run_tests.py
+
       - name: Run MCP Tool tests
         run: |
           cd src/aws-dataprocessing-mcp-server/IntegrationTest
