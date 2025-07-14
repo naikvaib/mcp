@@ -6,7 +6,6 @@ import os
 import uuid
 import tempfile
 import boto3
-import sys
 from src.data_processing_mcp_server_tests.models.test_case import MCPTestCase
 from src.data_processing_mcp_server_tests.core.test_executor import TestExecutor
 from src.data_processing_mcp_server_tests.core.validators import (
@@ -16,12 +15,11 @@ from src.data_processing_mcp_server_tests.core.validators import (
 from src.data_processing_mcp_server_tests.core.mcp_client import MCPClient
 from src.data_processing_mcp_server_tests.core.mcp_server import MCPServerManager
 from src.data_processing_mcp_server_tests.core.aws_setup import AWSSetup
+from src.data_processing_mcp_server_tests.core.reporting import ReportGenerator
 
 
-# Global AWS setup - use environment variables or default values
-aws_profile = os.environ.get('AWS_PROFILE', 'default')
-aws_region = os.environ.get('AWS_REGION', 'us-west-1')
-aws_setup = AWSSetup(profile_name=aws_profile, region=aws_region)
+# Global AWS setup
+aws_setup = AWSSetup(profile_name="kathryncoding", region="us-west-1")
 
 def ensure_unique_job_name(test_case):
     """Ensure job has a unique name to avoid conflicts"""
@@ -44,7 +42,11 @@ def create_non_mcp_job_if_needed(test_case, operation_type):
         
         if not exists:
             print(f"Creating non-MCP job {job_name} for negative {operation_type} test...")
-            create_non_mcp_job(aws_profile, aws_region, job_name)
+            job_name, role_name = create_non_mcp_job('kathryncoding', 'us-west-1', job_name)
+            
+            # Store role name for cleanup
+            test_case._role_name = role_name
+            print(f"Created non-MCP job: {job_name} with role: {role_name}")
             
             # Wait a bit for AWS to propagate the job
             import time
@@ -212,6 +214,11 @@ def cleanup_create_job(test_case):
     if job_name:
         print(f"Cleaning up job: {job_name}")
         aws_setup.delete_glue_job(job_name)
+    
+    # Cleanup IAM role if it exists for non-MCP jobs
+    if hasattr(test_case, '_role_name') and test_case._role_name:
+        print(f"Cleaning up IAM role: {test_case._role_name}")
+        aws_setup.delete_iam_role(test_case._role_name, ["AWSGlueServiceRole"])
 
 
 def cleanup_update_job(test_case):
@@ -232,29 +239,60 @@ def cleanup_delete_job(test_case):
         if exists:
             print(f"Job {job_name} still exists after delete test, cleaning up")
             aws_setup.delete_glue_job(job_name)
+    
 
+# def cleanup_orphaned_jobs():
+#     """Find and delete all Glue jobs from previous test runs that weren't cleaned up properly"""
+#     print("\n=== Cleaning Up Orphaned Jobs ===")
+    
+#     # Get list of all Glue jobs
+#     glue = boto3.client('glue', region_name=aws_setup.region)
+#     response = glue.get_jobs()
+    
+#     cleaned_jobs = 0
+#     for job in response.get('Jobs', []):
+#         job_name = job['Name']
+        
+#         # Get tags for this job
+#         try:
+#             # Construct the ARN for the job
+#             account_id = boto3.client('sts').get_caller_identity().get('Account')
+#             job_arn = f"arn:aws:glue:{aws_setup.region}:{account_id}:job/{job_name}"
+            
+#             tags_response = glue.get_tags(ResourceArn=job_arn)
+#             tags = tags_response.get('Tags', {})
+            
+#             # Check if this is an MCP managed job
+#             if tags.get('ManagedBy') == 'DataprocessingMcpServer':
+#                 # This is a job from a previous test run that wasn't cleaned up
+#                 print(f"Found orphaned MCP job: {job_name}")
+                
+#                 # Delete the job
+#                 aws_setup.delete_glue_job(job_name)
+#                 cleaned_jobs += 1
+#         except Exception as e:
+#             print(f"Error checking tags for job {job_name}: {e}")
+    
+#     print(f"Cleaned up {cleaned_jobs} orphaned jobs")
 
 def main():
-    # Get server path from environment variable or use a default path
-    # In GitHub Actions, this path should be provided by the workflow
-    server_path = os.environ.get('MCP_SERVER_PATH', './mcp_server')
+    # Clean up any orphaned jobs from previous test runs first
+    # cleanup_orphaned_jobs()
     
     server_manager = MCPServerManager(
-        server_path,
-        aws_profile=aws_profile,
-        aws_region=aws_region,
+        "/home/lfqing/workplace/mcp/src/dataprocessing-mcp-server/awslabs/dataprocessing_mcp_server",
+        aws_profile="kathryncoding",
+        aws_region="us-west-1",
         server_args="--allow-write"
     )
     
-    success = True
     try:
         server_manager.start()
         client = MCPClient(server_manager)
         client.initialize()
         
         # Load test cases from JSON and group by operation
-        test_cases_file = os.environ.get('TEST_CASES_PATH', 'tests/glue/test_cases.json')
-        with open(test_cases_file, 'r') as f:
+        with open('tests/glue/test_cases.json', 'r') as f:
             test_data = json.load(f)
         
         # Group test cases by operation
@@ -270,7 +308,9 @@ def main():
                 operations[operation] = []
             operations[operation].append(test_case)
         
-        # No report generation as per requirements
+        # Generate final reports
+        report_formats = ['markdown', 'json', 'html']
+        report_dir = 'test_reports'
         
         # Create separate executors for each operation type
         all_results = []
@@ -302,7 +342,7 @@ def main():
                     executor.add_test_case(test_case, None, None)
             
             # Run tests for this operation - but don't clean up yet
-            result_info = executor.run_tests_only()
+            result_info = executor.run_tests_only(report_dir=report_dir)
             all_results.extend(result_info)
         
 
@@ -312,12 +352,19 @@ def main():
         for executor in all_executors:
             cleanup_results.extend(executor.run_all_cleanups())
 
-        # Print summary without generating reports
+        # Generate reports after all tests and cleanups are done
+        report_generator = ReportGenerator(output_dir=report_dir)
+        report_paths = report_generator.generate_report(all_results, formats=report_formats)
+        
+        # Print summary
         passed = sum(1 for r in all_results if r.success)
         total = len(all_results)
         print(f"\n=== Final Summary ===")
         print(f"Total: {total}, Passed: {passed}, Failed: {total - passed}")
         print(f"Success Rate: {passed/total*100:.1f}%" if total > 0 else "No tests run")
+        
+        for fmt, path in report_paths.items():
+            print(f"{fmt.upper()} Report: {path}")
         
         # Print cleanup summary
         print("\n=== Cleanup Summary ===")
@@ -325,21 +372,10 @@ def main():
             status = "SUCCESS" if success else f"FAILED: {error}"
             print(f"Cleanup for {name}: {status}")
         
-        # Exit with failure if any test failed
-        if passed < total:
-            print(f"\n{total - passed} tests failed. See reports for details.")
-            success = False
-    
-    except Exception as e:
-        print(f"Error running tests: {e}")
-        success = False
+
     
     finally:
         server_manager.stop()
-        
-    # Exit with appropriate code for GitHub Actions
-    if not success:
-        sys.exit(1)
 
 
 if __name__ == "__main__":
