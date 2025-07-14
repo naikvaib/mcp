@@ -130,3 +130,4 @@ If you've made changes to the workflow file itself (`.github/workflows/mcp-tool-
 ## Creating a Validation PR
 
 A good practice is to create a dedicated Pull Request that demonstrates the GitHub Action working correctly before merging the Action implementation itself. This allows stakeholders to see the action in operation.
+
