@@ -50,6 +50,6 @@ jobs:
         env:
           AWS_PROFILE: default # Use the default profile as we're using configured credentials
           AWS_SDK_LOAD_CONFIG: 1
-          MCP_SERVER_PATH: ../../mcp_server/awslabs/dataprocessing_mcp_server
+          MCP_SERVER_PATH: ../../../mcp_server/awslabs/dataprocessing_mcp_server
           AWS_REGION: us-west-1
           TEST_CASES_PATH: tests/glue/test_cases.json
