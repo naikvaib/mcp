@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - integration-test-feature
   pull_request:
     branches:
       - main
@@ -36,7 +37,7 @@ jobs:
       
       - name: Clone MCP Server Repository
         run: |
-          git clone https://github.com/awslabs/dataprocessing-mcp-server.git mcp_server
+          git clone https://github.com/naikvaib/mcp.git mcp_server
           cd mcp_server
           pip install -e .
           cd ..
