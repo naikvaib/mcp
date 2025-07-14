@@ -120,32 +120,62 @@ jobs:
           echo "After modification:"
           grep -A5 "server_path = " run_tests.py
 
-      - name: Create necessary MCP module for server.py
+      - name: Install MCP Python SDK
         run: |
-          # Create a minimal MCP module structure (only used if not available elsewhere)
-          echo "Creating minimal MCP module structure for server.py..."
-          mkdir -p /tmp/mcp/server
-          touch /tmp/mcp/__init__.py
-          touch /tmp/mcp/server/__init__.py
+          echo "Looking for the real MCP Python SDK..."
           
-          cat > /tmp/mcp/server/fastmcp.py << 'EOF'
-          class FastMCP:
-              def __init__(self, name, instructions=None, dependencies=None):
-                  self.name = name
-                  self.instructions = instructions
-                  self.dependencies = dependencies
-              
-              def run(self):
-                  print(f"Running MCP server: {self.name}")
-                  return True
-              
-              def register_tool(self, tool_name, handler, description=None, parameters=None):
-                  print(f"Registering tool: {tool_name}")
-                  return True
-          EOF
+          # Try to install from GitHub repository
+          pip install git+https://github.com/modelcontextprotocol/mcp-python-sdk.git || echo "Failed to install MCP SDK from GitHub"
           
-          # Add this path to the Python path (but with lower priority than repo paths)
-          echo "PYTHONPATH=$PYTHONPATH:/tmp" >> $GITHUB_ENV
+          # Try to install from PyPI as another option
+          pip install mcp-python-sdk || echo "MCP SDK not available on PyPI"
+          
+          # Check if MCP module is already installed
+          python -c "import sys; print('Python module search paths:'); [print(f'  {p}') for p in sys.path]" || true
+          
+          # Create a directory for the local copy of MCP SDK
+          mkdir -p /tmp/mcp-sdk-repo
+          cd /tmp/mcp-sdk-repo
+          
+          # Try to clone the MCP repository
+          git clone https://github.com/modelcontextprotocol/mcp-python-sdk.git . || echo "Failed to clone MCP SDK repository"
+          
+          if [ -d "mcp" ]; then
+            echo "Found MCP directory in the cloned repository"
+            # Add it to the Python path
+            echo "PYTHONPATH=/tmp/mcp-sdk-repo:$PYTHONPATH" >> $GITHUB_ENV
+          else
+            echo "MCP directory not found in the cloned repository"
+            
+            # As a final fallback, search for the MCP module in the project
+            echo "Searching for MCP module in the project..."
+            cd $GITHUB_WORKSPACE
+            find . -path "*/mcp" -type d | grep -v "__pycache__" || echo "No MCP module found in repository"
+          fi
+
+      - name: Check server.py imports
+        run: |
+          echo "Checking imports in server.py..."
+          grep -r "import" --include="*.py" src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/ | grep mcp || echo "No mcp imports found"
+          grep -r "from mcp" --include="*.py" src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/ || echo "No from mcp imports found"
+          
+          # Check if MCP is available to import
+          echo "Checking if MCP module is importable..."
+          python -c "try:
+              from mcp.server.fastmcp import FastMCP
+              print('Successfully imported FastMCP')
+              from mcp.types import CallToolResult
+              print('Successfully imported CallToolResult')
+          except ImportError as e:
+              print(f'Error importing MCP modules: {e}')
+              exit(1)
+          "
+          
+          if [ $? -ne 0 ]; then
+            echo "WARNING: MCP module is not available, tests may fail"
+          else
+            echo "MCP module is available and can be imported"
+          fi
 
       - name: Run MCP Tool tests
         run: |
@@ -153,9 +183,14 @@ jobs:
           # Show final Python path and environment
           echo "Running tests with updated server path..."
           echo "PYTHONPATH=$PYTHONPATH"
-          python -m sys -c "import sys; print('Python module search paths:'); [print(f'  {p}') for p in sys.path]" || true
+          python -c "import sys; print('Python module search paths:'); [print(f'  {p}') for p in sys.path]" || true
+          
+          # Try to directly import the mock modules to verify they're accessible
+          python -c "from mcp.types import CallToolResult; print('Successfully imported CallToolResult')" || echo "Failed to import CallToolResult"
+          python -c "from mcp.server.fastmcp import FastMCP; print('Successfully imported FastMCP')" || echo "Failed to import FastMCP"
           
           # Run the tests
+          echo "Running the actual tests now..."
           python -u run_tests.py
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
