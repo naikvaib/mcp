@@ -44,23 +44,22 @@ jobs:
           pip list | grep -E "(mcp|pydantic|loguru|boto3)"
 
       - name: Configure AWS credentials
-        run: |
-          mkdir -p ~/.aws
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
-          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
-          echo "[default]" > ~/.aws/config
-          echo "region=${{ secrets.AWS_REGION }}" >> ~/.aws/config
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-MCPTests
           
-          # Create the kathryncoding profile that's used in run_tests.py
-          echo "[kathryncoding]" >> ~/.aws/credentials
-          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
-          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
-          echo "[profile kathryncoding]" >> ~/.aws/config
-          echo "region=${{ secrets.AWS_REGION }}" >> ~/.aws/config
+      - name: Setup AWS profiles
+        run: |
+          # Create the kathryncoding profile using the same credentials
+          aws configure set profile.kathryncoding.region ${{ secrets.AWS_REGION }}
+          aws configure set profile.kathryncoding.aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set profile.kathryncoding.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set profile.kathryncoding.aws_session_token $AWS_SESSION_TOKEN
           
           # Verify AWS configuration
-          aws configure list --profile kathryncoding
+          aws sts get-caller-identity --profile kathryncoding
 
       - name: Verify MCP server structure
         run: |
