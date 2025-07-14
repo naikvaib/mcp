@@ -7,6 +7,7 @@ import os
 from typing import Dict, Any, Tuple, List, Optional
 
 import boto3
+from botocore.exceptions import ProfileNotFound
 
 
 class AWSSetup:
@@ -19,7 +20,14 @@ class AWSSetup:
             profile_name: AWS profile name to use
             region: AWS region name
         """
-        session = boto3.Session(profile_name=profile_name, region_name=region)
+        try:
+            # Try to use the specified profile first
+            session = boto3.Session(profile_name=profile_name, region_name=region)
+        except ProfileNotFound:
+            # Fall back to environment variables or default profile if the specified profile doesn't exist
+            print(f"AWS profile '{profile_name}' not found. Falling back to environment variables or default profile.")
+            session = boto3.Session(region_name=region)
+        
         self.glue = session.client('glue')
         self.iam = session.client('iam')
         self.s3 = session.client('s3')
