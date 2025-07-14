@@ -65,7 +65,7 @@ jobs:
       - name: Verify MCP server structure
         run: |
           echo "Checking MCP server directory structure:"
-          find src/aws-dataprocessing-mcp-server -name "*.py" | head -10
+          find src/aws-dataprocessing-mcp-server -name "*.py" | head -5
           
           # Verify the server.py exists
           if [ -f "src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/server.py" ]; then
@@ -76,7 +76,7 @@ jobs:
           fi
           
           # Test MCP imports
-          python -c "import mcp; print(f'✓ MCP version: {mcp.__version__ if hasattr(mcp, "__version__") else "unknown"}')"
+          python -c "import mcp; print('✓ MCP package imported successfully')"
           python -c "from mcp.server.fastmcp import FastMCP; print('✓ FastMCP imported successfully')"
           python -c "from mcp.types import CallToolResult; print('✓ CallToolResult imported successfully')"
 
