@@ -5,7 +5,7 @@ import boto3
 from typing import Any, Dict, Optional, List, Tuple
 from ..core.aws_setup import AWSSetup
 from botocore.exceptions import ClientError
-
+import os
 
 class ValidationResult:
     def __init__(self, success: bool, message: str = "", details: Dict[str, Any] = None):
@@ -15,10 +15,13 @@ class ValidationResult:
 
 
 # Helper functions to simplify validators
+# def get_aws_setup() -> AWSSetup:
+#     """Get a configured AWSSetup instance"""
+#     return AWSSetup(profile_name='kathryncoding', region='us-west-1')
 def get_aws_setup() -> AWSSetup:
-    """Get a configured AWSSetup instance"""
-    return AWSSetup(profile_name='kathryncoding', region='us-west-1')
-
+    """Get a configured AWSSetup instance using GitHub Actions environment credentials"""
+    aws_region = os.environ.get("AWS_REGION", "us-west-1")  
+    return AWSSetup(profile_name=None, region=aws_region)
 
 def extract_nested_error_message(test_case, expected_msg: Optional[str] = None) -> Tuple[bool, str]:
     """Extract error message from nested response content
