@@ -52,6 +52,10 @@ jobs:
       - name: Test credentials
         run: aws sts get-caller-identity
 
+      - name: Check server.py path
+        run: |
+          ls -al src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server/server.py
+
       - name: Verify MCP server structure
         run: |
           echo "Checking MCP server directory structure:"
@@ -69,23 +73,27 @@ jobs:
           python -c "import mcp; print('✓ MCP package imported successfully')"
           python -c "from mcp.server.fastmcp import FastMCP; print('✓ FastMCP imported successfully')"
           python -c "from mcp.types import CallToolResult; print('✓ CallToolResult imported successfully')"
+      
+      # - name: Update server path in test configuration
+      #   run: |
+      #     cd src/aws-dataprocessing-mcp-server/IntegrationTest
 
-      - name: Update server path in test configuration
+      #     # Get absolute path to the server directory
+      #     current_dir="$(pwd)"
+      #     default_server_path="${current_dir}/../awslabs/aws_dataprocessing_mcp_server"
+
+      #     echo "Using server path: ${default_server_path}"
+
+      #     # Update the server path in run_tests.py
+      #     sed -i "s|server_path = os.environ.get(\"MCP_SERVER_PATH\", \"../awslabs/aws_dataprocessing_mcp_server\")|server_path = \"${default_server_path}\"|g" run_tests.py
+
+      #     # Verify the change
+      #     echo "Updated server path configuration:"
+      #     grep -A2 -B2 "server_path =" run_tests.py
+      - name: Set MCP_SERVER_PATH
         run: |
-          cd src/aws-dataprocessing-mcp-server/IntegrationTest
-
-          # Get absolute path to the server directory
-          current_dir="$(pwd)"
-          default_server_path="${current_dir}/../awslabs/aws_dataprocessing_mcp_server"
-
-          echo "Using server path: ${server_path}"
-
-          # Update the server path in run_tests.py
-          sed -i "s|server_path = os.environ.get(\"MCP_SERVER_PATH\", \"../awslabs/aws_dataprocessing_mcp_server\")|server_path = \"${server_path}\"|g" run_tests.py
-
-          # Verify the change
-          echo "Updated server path configuration:"
-          grep -A2 -B2 "server_path =" run_tests.py
+          export MCP_SERVER_PATH="$(pwd)/src/aws-dataprocessing-mcp-server/awslabs/aws_dataprocessing_mcp_server"
+          echo "MCP_SERVER_PATH=${MCP_SERVER_PATH}" >> $GITHUB_ENV
 
       - name: Run MCP integration tests (fail on test failure)
         continue-on-error: false
