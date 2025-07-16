@@ -263,10 +263,13 @@ def main():
     """
     # Get server path and AWS region from environment variables if available
     import os
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    default_path = os.path.abspath(os.path.join(current_dir, "../../awslabs/aws_dataprocessing_mcp_server"))
-    server_path = os.environ.get("MCP_SERVER_PATH", default_path)
-    
+    default_path = os.path.abspath(
+        os.path.join(current_dir, '../../awslabs/aws_dataprocessing_mcp_server')
+    )
+    server_path = os.environ.get('MCP_SERVER_PATH', default_path)
+
     aws_region = os.environ.get('AWS_REGION', 'us-east-1')
 
     server_manager = MCPServerManager(

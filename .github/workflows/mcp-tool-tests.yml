@@ -11,8 +11,17 @@ jobs:
     name: Run MCP Tool Tests
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
-      contents: read
+      id-token: write  # Required for AWS credential action
+      contents: read   # Required for checkout
+      actions: none    # Restrict other permissions
+      checks: none
+      deployments: none
+      issues: none
+      packages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
 
     steps:
       - name: Checkout code
@@ -73,7 +82,7 @@ jobs:
           python -c "import mcp; print('✓ MCP package imported successfully')"
           python -c "from mcp.server.fastmcp import FastMCP; print('✓ FastMCP imported successfully')"
           python -c "from mcp.types import CallToolResult; print('✓ CallToolResult imported successfully')"
-      
+
       # - name: Update server path in test configuration
       #   run: |
       #     cd src/aws-dataprocessing-mcp-server/IntegrationTest
