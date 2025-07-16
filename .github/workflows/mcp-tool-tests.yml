@@ -88,7 +88,8 @@ jobs:
           echo "Updated server path configuration:"
           grep -A2 -B2 "server_path =" run_tests.py
 
-      - name: Run MCP integration tests
+      - name: Run MCP integration tests (fail on test failure)
+        continue-on-error: false
         run: |
           cd src/aws-dataprocessing-mcp-server/IntegrationTest
           

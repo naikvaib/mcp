@@ -381,6 +381,16 @@ def main():
     
     finally:
         server_manager.stop()
+    
+    import sys
+
+    # Exit with code 1 if any test failed, so GitHub Actions detects failure
+    if passed < total:
+        print("❌ One or more tests failed. Exiting with status code 1.")
+        sys.exit(1)
+    else:
+        print("✅ All tests passed. Exiting with status code 0.")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
