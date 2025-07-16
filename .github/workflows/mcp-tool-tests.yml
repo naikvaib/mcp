@@ -2,10 +2,6 @@
 name: MCP Tool Tests
 
 on:
-  push:
-    branches:
-      - main
-      - integration-test-feature
   pull_request:
     branches:
       - main
