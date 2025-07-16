@@ -79,7 +79,9 @@ jobs:
           cd src/aws-dataprocessing-mcp-server/IntegrationTest
 
           # Get absolute path to the server directory
-          server_path="$(cd .. && pwd)/awslabs/aws_dataprocessing_mcp_server"
+          current_dir = os.path.dirname(os.path.abspath(__file__))
+          default_server_path = os.path.join(current_dir, "../awslabs/aws_dataprocessing_mcp_server")
+          server_path = os.environ.get("MCP_SERVER_PATH", os.path.normpath(default_server_path))
           echo "Using server path: ${server_path}"
 
           # Update the server path in run_tests.py
