@@ -8,8 +8,11 @@ from the MCP server should fail with permission errors.
 import boto3
 import argparse
 import uuid
+import boto3
+import uuid
+import argparse
 
-def create_non_mcp_job(profile_name, region_name, job_name=None):
+def create_non_mcp_job(profile_name=None, region_name="us-west-1", job_name=None):
     """
     Create a Glue job directly with boto3 (not via MCP server)
     so it doesn't have MCP managed tags.
@@ -17,7 +20,12 @@ def create_non_mcp_job(profile_name, region_name, job_name=None):
     if not job_name:
         job_name = f"non-mcp-test-job-{uuid.uuid4().hex[:8]}"
     
-    session = boto3.Session(profile_name=profile_name)
+    # Create session using profile only if provided
+    if profile_name:
+        session = boto3.Session(profile_name=profile_name)
+    else:
+        session = boto3.Session()
+    
     glue = session.client('glue', region_name=region_name)
     iam = session.client('iam', region_name=region_name)
     
@@ -75,9 +83,10 @@ def create_non_mcp_job(profile_name, region_name, job_name=None):
     
     return job_name, role_name
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create a non-MCP managed Glue job for testing')
-    parser.add_argument('--profile', type=str, default='kathryncoding', help='AWS profile name')
+    parser.add_argument('--profile', type=str, default=None, help='Optional AWS profile name')
     parser.add_argument('--region', type=str, default='us-west-1', help='AWS region name')
     parser.add_argument('--job-name', type=str, help='Job name (optional, defaults to generated name)')
     

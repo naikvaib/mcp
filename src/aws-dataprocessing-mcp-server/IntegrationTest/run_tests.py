@@ -19,7 +19,7 @@ from src.data_processing_mcp_server_tests.core.reporting import ReportGenerator
 
 
 # Global AWS setup - use environment variable for region if available
-aws_setup = AWSSetup(profile_name="kathryncoding", region=os.environ.get("AWS_REGION", "us-east-1"))
+aws_setup = AWSSetup(profile_name=None, region=os.environ.get("AWS_REGION", "us-east-1"))
 
 def ensure_unique_job_name(test_case):
     """Ensure job has a unique name to avoid conflicts"""
@@ -43,7 +43,7 @@ def create_non_mcp_job_if_needed(test_case, operation_type):
         if not exists:
             print(f"Creating non-MCP job {job_name} for negative {operation_type} test...")
             aws_region = os.environ.get("AWS_REGION", "us-east-1")
-            job_name, role_name = create_non_mcp_job('kathryncoding', aws_region, job_name)
+            job_name, role_name = create_non_mcp_job(None, aws_region, job_name)
             
             # Store role name for cleanup
             test_case._role_name = role_name
@@ -286,7 +286,7 @@ def main():
     
     server_manager = MCPServerManager(
         server_path,
-        aws_profile="kathryncoding",
+        aws_profile=None,
         aws_region=aws_region,
         server_args="--allow-write"
     )
