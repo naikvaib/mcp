@@ -66,7 +66,7 @@ python run_tests.py
 
 1. Add your new test case to `test_cases.json` following the existing structure
 2. Test cases will automatically use the appropriate validators
-3. For negative test cases, prefix the test name with "negative_" 
+3. For negative test cases, prefix the test name with "negative_"
 
 ## Creating Non-MCP Jobs for Testing
 

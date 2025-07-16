@@ -1,162 +1,162 @@
 [
   {
-    "test_name": "create_glue_job_basic",
-    "tool_name": "manage_aws_glue_jobs",
     "input_params": {
-      "operation": "create-job",
-      "job_name": "mcp-test-job-1",
       "job_definition": {
         "Command": {
           "Name": "glueetl",
           "ScriptLocation": "PLACEHOLDER"
         },
-        "Role": "PLACEHOLDER",
+        "Description": "Basic test job created by MCP server",
         "GlueVersion": "4.0",
-        "WorkerType": "G.1X",
         "NumberOfWorkers": 2,
-        "Description": "Basic test job created by MCP server"
-      }
-    }
+        "Role": "PLACEHOLDER",
+        "WorkerType": "G.1X"
+      },
+      "job_name": "mcp-test-job-1",
+      "operation": "create-job"
+    },
+    "test_name": "create_glue_job_basic",
+    "tool_name": "manage_aws_glue_jobs"
   },
   {
-    "test_name": "create_glue_job_with_tags",
-    "tool_name": "manage_aws_glue_jobs",
     "input_params": {
-      "operation": "create-job",
-      "job_name": "mcp-test-job-2",
       "job_definition": {
         "Command": {
           "Name": "glueetl",
           "ScriptLocation": "PLACEHOLDER"
         },
-        "Role": "PLACEHOLDER",
-        "GlueVersion": "4.0",
-        "WorkerType": "G.2X",
-        "NumberOfWorkers": 3,
         "Description": "Test job with custom tags",
+        "GlueVersion": "4.0",
+        "NumberOfWorkers": 3,
+        "Role": "PLACEHOLDER",
         "Tags": {
           "Environment": "Test",
-          "Project": "MCP",
-          "Owner": "TestFramework"
-        }
-      }
-    }
+          "Owner": "TestFramework",
+          "Project": "MCP"
+        },
+        "WorkerType": "G.2X"
+      },
+      "job_name": "mcp-test-job-2",
+      "operation": "create-job"
+    },
+    "test_name": "create_glue_job_with_tags",
+    "tool_name": "manage_aws_glue_jobs"
   },
   {
-    "test_name": "create_glue_job_with_params",
-    "tool_name": "manage_aws_glue_jobs",
     "input_params": {
-      "operation": "create-job",
-      "job_name": "mcp-test-job-3",
       "job_definition": {
         "Command": {
           "Name": "glueetl",
           "ScriptLocation": "PLACEHOLDER"
         },
-        "Role": "PLACEHOLDER",
-        "GlueVersion": "4.0",
-        "MaxRetries": 2,
-        "Timeout": 120,
         "DefaultArguments": {
           "--enable-metrics": "true",
           "--extra-py-files": "s3://mcp-test-script-s3/utils.py",
           "--job-language": "python"
         },
-        "Description": "Test job with custom parameters"
-      }
-    }
+        "Description": "Test job with custom parameters",
+        "GlueVersion": "4.0",
+        "MaxRetries": 2,
+        "Role": "PLACEHOLDER",
+        "Timeout": 120
+      },
+      "job_name": "mcp-test-job-3",
+      "operation": "create-job"
+    },
+    "test_name": "create_glue_job_with_params",
+    "tool_name": "manage_aws_glue_jobs"
   },
   {
-    "test_name": "update_glue_job_workers",
-    "tool_name": "manage_aws_glue_jobs",
     "input_params": {
-      "operation": "update-job",
-      "job_name": "mcp-test-job-update-1",
       "job_definition": {
         "Command": {
           "Name": "glueetl",
           "ScriptLocation": "s3://mcp-test-script-s3/mcp-test-script.py"
         },
-        "Role": "PLACEHOLDER",
         "NumberOfWorkers": 4,
+        "Role": "PLACEHOLDER",
         "WorkerType": "G.2X"
-      }
-    }
+      },
+      "job_name": "mcp-test-job-update-1",
+      "operation": "update-job"
+    },
+    "test_name": "update_glue_job_workers",
+    "tool_name": "manage_aws_glue_jobs"
   },
   {
-    "test_name": "update_glue_job_script",
-    "tool_name": "manage_aws_glue_jobs",
     "input_params": {
-      "operation": "update-job",
-      "job_name": "mcp-test-job-update-2",
       "job_definition": {
         "Command": {
           "Name": "glueetl",
           "ScriptLocation": "PLACEHOLDER"
         },
         "Role": "PLACEHOLDER"
-      }
-    }
+      },
+      "job_name": "mcp-test-job-update-2",
+      "operation": "update-job"
+    },
+    "test_name": "update_glue_job_script",
+    "tool_name": "manage_aws_glue_jobs"
   },
   {
-    "test_name": "update_glue_job_description",
-    "tool_name": "manage_aws_glue_jobs",
     "input_params": {
-      "operation": "update-job",
-      "job_name": "mcp-test-job-update-3",
       "job_definition": {
         "Command": {
           "Name": "glueetl",
           "ScriptLocation": "s3://mcp-test-script-s3/mcp-test-script.py"
         },
-        "Role": "PLACEHOLDER",
-        "Description": "Updated description for MCP test job",
-        "MaxRetries": 3,
         "DefaultArguments": {
           "--enable-metrics": "true",
           "--extra-jars": "s3://mcp-test-script-s3/library.jar"
-        }
-      }
-    }
+        },
+        "Description": "Updated description for MCP test job",
+        "MaxRetries": 3,
+        "Role": "PLACEHOLDER"
+      },
+      "job_name": "mcp-test-job-update-3",
+      "operation": "update-job"
+    },
+    "test_name": "update_glue_job_description",
+    "tool_name": "manage_aws_glue_jobs"
   },
   {
-    "test_name": "negative_update_non_mcp_job",
-    "tool_name": "manage_aws_glue_jobs",
     "input_params": {
-      "operation": "update-job",
-      "job_name": "non-mcp-test-job",
       "job_definition": {
         "Command": {
           "Name": "glueetl",
           "ScriptLocation": "s3://mcp-test-script-s3/mcp-test-script.py"
         },
-        "Role": "PLACEHOLDER",
-        "Description": "This update should fail because the job is not managed by MCP"
-      }
-    }
+        "Description": "This update should fail because the job is not managed by MCP",
+        "Role": "PLACEHOLDER"
+      },
+      "job_name": "non-mcp-test-job",
+      "operation": "update-job"
+    },
+    "test_name": "negative_update_non_mcp_job",
+    "tool_name": "manage_aws_glue_jobs"
   },
   {
+    "input_params": {
+      "job_name": "mcp-test-job-delete-1",
+      "operation": "delete-job"
+    },
     "test_name": "delete_glue_job_1",
-    "tool_name": "manage_aws_glue_jobs",
-    "input_params": {
-      "operation": "delete-job",
-      "job_name": "mcp-test-job-delete-1"
-    }
+    "tool_name": "manage_aws_glue_jobs"
   },
   {
+    "input_params": {
+      "job_name": "mcp-test-job-delete-2",
+      "operation": "delete-job"
+    },
     "test_name": "delete_glue_job_2",
-    "tool_name": "manage_aws_glue_jobs",
-    "input_params": {
-      "operation": "delete-job",
-      "job_name": "mcp-test-job-delete-2"
-    }
+    "tool_name": "manage_aws_glue_jobs"
   },
   {
-    "test_name": "negative_delete_non_mcp_job",
-    "tool_name": "manage_aws_glue_jobs",
     "input_params": {
-      "operation": "delete-job",
-      "job_name": "non-mcp-test-job"
-    }
+      "job_name": "non-mcp-test-job",
+      "operation": "delete-job"
+    },
+    "test_name": "negative_delete_non_mcp_job",
+    "tool_name": "manage_aws_glue_jobs"
   }
 ]

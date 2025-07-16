@@ -135,14 +135,14 @@ def validate_glue_job_worker_count(test_case) -> ValidationResult:
     """Validate that the Glue job has the expected worker count"""
     expected_count = test_case.input_params["job_definition"]["NumberOfWorkers"]
     job_name = test_case.input_params["job_name"]
-    
+
     session = boto3.Session(profile_name='your_profile')
     glue = session.client('glue')
-    
+
     try:
         response = glue.get_job(JobName=job_name)
         actual_count = response['Job']['NumberOfWorkers']
-        
+
         if actual_count == expected_count:
             return ValidationResult(True, f"Job has {actual_count} workers as expected")
         else:
@@ -238,7 +238,7 @@ if failed_tests:
     print(f"{len(failed_tests)} tests failed")
     for test in failed_tests:
         print(f"Test {test.test_case.test_name} failed: {test.error}")
-        
+
 # Example: Access summary statistics
 print(f"Success rate: {summary['success_rate']:.1f}%")
 
