@@ -160,7 +160,7 @@ def get_operation_validators(operation: str):
             validate_job_params_match,
         ],
         'update-job': [validate_response_iserror, validate_update_job_operation],
-        'delete-job': [validate_response_iserror, validate_glue_job_deleted, always_fail_validator],
+        'delete-job': [validate_response_iserror, validate_glue_job_deleted],
     }
     return validators.get(operation, [validate_response_iserror])
 
