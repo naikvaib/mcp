@@ -21,7 +21,6 @@ from src.data_processing_mcp_server_tests.core.aws_setup import get_or_create_gl
 # This is the demo modification
 
 
-
 class ContainsTextValidator(TextValidator):
     def __init__(self, expected_string: str, expected_count: Optional[int] = None, bucket_count: Optional[int] = None):
         super().__init__()
