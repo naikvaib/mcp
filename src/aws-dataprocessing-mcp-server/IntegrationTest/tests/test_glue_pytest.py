@@ -18,8 +18,7 @@ from src.data_processing_mcp_server_tests.models.clean_up import CleanUper
 from src.data_processing_mcp_server_tests.utils.injection import extract_path
 from src.data_processing_mcp_server_tests.core.aws_setup import get_or_create_glue_role
 
-# This is the demo modification
-
+# demo modification
 
 class ContainsTextValidator(TextValidator):
     def __init__(self, expected_string: str, expected_count: Optional[int] = None, bucket_count: Optional[int] = None):
