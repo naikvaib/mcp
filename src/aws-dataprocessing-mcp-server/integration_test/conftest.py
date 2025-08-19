@@ -1,11 +1,8 @@
 import pytest
 import os
-import sys
-import boto3
 
-
-from src.data_processing_mcp_server_tests.core.mcp_server import MCPServerManager
-from src.data_processing_mcp_server_tests.core.mcp_client import MCPClient
+from data_processing_mcp_server_tests.core.mcp_server import MCPServerManager
+from data_processing_mcp_server_tests.core.mcp_client import MCPClient
 
 
 @pytest.fixture(scope="session")
@@ -25,4 +22,3 @@ def mcp_env():
     client.initialize()
     yield client
     server.stop()
-

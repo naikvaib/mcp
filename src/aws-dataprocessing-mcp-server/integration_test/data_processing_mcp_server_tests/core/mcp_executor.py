@@ -3,7 +3,10 @@ from collections import deque, defaultdict
 from .mcp_client import MCPClient
 from ..models.validators import BotoValidator, ValidationResult
 from ..utils.injection import extract_path
+from ..utils.logger import get_logger
 import re
+
+logger = get_logger(__name__)
 
 class Executor:
     def __init__(self, test_cases, mcp_client: MCPClient):
@@ -105,11 +108,20 @@ class Executor:
         for dependency in test_case.dependencies:
             self._setup_all_and_call_tool(dependency)
             resp = self.response_map.get(dependency)
-            print(f"actual response for {dependency}: {resp}")
+            logger.info(f"actual response for {dependency}: {resp}")
             if resp is None:
-                print(f"[Injector] Skipping {test_name} because dependency '{dependency}' response is None")
+                logger.info(f"[Injector] Skipping {test_name} because dependency '{dependency}' response is None")
                 return
-
+            
+        # Run aws_resources setup functions: if setup is failed, raise an error
+        for setup_func in getattr(test_case, "aws_resources", []):
+            try:
+                logger.info(f"[Setup] Executing AWS resource setup for {test_case.test_name}")
+                setup_func()
+            except Exception as e:
+                raise RuntimeError(f"[Setup Error] AWS resource setup failed for {test_case.test_name}: {e}")
+            
+        # Call the tool with injected parameters
         input_params = self._inject_input_params(test_case.input_params, self.response_map)
         response = self.mcp_client.call_tool(test_case.tool_name, input_params)
         self.response_map[test_name] = response
@@ -126,7 +138,7 @@ class Executor:
                 clean_uper.clean_up(test_case.input_params, self.response_map[test_name] or {})
 
         except Exception as e:
-            print(f"Error during clean up for {test_name}: {str(e)}")
+            logger.error(f"Error during clean up for {test_name}: {str(e)}")
         
         # Then clean up all dependencies in reverse order
         for dependency in reversed(test_case.dependencies):
@@ -141,7 +153,7 @@ class Executor:
             test_name = test_case.test_name
             ok, fail_test_name = self._check_all_dependencies_succeeded(test_name, success_map)
             if not ok:
-                print(f"Skipping test {test_name} because dependency {fail_test_name} failed")
+                logger.info(f"Skipping test {test_name} because dependency {fail_test_name} failed")
                 results.append({
                     "test_name": test_name,
                     "success": False,
@@ -169,11 +181,11 @@ class Executor:
 
                     validation_results.append(result)
                     if not result.success:
-                        print(f"Validation failed: {result.error_message}")
+                        logger.info(f"Validation failed: {result.error_message}")
                         all_validations_passed = False
 
                 success_map[test_name] = all_validations_passed
-                print(f"Test {test_name} {'PASSED' if all_validations_passed else 'FAILED'}")
+                logger.info(f"Test {test_name} {'PASSED' if all_validations_passed else 'FAILED'}")
 
                 results.append({
                     "test_name": test_name,
@@ -182,7 +194,7 @@ class Executor:
                 })
 
             except Exception as e:
-                print(f"Error executing test {test_name}: {str(e)}")
+                logger.error(f"Error executing test {test_name}: {str(e)}")
                 error_msg = f"Exception: {str(e)}"
                 success_map[test_name] = False
                 validation_results = [ValidationResult(False, error_msg)]    

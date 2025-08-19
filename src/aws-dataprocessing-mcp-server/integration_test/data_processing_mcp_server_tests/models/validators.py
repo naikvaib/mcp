@@ -58,7 +58,7 @@ class BotoValidator(Validator):
 
 
     @abstractmethod
-    def validate(self, tool_params: Dict[str, Any], response_map: Optional[Dict[str, Any]] = None) -> ValidationResult:
+    def validate(self, tool_params: Dict[str, Any]) -> ValidationResult:
         """Validate AWS resources using boto3.
         
         Args:

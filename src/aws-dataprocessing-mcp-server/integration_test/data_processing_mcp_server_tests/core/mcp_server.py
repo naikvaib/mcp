@@ -4,8 +4,10 @@ import os
 import subprocess
 import time
 import atexit
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple
+from data_processing_mcp_server_tests.utils.logger import get_logger
 
+logger = get_logger(__name__)
 
 class MCPServerManager:
     """Manages an MCP server instance for testing."""
@@ -45,10 +47,7 @@ class MCPServerManager:
         if self.aws_profile:
             env["AWS_PROFILE"] = self.aws_profile
         if self.aws_region:
-            # Set both AWS_REGION and AWS_DEFAULT_REGION to ensure compatibility
-            # with all AWS SDK components and tools
             env["AWS_DEFAULT_REGION"] = self.aws_region
-            env["AWS_REGION"] = self.aws_region
         
         # Add directory containing awslabs to PYTHONPATH
         # For path like /path/to/dataprocessing-mcp-server/awslabs/dataprocessing_mcp_server
@@ -70,7 +69,7 @@ class MCPServerManager:
             import shlex
             cmd.extend(shlex.split(self.server_args))
         
-        print(f"Starting MCP server: {' '.join(cmd)}")
+        logger.info(f"Starting MCP server: {' '.join(cmd)}")
         
         self.process = subprocess.Popen(
             cmd,
@@ -86,12 +85,12 @@ class MCPServerManager:
         
         # Wait for server to be ready
         self._wait_for_server()
-        print("MCP server started successfully")
+        logger.info("MCP server started successfully")
         return "stdio"
     
     def _wait_for_server(self, timeout: int = 5) -> None:
         """Wait for server to be ready."""
-        print("Waiting for MCP server to be ready...")
+        logger.info("Waiting for MCP server to be ready...")
         time.sleep(1)  # Give server time to start
         
         if self.process.poll() is not None:
@@ -115,7 +114,7 @@ class MCPServerManager:
     def stop(self) -> None:
         """Stop the MCP server."""
         if self.process:
-            print("Stopping MCP server...")
+            logger.info("Stopping MCP server...")
             self.process.terminate()
             
             try:
@@ -124,4 +123,4 @@ class MCPServerManager:
                 self.process.kill()
             
             self.process = None
-            print("MCP server stopped")
+            logger.info("MCP server stopped")
