@@ -39,7 +39,7 @@ def emr_step_test_cases(s3_bucket, aws_clients) -> List[MCPTestCase]:
                                 'spark-submit',
                                 '--deploy-mode',
                                 'cluster',
-                                's3://{s3_bucket}/app.jar',
+                                f's3://{s3_bucket}/app.jar',
                                 '--arg1',
                                 'val1',
                             ],
