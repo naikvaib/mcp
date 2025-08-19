@@ -98,7 +98,7 @@ def load_all_grouped_test_cases(
             (
                 'athena_data_catalog_db_table',
                 athena_data_catalog_test_cases(aws_clients)
-                + athena_databse_table_test_cases(s3_bucket, aws_clients),
+                + athena_database_table_test_cases(s3_bucket, aws_clients),
             ),
             ('athena_workgroup', athena_workgroup_test_cases(s3_bucket, aws_clients)),
         ]
