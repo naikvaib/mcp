@@ -194,7 +194,7 @@ def emr_instance_test_cases(aws_clients) -> List[MCPTestCase]:
                 'max_results': 10,
             },
             dependencies=['add_instance_group_to_emr_cluster_basic'],
-            validators=[ContainsTextValidator('uccessfully listed instances for EMR cluster ')],
+            validators=[ContainsTextValidator('Successfully listed instances for EMR cluster ')],
             clean_ups=[],
         ),
         MCPTestCase(
