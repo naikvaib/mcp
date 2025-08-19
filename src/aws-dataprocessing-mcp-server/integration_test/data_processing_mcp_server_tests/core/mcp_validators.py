@@ -25,7 +25,7 @@ class ContainsTextValidator(TextValidator):
             ValidationResult: Result of the validation.
         """
         # 1. Validate the text content
-        logger.info(f"[ContainsTextValidator] Validating response: {actual_response}")
+        # logger.info(f"[ContainsTextValidator] Validating response: {actual_response}")
         content_items = actual_response.get("result", {}).get("content", [])
         if not content_items:
             return ValidationResult(False, "No content in response")
