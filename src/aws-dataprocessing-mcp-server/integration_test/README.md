@@ -2,7 +2,7 @@
 
 # MCP Tool Test Framework
 
-A unified testing framework for validating all AWS-based tools integrated into the **Data Processing MCP Server**, including Glue, Athena, EMR, S3, and IAM tools. 
+A unified testing framework for validating all AWS-based tools integrated into the **Data Processing MCP Server**, including Glue, Athena, EMR, S3, and IAM tools.
 
 It ensures consistent setup, validation, and cleanup across tools, with support for dependency tracking, parallel execution, and CI integration via GitHub Actions.
 
@@ -39,14 +39,14 @@ test/
   │     ├── glue_job_testcases.py      # Testcases for glue job tool
   │     ├── glue_database_testcases.py # Testcases for glue database tool
   │     └── other_testcases.py
-  ├── EMR/ 
-  └── Other_Services/  
-                          
+  ├── EMR/
+  └── Other_Services/
+
 Configuration:
 ├── conftest.py                # Pytest configuration and fixtures
 ├── pytest.ini                 # Pytest settings
 ├── requirements.txt           # Python dependencies
-└── README.md  
+└── README.md
 ```
 
 
@@ -98,9 +98,9 @@ MCPTestCase(
     validators=[
         ContainsTextValidator("Successfully created Glue job"),
         AWSBotoValidator(
-            aws_clients["glue"], 
-            operation="get_job", 
-            operation_input_params={"job_name": "mcp-test-job-basic"}, 
+            aws_clients["glue"],
+            operation="get_job",
+            operation_input_params={"job_name": "mcp-test-job-basic"},
             expected_keys=[
                 "job_definition.Command.Name",
                 "job_definition.Command.ScriptLocation",
@@ -111,8 +111,8 @@ MCPTestCase(
     ],
     clean_ups=[
         DeleteAWSResources(
-            delete_api="delete_job", 
-            delete_params={"job_name": "mcp-test-job-basic"}, 
+            delete_api="delete_job",
+            delete_params={"job_name": "mcp-test-job-basic"},
             boto_client=aws_clients["glue"])
     ]
 )

@@ -1,22 +1,41 @@
-from typing import Dict, Optional, Tuple, Any
-from collections import deque, defaultdict
-from .mcp_client import MCPClient
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import re
 from ..models.validators import BotoValidator, ValidationResult
 from ..utils.injection import extract_path
 from ..utils.logger import get_logger
-import re
+from .mcp_client import MCPClient
+from collections import defaultdict, deque
+from typing import Any, Dict, Optional, Tuple
+
 
 logger = get_logger(__name__)
 
+
 class Executor:
+    """Test executor for MCP test cases."""
+
     def __init__(self, test_cases, mcp_client: MCPClient):
+        """Initialize test executor."""
         self.test_cases = test_cases
         self.mcp_client = mcp_client
         self.test_case_map = {tc.test_name: tc for tc in test_cases}
         reverse_graph = self._generate_reverse_dependency_graph(test_cases)
         self.sorted_test_cases = self._topological_sort(reverse_graph)
         self.response_map = {tc.test_name: None for tc in test_cases}
-        
+
     def _generate_reverse_dependency_graph(self, test_cases):
         graph = defaultdict(list)
 
@@ -24,21 +43,19 @@ class Executor:
             test_name = test_case.test_name
             if test_name not in graph:
                 graph[test_name] = []
-            
+
             for dependency in test_case.dependencies:
                 graph[dependency].append(test_name)
-                
+
         return graph
-    
+
     def _topological_sort(self, graph):
-        """
-        Performs topological sort on the given dependency graph using Kahn's Algorithm
-        """
+        """Performs topological sort on the given dependency graph using Kahn's Algorithm."""
         # Calculate in-degrees for each node
         in_degree = defaultdict(int)
         for node in graph:
             in_degree[node] = 0  # Initialize all nodes with 0
-            
+
         for node in graph:
             for neighbor in graph[node]:
                 in_degree[neighbor] += 1
@@ -58,14 +75,16 @@ class Executor:
 
         # Check for cycles
         if len(sorted_order) != len(graph):
-            raise ValueError("Cycle detected! Topological sort not possible.")
-            
+            raise ValueError('Cycle detected! Topological sort not possible.')
+
         return [self.test_case_map[name] for name in sorted_order]
-    
-    def _check_all_dependencies_succeeded(self, test_name: str, success_map: Dict[str, bool]) -> Tuple[bool, Optional[str]]:
+
+    def _check_all_dependencies_succeeded(
+        self, test_name: str, success_map: Dict[str, bool]
+    ) -> Tuple[bool, Optional[str]]:
         if (test_name in success_map) and (not success_map[test_name]):
             return False, test_name
-        
+
         dependencies = self.test_case_map[test_name].dependencies
         for dependency in dependencies:
             ok, fail_test_name = self._check_all_dependencies_succeeded(dependency, success_map)
@@ -74,19 +93,21 @@ class Executor:
 
         return True, None
 
-    def _inject_input_params(self, raw_params: Dict[str, Any], response_map: Dict[str, Any]) -> Dict[str, Any]:
+    def _inject_input_params(
+        self, raw_params: Dict[str, Any], response_map: Dict[str, Any]
+    ) -> Dict[str, Any]:
         def resolve(value):
             if isinstance(value, str):
-                matches = re.findall(r"\{\{(.+?)\}\}", value)
+                matches = re.findall(r'\{\{(.+?)\}\}', value)
                 for m in matches:
-                    parts = m.split(".", 1)
+                    parts = m.split('.', 1)
                     dep_name = parts[0]
-                    sub_path = parts[1] if len(parts) > 1 else ""
+                    sub_path = parts[1] if len(parts) > 1 else ''
                     dep_response = response_map.get(dep_name)
                     if not dep_response:
-                        raise ValueError(f"Missing response for dependency: {dep_name}")
+                        raise ValueError(f'Missing response for dependency: {dep_name}')
                     resolved_value = extract_path(dep_response, sub_path)
-                    value = value.replace(f"{{{{{m}}}}}", str(resolved_value))
+                    value = value.replace(f'{{{{{m}}}}}', str(resolved_value))
                 return value
             elif isinstance(value, list):
                 return [resolve(v) for v in value]
@@ -97,10 +118,9 @@ class Executor:
 
         return resolve(raw_params)
 
-
     def _setup_all_and_call_tool(self, test_name: str):
-        """
-        Recursively sets up a test and all its dependencies.
+        """Recursively sets up a test and all its dependencies.
+
         Returns the test case response after running the tool.
         """
         test_case = self.test_case_map[test_name]
@@ -108,44 +128,45 @@ class Executor:
         for dependency in test_case.dependencies:
             self._setup_all_and_call_tool(dependency)
             resp = self.response_map.get(dependency)
-            logger.info(f"actual response for {dependency}: {resp}")
+            logger.info(f'actual response for {dependency}: {resp}')
             if resp is None:
-                logger.info(f"[Injector] Skipping {test_name} because dependency '{dependency}' response is None")
+                logger.info(
+                    f"[Injector] Skipping {test_name} because dependency '{dependency}' response is None"
+                )
                 return
-            
+
         # Run aws_resources setup functions: if setup is failed, raise an error
-        for setup_func in getattr(test_case, "aws_resources", []):
+        for setup_func in getattr(test_case, 'aws_resources', []):
             try:
-                logger.info(f"[Setup] Executing AWS resource setup for {test_case.test_name}")
+                logger.info(f'[Setup] Executing AWS resource setup for {test_case.test_name}')
                 setup_func()
             except Exception as e:
-                raise RuntimeError(f"[Setup Error] AWS resource setup failed for {test_case.test_name}: {e}")
-            
+                raise RuntimeError(
+                    f'[Setup Error] AWS resource setup failed for {test_case.test_name}: {e}'
+                )
+
         # Call the tool with injected parameters
         input_params = self._inject_input_params(test_case.input_params, self.response_map)
         response = self.mcp_client.call_tool(test_case.tool_name, input_params)
         self.response_map[test_name] = response
 
-        
     def _clean_up_all(self, test_name: str):
-        """
-        Recursively cleans up a test and all its dependencies in reverse order.
-        """
+        """Recursively cleans up a test and all its dependencies in reverse order."""
         test_case = self.test_case_map[test_name]
-        
+
         try:
             for clean_uper in test_case.clean_ups:
                 clean_uper.clean_up(test_case.input_params, self.response_map[test_name] or {})
 
         except Exception as e:
-            logger.error(f"Error during clean up for {test_name}: {str(e)}")
-        
+            logger.error(f'Error during clean up for {test_name}: {str(e)}')
+
         # Then clean up all dependencies in reverse order
         for dependency in reversed(test_case.dependencies):
             self._clean_up_all(dependency)
-        
 
     def execute_tests(self):
+        """Execute all test cases."""
         success_map = defaultdict(bool)
         results = []
 
@@ -153,12 +174,18 @@ class Executor:
             test_name = test_case.test_name
             ok, fail_test_name = self._check_all_dependencies_succeeded(test_name, success_map)
             if not ok:
-                logger.info(f"Skipping test {test_name} because dependency {fail_test_name} failed")
-                results.append({
-                    "test_name": test_name,
-                    "success": False,
-                    "validations": [ValidationResult(False, f"Dependency {fail_test_name} failed")]
-                })
+                logger.info(
+                    f'Skipping test {test_name} because dependency {fail_test_name} failed'
+                )
+                results.append(
+                    {
+                        'test_name': test_name,
+                        'success': False,
+                        'validations': [
+                            ValidationResult(False, f'Dependency {fail_test_name} failed')
+                        ],
+                    }
+                )
                 success_map[test_name] = False
                 continue
 
@@ -173,47 +200,46 @@ class Executor:
                 for validator in test_case.validators:
                     if isinstance(validator, BotoValidator):
                         result = validator.validate(
-                            tool_params=test_case.input_params,
-                            response_map=self.response_map
+                            tool_params=test_case.input_params, response_map=self.response_map
                         )
                     else:
                         result = validator.validate(self.response_map[test_name])
 
                     validation_results.append(result)
                     if not result.success:
-                        logger.info(f"Validation failed: {result.error_message}")
+                        logger.info(f'Validation failed: {result.error_message}')
                         all_validations_passed = False
 
                 success_map[test_name] = all_validations_passed
-                logger.info(f"Test {test_name} {'PASSED' if all_validations_passed else 'FAILED'}")
+                logger.info(f'Test {test_name} {"PASSED" if all_validations_passed else "FAILED"}')
 
-                results.append({
-                    "test_name": test_name,
-                    "success": all_validations_passed,
-                    "validations": validation_results
-                })
+                results.append(
+                    {
+                        'test_name': test_name,
+                        'success': all_validations_passed,
+                        'validations': validation_results,
+                    }
+                )
 
             except Exception as e:
-                logger.error(f"Error executing test {test_name}: {str(e)}")
-                error_msg = f"Exception: {str(e)}"
+                logger.error(f'Error executing test {test_name}: {str(e)}')
+                error_msg = f'Exception: {str(e)}'
                 success_map[test_name] = False
-                validation_results = [ValidationResult(False, error_msg)]    
-                results.append({ 
-                    "test_name": test_name,
-                    "success": False,
-                    "validations": validation_results
-                })
+                validation_results = [ValidationResult(False, error_msg)]
+                results.append(
+                    {'test_name': test_name, 'success': False, 'validations': validation_results}
+                )
             finally:
                 self._clean_up_all(test_name)
 
         success_count = sum(1 for name, success in success_map.items() if success)
         total_count = len(self.sorted_test_cases)
         return {
-            "success_map": success_map,
-            "results": results,
-            "summary": {
-                "total": total_count,
-                "passed": success_count,
-                "success_rate": (success_count / total_count * 100) if total_count > 0 else 0
-            }
+            'success_map': success_map,
+            'results': results,
+            'summary': {
+                'total': total_count,
+                'passed': success_count,
+                'success_rate': (success_count / total_count * 100) if total_count > 0 else 0,
+            },
         }
