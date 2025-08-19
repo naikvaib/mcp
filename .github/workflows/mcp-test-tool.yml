@@ -41,8 +41,8 @@ jobs:
           cd src/aws-dataprocessing-mcp-server/integration_test
           pip install -r requirements.txt
 
-          # Add the server package to Python path
-          echo "PYTHONPATH=$(pwd)/../..:$PYTHONPATH" >> $GITHUB_ENV
+          # Add the server package and integration test directory to Python path
+          echo "PYTHONPATH=$(pwd)/../..:$(pwd):$PYTHONPATH" >> $GITHUB_ENV
 
           # List installed packages for debugging
           pip list | grep -E "(mcp|pydantic|loguru|boto3)"

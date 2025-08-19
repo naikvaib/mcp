@@ -10,31 +10,31 @@ from data_processing_mcp_server_tests.models.mcp_test_case import MCPTestCase
 from botocore.config import Config
 from data_processing_mcp_server_tests.core.aws_setup import get_or_create_glue_role, create_s3_bucket_if_not_exists
 
-from test.Glue.glue_job_testcase import glue_job_test_cases
-from test.Glue.glue_trigger_testcases import glue_triggers_test_cases
-from test.Glue.glue_workflow_testcases import glue_workflows_test_cases
-from test.Glue.glue_database_testcase import glue_database_test_cases
-from test.Glue.glue_table_testcase import glue_table_test_cases
-from test.Glue.glue_connection_testcase import glue_connections_test_cases
-from test.Glue.glue_partition_testcase import glue_partitions_test_cases
-from test.Glue.glue_catalog_testcases import glue_catalogs_test_cases
-from test.Glue.glue_encrption_testcases import glue_encryption_test_cases
-from test.Glue.glue_crawler_testcases import glue_crawlers_test_cases
-from test.Glue.glue_crawler_management_testcases import glue_crawler_management_test_cases
-from test.Glue.glue_session_testcases import glue_sessions_test_cases
-from test.Glue.glue_classifier_testcases import glue_classifiers_test_cases
-from test.Glue.glue_profile_testcases import glue_profiles_test_cases
-from test.Glue.glue_security_config_testcases import glue_security_configurations_test_cases
-from test.IAM.iam_testcases import iam_test_cases
-from test.S3.s3_testcases import s3_test_cases
-from test.EMR.emr_cluster_testcases import emr_cluster_test_cases
-from test.EMR.emr_step_testcases import emr_step_test_cases
-from test.EMR.emr_instance_testcases import emr_instance_test_cases
-from test.Athena.athena_named_query_testcases import athena_named_query_test_cases
-from test.Athena.athena_query_execution_testcases import athena_query_execution_test_cases
-from test.Athena.athena_database_table_testcases import athena_databse_table_test_cases
-from test.Athena.athena_catalog_testcases import athena_data_catalog_test_cases
-from test.Athena.athena_workgroup_testcases import athena_workgroup_test_cases
+from tests.Glue.glue_job_testcase import glue_job_test_cases
+from tests.Glue.glue_trigger_testcases import glue_triggers_test_cases
+from tests.Glue.glue_workflow_testcases import glue_workflows_test_cases
+from tests.Glue.glue_database_testcase import glue_database_test_cases
+from tests.Glue.glue_table_testcase import glue_table_test_cases
+from tests.Glue.glue_connection_testcase import glue_connections_test_cases
+from tests.Glue.glue_partition_testcase import glue_partitions_test_cases
+from tests.Glue.glue_catalog_testcases import glue_catalogs_test_cases
+from tests.Glue.glue_encrption_testcases import glue_encryption_test_cases
+from tests.Glue.glue_crawler_testcases import glue_crawlers_test_cases
+from tests.Glue.glue_crawler_management_testcases import glue_crawler_management_test_cases
+from tests.Glue.glue_session_testcases import glue_sessions_test_cases
+from tests.Glue.glue_classifier_testcases import glue_classifiers_test_cases
+from tests.Glue.glue_profile_testcases import glue_profiles_test_cases
+from tests.Glue.glue_security_config_testcases import glue_security_configurations_test_cases
+from tests.IAM.iam_testcases import iam_test_cases
+from tests.S3.s3_testcases import s3_test_cases
+from tests.EMR.emr_cluster_testcases import emr_cluster_test_cases
+from tests.EMR.emr_step_testcases import emr_step_test_cases
+from tests.EMR.emr_instance_testcases import emr_instance_test_cases
+from tests.Athena.athena_named_query_testcases import athena_named_query_test_cases
+from tests.Athena.athena_query_execution_testcases import athena_query_execution_test_cases
+from tests.Athena.athena_database_table_testcases import athena_databse_table_test_cases
+from tests.Athena.athena_catalog_testcases import athena_data_catalog_test_cases
+from tests.Athena.athena_workgroup_testcases import athena_workgroup_test_cases
 
 def load_all_grouped_test_cases(s3_bucket, glue_role, aws_clients) -> List[Tuple[str, List[MCPTestCase]]]:
     """Load and group test cases by their originating test case function (not tool_name)."""
