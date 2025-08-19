@@ -34,7 +34,7 @@ def glue_job_test_cases(s3_bucket, glue_role, aws_clients) -> List[MCPTestCase]:
                 'job_definition': {
                     'Command': {
                         'Name': 'glueetl',
-                        'ScriptLocation': 's3://{s3_bucket}/glue_job_script/mcp-test-script.py',
+                        'ScriptLocation': f's3://{s3_bucket}/glue_job_script/mcp-test-script.py',
                     },
                     'Role': glue_role,
                     'GlueVersion': '5.0',
