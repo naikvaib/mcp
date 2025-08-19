@@ -85,14 +85,14 @@ jobs:
       - name: Run MCP integration tests (fail on test failure)
         continue-on-error: false
         run: |
-          cd src/aws-dataprocessing-mcp-server/IntegrationTest
+          cd src/aws-dataprocessing-mcp-server/integration_test
 
           echo "Starting MCP integration tests with pytest..."
           echo "Python path: $PYTHONPATH"
           echo "MCP Server path: $MCP_SERVER_PATH"
 
           # Run the tests with pytest
-          pytest -n auto -v -k test_tool_group tests/test_glue_pytest.py
+          pytest -n auto -v -k test_tool_group tests/tool_testcase_parallel.py
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_SDK_LOAD_CONFIG: 1
