@@ -21,7 +21,7 @@ from data_processing_mcp_server_tests.models.mcp_test_case import MCPTestCase
 from typing import List
 
 
-def athena_databse_table_test_cases(s3_bucket, aws_clients) -> List[MCPTestCase]:
+def athena_database_table_test_cases(s3_bucket, aws_clients) -> List[MCPTestCase]:
     """Athena database table test cases."""
     return [
         MCPTestCase(
